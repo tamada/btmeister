@@ -31,7 +31,7 @@ PROJECT
 ### Sample Output
 
 ```sh
-$ btmeister btmeister [~/go/src/github.com/tamada/rrh](https://github.com/tamada/rrh)
+$ btmeister btmeister ~/go/src/github.com/tamada/rrh
 cargo       btmeister/Cargo.toml
 make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
 $ btmeister --format json btmeister rrh | jq .
