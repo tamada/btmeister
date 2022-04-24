@@ -28,6 +28,37 @@ PROJECT
     the target project of btmeister.
 ```
 
+### Sample Output
+
+```sh
+$ btmeister btmeister [~/go/src/github.com/tamada/rrh](https://github.com/tamada/rrh)
+cargo       btmeister/Cargo.toml
+make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
+$ btmeister --format json btmeister rrh | jq .
+[
+  {
+    "project":"btmeister",
+    "path":"./btmeister",
+    "build-tools":[
+      {
+        "file-name":"Cargo.toml",
+        "tool-name":"cargo"
+      }
+    ]
+  },
+  {
+    "project":"rrh",
+    "path":"/Usrs/tamada/go/src/github.com/tamada/rrh",
+    "build-tools":[
+      {
+        "file-name":"Makefile",
+        "tool-name":"make"
+      }
+    ]
+  }
+]
+```
+
 
 ## :hammer_and_wrench: Related Tools
 
