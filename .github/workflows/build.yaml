@@ -23,6 +23,9 @@ jobs:
         with:
           crate: cargo-llvm-cov
           version: latest
+      - name: llvm-tools-preview
+        run:
+          rustup component add llvm-tools-preview
       - name: Build 
         run: |
           cargo llvm-cov --lcov --output-path coverage.lcov
