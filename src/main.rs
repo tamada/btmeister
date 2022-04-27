@@ -31,18 +31,12 @@ struct Options {
 
 impl Options {
     fn validate(&self) -> Option<MeisterError> {
-        if let Some(x) = &self.project_list {
-            if self.dirs.len() > 0 {
-                return Some(MeisterError::BothTargetSpecified())
-            } else {
-                None
-            }
+        if self.project_list.is_some() && !self.dirs.is_empty() {
+            Some(MeisterError::BothTargetSpecified())
+        } else if self.project_list.is_none() && self.dirs.is_empty() {
+            Some(MeisterError::NoProjectSpecified())
         } else {
-            if self.dirs.len() == 0 {
-                return Some(MeisterError::NoProjectSpecified())
-            } else {
-                None
-            }
+            None
         }
     }    
 }
@@ -90,7 +84,7 @@ fn parse_project_list(list_file: String) -> Result<Vec<PathBuf>, Box<dyn Error>>
     for line in f.lines() {
         lines.push(PathBuf::from(line.unwrap()));
     }
-    return Ok(lines)
+    Ok(lines)
 }
 
 
