@@ -105,3 +105,22 @@ fn main() {
     let _targets = parse_targets(opts.project_list, opts.dirs);
 
 }
+
+fn hello(name: Option<String>) -> String {
+    return format!("Hello, {}", if let Some(n) = name {
+        n
+    } else {
+        "World".to_string()
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_basic() {
+        assert_eq!("Hello, World", hello(None));
+        assert_eq!("Hello, Tamada", hello(Some("Tamada".to_string())));
+    }
+}
