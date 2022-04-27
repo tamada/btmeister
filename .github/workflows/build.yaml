@@ -17,7 +17,7 @@ jobs:
         uses: ATiltedTree/setup-rust@v1
         with:
           rust-version: stable
-          component: clippy, llvm-tools-preview
+          component: llvm-tools-preview
       - name: Cargo install llvm-cov
         uses: actions-rs/install@v0.1
         with:
