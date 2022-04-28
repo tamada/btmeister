@@ -1,5 +1,9 @@
 # btmeister
 
+[![build](https://github.com/tamada/btmeister/actions/workflows/build.yaml/badge.svg)](https://github.com/tamada/btmeister/actions/workflows/build.yaml)
+[![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=coverage)](https://coveralls.io/github/tamada/btmeister?branch=coverage)
+
+
 Build tools detector for the projects.
 
 ![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/docs/images/logo.png)
