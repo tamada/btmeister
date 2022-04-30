@@ -4,11 +4,12 @@ use std::io::BufReader;
 use std::path::PathBuf;
 use std::str::FromStr;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BuildToolDef {
-    name: String,
-    build_files: Vec<String>,
-    url: String,
+    pub name: String,
+    #[serde(rename = "build-files")]
+    pub build_files: Vec<String>,
+    pub url: String,
 }
 
 pub type BuildToolDefs = std::vec::Vec<BuildToolDef>;
@@ -25,7 +26,7 @@ impl BuildToolDef {
     }
 }
 
-pub fn mergeBuildTools(first: BuildToolDefs, second: BuildToolDefs) -> BuildToolDefs {
+pub fn merge_build_tools(first: BuildToolDefs, second: BuildToolDefs) -> BuildToolDefs {
     let mut result = BuildToolDefs::new();
     for item in first {
         result.push(item);
@@ -47,7 +48,7 @@ pub fn construct(
     }?;
     let result = if let Some(append_path) = append {
         let additional_defs = BuildToolDef::parse(append_path)?;
-        mergeBuildTools(def, additional_defs)
+        merge_build_tools(def, additional_defs)
     } else {
         def
     };

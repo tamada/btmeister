@@ -4,6 +4,8 @@ use std::fs::File;
 use std::io::{stdin, BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+use build_tool_defs::{BuildToolDef,BuildToolDefs,construct};
+use walkdir::WalkDir;
 
 mod build_tool_defs;
 
@@ -80,12 +82,6 @@ struct BuildTool {
     def: build_tool_defs::BuildToolDef,
 }
 
-impl BuildTool {
-    fn parse(project: String) -> Vec<BuildTool> {
-        Vec::new()
-    }
-}
-
 #[derive(Error, Debug)]
 enum MeisterError {
     #[error("{0}: project directory not found")]
@@ -123,20 +119,64 @@ fn parse_targets(
     }
 }
 
+fn extract_file_name(target: &Path) -> Option<&str> {
+    if let Some(name) = target.file_name() {
+        name.to_str()
+    } else {
+        None
+    }
+}
+
+fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToolDef> {
+    if let Some(file_name) = extract_file_name(target) {
+       for def in defs {
+            for build_file in &def.build_files {
+                if file_name == build_file {
+                    return Some(def.clone());
+                }
+            }
+        }
+    }
+    None
+}
+
+fn find_build_tools(target: &Path, defs: &BuildToolDefs) -> Result<Vec<BuildTool>, Box<dyn Error>> {
+    let mut build_tools = Vec::new();
+    for entry in WalkDir::new(target) {
+        let entry = &entry?;
+        if let Some(def) = find_build_tools_impl(entry.path(), defs) {
+            build_tools.push(BuildTool {
+                path: entry.path().to_path_buf(),
+                def,
+            });
+        }
+    }
+    Ok(build_tools)
+}
+
+fn print_result(results: Vec<BuildTool>) -> Result<i32, Box<dyn Error>> {
+    for result in results {
+        println!("{}: {}", result.path.display(), result.def.name);
+    }
+    Ok(0)
+}
+
 fn perform_each(
     target: &Path,
-    _defs: &build_tool_defs::BuildToolDefs,
+    defs: &build_tool_defs::BuildToolDefs,
 ) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
-
-        Ok(0)
+        match find_build_tools(target, defs) {
+            Ok(results) => print_result(results),
+            Err(e) => Err(e),
+        }
     }
 }
 
 fn perform(opts: Options) -> Result<i32, Box<dyn Error>> {
-    let defs = build_tool_defs::construct(opts.definition, opts.append_defs)?;
+    let defs = construct(opts.definition, opts.append_defs)?;
     let targets = parse_targets(opts.project_list, opts.dirs)?;
     for target in targets {
         if let Err(e) = perform_each(target.as_path(), &defs) {
