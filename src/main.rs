@@ -6,12 +6,7 @@ use std::path::PathBuf;
 use std::error::Error;
 
 #[derive(Parser)]
-#[clap(
-    name = "btmeister",
-    author = "Haruaki TAMADA",
-    version = "1.0.0",
-    about = "Identifying the build tools of the projects in use."
-)]
+#[clap(author, version, about)]
 struct Options {
     #[clap(long, value_name = "JSON", help = "Specify the additional definitions of the build tools.")]
     append_defs: Option<PathBuf>,
