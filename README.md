@@ -8,7 +8,7 @@
 
 Build tools detector for the projects.
 
-![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/docs/images/logo.png)
+![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/images/logo.png)
 
 ## :speaking_head: Description
 

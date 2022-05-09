@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2021"
 authors = [ "Haruaki TAMADA" ]
 license-file = "LICENSE"
-author_email = "tamada@users.noreply.github.com"
 description = "A tool for detecting build tools of the projects"
 repository = "https://github.com/tamada/btmeister"
 homepage = "https://tamada.github.io/btmeister/"
