@@ -38,26 +38,6 @@ jobs:
           HEAD_REF=${{ github.head_ref }}
           echo "::set-output name=tag::${HEAD_REF##*/v}"
 
-      - name: Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-# docker image
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v1
-        with:
-          registry: ghcr.io
-          username: ${{ github.repository_owner }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push Docker Images (without Groovy)
-        uses: docker/build-push-action@v2
-        with:
-          context: Dockerfile
-          push: true
-          tags: |
-            ghcr.io/tamada/btmeister:${{ steps.vars.outputs.tag }}
-            ghcr.io/tamada/btmeister:latest
-
 # web page
         # before relese it, must add gh-pages branch as a worktree, by the following command.
         #     git switch --orphan gh-pages
