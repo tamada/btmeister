@@ -2,7 +2,9 @@
 
 [![build](https://github.com/tamada/btmeister/actions/workflows/build.yaml/badge.svg)](https://github.com/tamada/btmeister/actions/workflows/build.yaml)
 [![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=coverage)](https://coveralls.io/github/tamada/btmeister?branch=coverage)
+[![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
 
+[![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
 Build tools detector for the projects.
 
