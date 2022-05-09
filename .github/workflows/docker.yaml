@@ -1,9 +1,13 @@
 name: Building docker image
 
 on:
-  push:
-    tags: 
-      - release/v*
+  workflow_run:
+    workflows:
+      - publish
+    branches:
+      - main
+    types:
+      - completed
 
 jobs:
   build_and_push:
