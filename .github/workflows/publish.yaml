@@ -1,4 +1,5 @@
 name: Publish Web Pages, and Docker Images
+
 on:
   pull_request:
     branches:
@@ -13,8 +14,8 @@ jobs:
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     env:
       REPO: https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git
-    steps:
 
+    steps:
 # initialization
       - name: Checkout
         uses: actions/checkout@v2
@@ -42,10 +43,6 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
 # web page
-        # before relese it, must add gh-pages branch as a worktree, by the following command.
-        #     git switch --orphan gh-pages
-        #     git worktree add site/public gh-pages
-
         # pandoc で README を html に変換する．とりあえず．
       - name: Build Site
         uses: docker://pandoc/core:2.9
