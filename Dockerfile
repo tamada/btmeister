@@ -1,1 +1,1 @@
-dockers/default/Dockerfile
+dockers/distroless/Dockerfile
