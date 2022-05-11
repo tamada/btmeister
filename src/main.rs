@@ -1,6 +1,6 @@
 use clap::{ArgEnum, Parser};
 use std::error::Error;
-use std::fs::File;
+use std::fs::{read_dir, File};
 use std::io::{stdin, BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -8,6 +8,7 @@ use build_tool_defs::{BuildToolDef,BuildToolDefs,construct};
 use walkdir::WalkDir;
 
 mod build_tool_defs;
+mod git_ignore;
 
 #[derive(Parser)]
 #[clap(
@@ -140,7 +141,32 @@ fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToo
     None
 }
 
-fn find_build_tools(target: &Path, defs: &BuildToolDefs) -> Result<Vec<BuildTool>, Box<dyn Error>> {
+fn find_ignore_file(ignore_file: &Path) -> Option<gitignore::File> {
+    if !ignore_file.exists() || !ignore_file.is_file() {
+        return None
+    }
+    match gitignore::File::new(ignore_file) {
+        Ok(r) => Some(r),
+        Err(e) => None,
+    }
+}
+
+fn find_build_tools(target: &Path, defs: &BuildToolDefs, ignore: &mut git_ignore::Ignore) -> Result<Vec<BuildTool>, Box<dyn Error>>{
+    let mut build_tools = Vec::new();
+    let this_ignore = ignore.append(target);
+    for entry in read_dir(target)? {
+        if let Ok(e) = entry {
+            let path = e.path();
+            if path.is_dir() && !this_ignore.is_ignore(target) {
+                find_build_tools(path.as_path(), defs, ignore)
+            }
+        }
+    }
+
+    Ok(build_tools)
+}
+
+fn find_build_tools2(target: &Path, defs: &BuildToolDefs) -> Result<Vec<BuildTool>, Box<dyn Error>> {
     let mut build_tools = Vec::new();
     for entry in WalkDir::new(target) {
         let entry = &entry?;
@@ -168,7 +194,7 @@ fn perform_each(
     if !target.exists() {
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
-        match find_build_tools(target, defs) {
+        match find_build_tools(target, defs, &mut git_ignore::Ignore{files: vec!()}) {
             Ok(results) => print_result(results),
             Err(e) => Err(e),
         }
