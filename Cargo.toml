@@ -16,3 +16,6 @@ keywords = ["build", "tools", "detection"]
 [dependencies]
     clap = { version = "3.1.9", features = ["derive"] }
     thiserror = "1.0.30"
+    serde = { version = "1.0.136", features = ["derive"] }
+    serde_json = "1.0"
+    ignore = "0.4.18"

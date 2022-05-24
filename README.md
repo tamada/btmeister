@@ -65,6 +65,12 @@ $ btmeister --format json btmeister rrh | jq .
 ]
 ```
 
+## :whale: Docker
+
+```sh
+docker run --rm -it tamada/btmeister 
+```
+
 
 ## :hammer_and_wrench: Related Tools
 
