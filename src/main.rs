@@ -1,14 +1,13 @@
 use clap::{ArgEnum, Parser};
 use std::error::Error;
-use std::fs::{read_dir, File};
+use std::fs::File;
 use std::io::{stdin, BufRead, BufReader};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use build_tool_defs::{BuildToolDef,BuildToolDefs,construct};
-use walkdir::WalkDir;
+use ignore::WalkBuilder;
 
 mod build_tool_defs;
-mod git_ignore;
 
 #[derive(Parser)]
 #[clap(
@@ -43,6 +42,9 @@ struct Options {
     )]
     format: Format,
 
+    #[clap(long = "no-ignore", help = "Do not respect ignore files (.ignore, .gitignore, etc.)")]
+    no_ignore: bool,
+
     #[clap(
         short = '@',
         value_name = "INPUT",
@@ -59,7 +61,7 @@ struct Options {
 }
 
 impl Options {
-    fn validate(&self) -> Option<MeisterError> {
+    pub fn validate(&self) -> Option<MeisterError> {
         if self.project_list.is_some() && !self.dirs.is_empty() {
             Some(MeisterError::BothTargetSpecified())
         } else if self.project_list.is_none() && self.dirs.is_empty() {
@@ -81,6 +83,12 @@ enum Format {
 struct BuildTool {
     path: PathBuf,
     def: build_tool_defs::BuildToolDef,
+}
+
+impl BuildTool {
+    pub fn new(path: PathBuf, def: build_tool_defs::BuildToolDef) -> BuildTool {
+        BuildTool { path, def }
+    }
 }
 
 #[derive(Error, Debug)]
@@ -141,40 +149,16 @@ fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToo
     None
 }
 
-fn find_ignore_file(ignore_file: &Path) -> Option<gitignore::File> {
-    if !ignore_file.exists() || !ignore_file.is_file() {
-        return None
-    }
-    match gitignore::File::new(ignore_file) {
-        Ok(r) => Some(r),
-        Err(e) => None,
-    }
-}
-
-fn find_build_tools(target: &Path, defs: &BuildToolDefs, ignore: &mut git_ignore::Ignore) -> Result<Vec<BuildTool>, Box<dyn Error>>{
+fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> Result<Vec<BuildTool>, Box<dyn Error>> {
     let mut build_tools = Vec::new();
-    let this_ignore = ignore.append(target);
-    for entry in read_dir(target)? {
-        if let Ok(e) = entry {
-            let path = e.path();
-            if path.is_dir() && !this_ignore.is_ignore(target) {
-                find_build_tools(path.as_path(), defs, ignore)
-            }
-        }
-    }
-
-    Ok(build_tools)
-}
-
-fn find_build_tools2(target: &Path, defs: &BuildToolDefs) -> Result<Vec<BuildTool>, Box<dyn Error>> {
-    let mut build_tools = Vec::new();
-    for entry in WalkDir::new(target) {
-        let entry = &entry?;
-        if let Some(def) = find_build_tools_impl(entry.path(), defs) {
-            build_tools.push(BuildTool {
-                path: entry.path().to_path_buf(),
-                def,
-            });
+    println!("ignore: {}", no_ignore);
+    for result in WalkBuilder::new(target)
+            .ignore(!no_ignore).git_ignore(!no_ignore).build() {
+        match result {
+            Ok(entry) => if let Some(def) = find_build_tools_impl(entry.path(), defs) {
+                build_tools.push(BuildTool::new(entry.path().to_path_buf(), def));
+            },
+            Err(err) => eprintln!("ERROR: {}", err),
         }
     }
     Ok(build_tools)
@@ -187,14 +171,11 @@ fn print_result(results: Vec<BuildTool>) -> Result<i32, Box<dyn Error>> {
     Ok(0)
 }
 
-fn perform_each(
-    target: &Path,
-    defs: &build_tool_defs::BuildToolDefs,
-) -> Result<i32, Box<dyn Error>> {
+fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_ignore: bool) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
-        match find_build_tools(target, defs, &mut git_ignore::Ignore{files: vec!()}) {
+        match find_build_tools(target, defs, no_ignore) {
             Ok(results) => print_result(results),
             Err(e) => Err(e),
         }
@@ -205,7 +186,7 @@ fn perform(opts: Options) -> Result<i32, Box<dyn Error>> {
     let defs = construct(opts.definition, opts.append_defs)?;
     let targets = parse_targets(opts.project_list, opts.dirs)?;
     for target in targets {
-        if let Err(e) = perform_each(target.as_path(), &defs) {
+        if let Err(e) = perform_each(&target, &defs, opts.no_ignore) {
             println!("{}", e);
         }
     }
