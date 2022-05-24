@@ -63,7 +63,7 @@ mod test {
     fn test_parse() {
         let r = BuildToolDef::parse_from_pathstr("defs/buildtools.json".to_string());
         if let Ok(result) = r {
-            assert_eq!(23, result.len())
+            assert_eq!(24, result.len())
         }
     }
 
