@@ -1,13 +1,14 @@
 use clap::{ArgEnum, Parser};
 use std::error::Error;
 use std::fs::File;
-use std::io::{stdin, BufRead, BufReader};
+use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use build_tool_defs::{BuildToolDef,BuildToolDefs,construct};
 use ignore::WalkBuilder;
 
 mod build_tool_defs;
+mod formatter;
 
 #[derive(Parser)]
 #[clap(author, version, about)]
@@ -68,14 +69,14 @@ impl Options {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-enum Format {
+pub enum Format {
     Default,
     Json,
     Yaml,
     Xml,
 }
 
-struct BuildTool {
+pub struct BuildTool {
     path: PathBuf,
     def: build_tool_defs::BuildToolDef,
 }
@@ -158,19 +159,17 @@ fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> 
     Ok(build_tools)
 }
 
-fn print_result(results: Vec<BuildTool>) -> Result<i32, Box<dyn Error>> {
-    for result in results {
-        println!("{}: {}", result.path.display(), result.def.name);
-    }
-    Ok(0)
+fn print_result(results: Vec<BuildTool>, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
+    let mut out: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(stdout()));
+    Ok(formatter.print(&mut out, results))
 }
 
-fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_ignore: bool) -> Result<i32, Box<dyn Error>> {
+fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_ignore: bool, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
         match find_build_tools(target, defs, no_ignore) {
-            Ok(results) => print_result(results),
+            Ok(results) => print_result(results, formatter),
             Err(e) => Err(e),
         }
     }
@@ -179,8 +178,9 @@ fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_igno
 fn perform(opts: Options) -> Result<i32, Box<dyn Error>> {
     let defs = construct(opts.definition, opts.append_defs)?;
     let targets = parse_targets(opts.project_list, opts.dirs)?;
+    let formatter = <dyn formatter::Formatter>::build(opts.format);
     for target in targets {
-        if let Err(e) = perform_each(&target, &defs, opts.no_ignore) {
+        if let Err(e) = perform_each(&target, &defs, opts.no_ignore, &formatter) {
             println!("{}", e);
         }
     }
