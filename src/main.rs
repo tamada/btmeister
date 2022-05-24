@@ -10,12 +10,7 @@ use ignore::WalkBuilder;
 mod build_tool_defs;
 
 #[derive(Parser)]
-#[clap(
-    name = "btmeister",
-    author = "Haruaki TAMADA",
-    version = "1.0.0",
-    about = "Identifying the build tools of the projects in use."
-)]
+#[clap(author, version, about)]
 struct Options {
     #[clap(
         long,
@@ -151,7 +146,6 @@ fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToo
 
 fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> Result<Vec<BuildTool>, Box<dyn Error>> {
     let mut build_tools = Vec::new();
-    println!("ignore: {}", no_ignore);
     for result in WalkBuilder::new(target)
             .ignore(!no_ignore).git_ignore(!no_ignore).build() {
         match result {
@@ -205,4 +199,23 @@ fn main() {
         }
         Ok(code) => code,
     })
+}
+
+fn hello(name: Option<String>) -> String {
+    return format!("Hello, {}", if let Some(n) = name {
+        n
+    } else {
+        "World".to_string()
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_basic() {
+        assert_eq!("Hello, World", hello(None));
+        assert_eq!("Hello, Tamada", hello(Some("Tamada".to_string())));
+    }
 }

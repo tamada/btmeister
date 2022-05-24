@@ -2,6 +2,14 @@
 name = "btmeister"
 version = "0.1.0"
 edition = "2021"
+authors = [ "Haruaki TAMADA" ]
+license-file = "LICENSE"
+description = "A tool for detecting build tools of the projects"
+repository = "https://github.com/tamada/btmeister"
+homepage = "https://tamada.github.io/btmeister/"
+readme = "README.md"
+categories = ["command-line-utilities"]
+keywords = ["build", "tools", "detection"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

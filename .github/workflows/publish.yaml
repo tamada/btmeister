@@ -1,0 +1,72 @@
+name: Publish Web Pages, and Docker Images
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    # ブランチ名が release/v から始まる場合のみに実行する．
+    # プルリクエストがマージされた場合のみに実行する．
+    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
+    env:
+      REPO: https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git
+    steps:
+
+# initialization
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Initialize Git
+        shell: bash
+        run: |
+          git config --global user.name  "GitHub Actions"
+          git config --global user.email "action@github.com"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+          git worktree add site/public gh-pages
+
+      - name: Git Tag name
+        id: vars
+        run: |
+          HEAD_REF=${{ github.head_ref }}
+          echo "::set-output name=tag::${HEAD_REF##*/v}"
+
+# web page
+        # before relese it, must add gh-pages branch as a worktree, by the following command.
+        #     git switch --orphan gh-pages
+        #     git worktree add site/public gh-pages
+
+        # pandoc で README を html に変換する．とりあえず．
+      - name: Build Site
+        uses: docker://pandoc/core:2.9
+        with:
+          args: >-
+            --standalone
+            --output=site/public/index.html
+            --metadata title=btmeister
+            README.md
+
+      - name: Deploy Site
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site/public
+
+# publish release
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.vars.outputs.tag }}
+          release_name: Release v${{ steps.vars.outputs.tag }}
+          draft: false
+          prerelease: false
