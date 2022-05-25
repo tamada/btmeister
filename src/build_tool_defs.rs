@@ -2,7 +2,11 @@ use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::path::PathBuf;
-use std::str::FromStr;
+use rust_embed::RustEmbed;
+
+#[derive(RustEmbed)]
+#[folder = "defs"]
+struct Asset;
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BuildToolDef {
@@ -21,8 +25,13 @@ impl BuildToolDef {
         Ok(serde_json::from_reader(reader)?)
     }
 
-    pub fn parse_from_pathstr(defs: String) -> Result<BuildToolDefs, Box<dyn std::error::Error>> {
-        BuildToolDef::parse(PathBuf::from_str(&defs)?)
+    fn parse_from_asset() -> Result<BuildToolDefs, Box<dyn std::error::Error>> {
+        if let Some(f) = Asset::get("buildtools.json") {
+            let string = std::str::from_utf8(f.data.as_ref())?;
+            Ok(serde_json::from_str(string)?)
+        } else {
+            panic!("buildtools.json: file not found");
+        }
     }
 }
 
@@ -44,7 +53,7 @@ pub fn construct(
     let def = if let Some(path) = defs {
         BuildToolDef::parse(path)
     } else {
-        BuildToolDef::parse_from_pathstr("defs/buildtools.json".to_string())
+        BuildToolDef::parse_from_asset()
     }?;
     let result = if let Some(append_path) = append {
         let additional_defs = BuildToolDef::parse(append_path)?;
@@ -61,11 +70,10 @@ mod test {
 
     #[test]
     fn test_parse() {
-        let r = BuildToolDef::parse_from_pathstr("defs/buildtools.json".to_string());
+        let r = BuildToolDef::parse_from_asset();
         if let Ok(result) = r {
             assert_eq!(24, result.len())
         }
     }
-
 }
 

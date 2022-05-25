@@ -159,9 +159,9 @@ fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> 
     Ok(build_tools)
 }
 
-fn print_result(results: Vec<BuildTool>, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
+fn print_result(base: &PathBuf, results: Vec<BuildTool>, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
     let mut out: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(stdout()));
-    Ok(formatter.print(&mut out, results))
+    Ok(formatter.print(&mut out, base, results))
 }
 
 fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_ignore: bool, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
@@ -169,7 +169,7 @@ fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_igno
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
         match find_build_tools(target, defs, no_ignore) {
-            Ok(results) => print_result(results, formatter),
+            Ok(results) => print_result(target, results, formatter),
             Err(e) => Err(e),
         }
     }
