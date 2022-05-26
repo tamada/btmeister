@@ -38,6 +38,9 @@ struct Options {
     )]
     format: Format,
 
+    #[clap(short = 'L', long = "list-defs", help = "print the build tools' definition list")]
+    list_defs: bool,
+
     #[clap(long = "no-ignore", help = "Do not respect ignore files (.ignore, .gitignore, etc.)")]
     no_ignore: bool,
 
@@ -60,7 +63,7 @@ impl Options {
     pub fn validate(&self) -> Option<MeisterError> {
         if self.project_list.is_some() && !self.dirs.is_empty() {
             Some(MeisterError::BothTargetSpecified())
-        } else if self.project_list.is_none() && self.dirs.is_empty() {
+        } else if !self.list_defs && self.project_list.is_none() && self.dirs.is_empty() {
             Some(MeisterError::NoProjectSpecified())
         } else {
             None
@@ -175,16 +178,26 @@ fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_igno
     }
 }
 
+fn print_defs(defs: &build_tool_defs::BuildToolDefs, formatter: Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
+    let mut out: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(stdout()));
+    formatter.print_defs(&mut out, defs);
+    Ok(0)
+}
+
 fn perform(opts: Options) -> Result<i32, Box<dyn Error>> {
     let defs = construct(opts.definition, opts.append_defs)?;
-    let targets = parse_targets(opts.project_list, opts.dirs)?;
     let formatter = <dyn formatter::Formatter>::build(opts.format);
-    for target in targets {
-        if let Err(e) = perform_each(&target, &defs, opts.no_ignore, &formatter) {
-            println!("{}", e);
+    if opts.list_defs {
+        print_defs(&defs, formatter)
+    } else {
+        let targets = parse_targets(opts.project_list, opts.dirs)?;
+        for target in targets {
+            if let Err(e) = perform_each(&target, &defs, opts.no_ignore, &formatter) {
+                println!("{}", e);
+            }
         }
+        Ok(0)
     }
-    Ok(0)
 }
 
 fn main() {
