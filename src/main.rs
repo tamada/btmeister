@@ -208,21 +208,49 @@ fn main() {
     })
 }
 
-fn hello(name: Option<String>) -> String {
-    return format!("Hello, {}", if let Some(n) = name {
-        n
-    } else {
-        "World".to_string()
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn test_basic() {
-        assert_eq!("Hello, World", hello(None));
-        assert_eq!("Hello, Tamada", hello(Some("Tamada".to_string())));
+        let opts = Options::parse_from("testdata/fibonacci testdata/hello".split(" "));
+        let defs = btmeister::construct(opts.definition, opts.append_defs).unwrap();
+
+        let r1 = find_build_tools(&PathBuf::from("testdata/fibonacci"), &defs, false).unwrap();
+        assert_eq!(1, r1.len());
+        let item1 = r1.get(0).unwrap();
+
+        assert_eq!(PathBuf::from("testdata/fibonacci/build.gradle"), item1.path);
+        assert_eq!("Gradle", item1.def.name);
+    }
+
+    #[test]
+    fn test_validate() {
+        let opts = Options::parse_from(["btmeister", "testdata/fibonacci"]);
+        let r = opts.validate();
+        assert!(r.is_none());
+    }
+
+    #[test]
+    fn test_validate_both_project_list_dirs() {
+        let opts = Options::parse_from("btmeister -@ testdata/project_list.txt testdata/fibonacci".split(" "));
+        let r = opts.validate();
+        assert!(r.is_some());
+        println!("{}", r.unwrap());
+    }
+
+    #[test]
+    fn test_validate_no_project_given() {
+        let opts = Options::parse_from(["btmeister"]);
+        let r = opts.validate();
+        assert!(r.is_some());
+    }
+
+    #[test]
+    fn test_validate_ok() {
+        let opts = Options::parse_from(["btmeister", "testdata/fibonacci"]);
+        let r = opts.validate();
+        assert!(r.is_none());
     }
 }
