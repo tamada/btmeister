@@ -1,0 +1,9 @@
+[
+    {
+      "name": "go",
+      "build-files": [
+        "go.mod"
+      ],
+      "url": "https://go.dev/"
+    }
+]  

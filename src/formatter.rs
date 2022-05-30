@@ -1,7 +1,7 @@
 use std::io::{Write, BufWriter};
 use std::path::PathBuf;
 
-use super::build_tool_defs::{BuildToolDef, BuildToolDefs};
+use super::btmeister::{BuildToolDef, BuildToolDefs};
 use super::{BuildTool, Format};
 
 pub trait Formatter {

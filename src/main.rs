@@ -4,10 +4,10 @@ use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use build_tool_defs::{BuildToolDef,BuildToolDefs,construct};
+use btmeister::{BuildToolDef,BuildToolDefs,construct};
 use ignore::WalkBuilder;
 
-mod build_tool_defs;
+mod btmeister;
 mod formatter;
 
 #[derive(Parser)]
@@ -81,11 +81,11 @@ pub enum Format {
 
 pub struct BuildTool {
     path: PathBuf,
-    def: build_tool_defs::BuildToolDef,
+    def: BuildToolDef,
 }
 
 impl BuildTool {
-    pub fn new(path: PathBuf, def: build_tool_defs::BuildToolDef) -> BuildTool {
+    pub fn new(path: PathBuf, def: BuildToolDef) -> BuildTool {
         BuildTool { path, def }
     }
 }
@@ -167,7 +167,7 @@ fn print_result(base: &PathBuf, results: Vec<BuildTool>, formatter: &Box<dyn for
     Ok(formatter.print(&mut out, base, results))
 }
 
-fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_ignore: bool, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
+fn perform_each(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
@@ -178,7 +178,7 @@ fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_igno
     }
 }
 
-fn print_defs(defs: &build_tool_defs::BuildToolDefs, formatter: Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
+fn print_defs(defs: &BuildToolDefs, formatter: Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
     let mut out: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(stdout()));
     formatter.print_defs(&mut out, defs);
     Ok(0)
