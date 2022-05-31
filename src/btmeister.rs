@@ -82,7 +82,7 @@ mod test {
         let r = BuildToolDef::parse(PathBuf::from("testdata/append_def.json"));
         assert!(r.is_ok());
         if let Ok(result) = r {
-            assert_eq!(1, result.len());
+            assert_eq!(2, result.len());
         } 
     }
 
@@ -109,7 +109,7 @@ mod test {
         let r = construct(None, Some(PathBuf::from("testdata/append_def.json")));
         assert!(r.is_ok());
         if let Ok(result) = r {
-            assert_eq!(25, result.len());
+            assert_eq!(26, result.len());
         }
     }
 }

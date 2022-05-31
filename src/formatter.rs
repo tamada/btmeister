@@ -72,11 +72,11 @@ impl Formatter for JsonFormatter{
         if !first {
             write!(out, ",").unwrap();
         }
-        write!(out, "{{\"file-path\":\"{}\",\"tool-name\":\"{}\"}}",
+        write!(out, r#"{{"file-path":"{}","tool-name":"{}"}}"#,
                 result.path.display(), result.def.name).unwrap();
     }
     fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
-        write!(out, "{{\"base\":\"{}\",\"build-tools\":[", base.display()).unwrap();
+        write!(out, r#"{{"base":"{}","build-tools":["#, base.display()).unwrap();
     }
     fn print_footer(&self, out: &mut Box<dyn Write>) {
         writeln!(out, "]}}").unwrap();
@@ -85,18 +85,18 @@ impl Formatter for JsonFormatter{
         write!(out, "[").unwrap();
     }
     fn print_def_footer(&self, out: &mut Box<dyn Write>) {
-        write!(out, "]").unwrap();
+        writeln!(out, "]").unwrap();
     }
     fn print_def(&self, out: &mut Box<dyn Write>, def: &BuildToolDef, first: bool) {
         if !first {
             write!(out, ",").unwrap();
         }
-        write!(out, "{{\"name\":\"{}\",\"url\":\"{}\",\"build-files\":[", def.name, def.url).unwrap();
+        write!(out, r#"{{"name":"{}","url":"{}","build-files":["#, def.name, def.url).unwrap();
         for (i, element) in def.build_files.iter().enumerate() {
             if i != 0 {
                 write!(out, ",").unwrap();
             }
-            write!(out, "\"{}\"", element).unwrap();
+            write!(out, r#""{}""#, element).unwrap();
         }
         write!(out, "]}}").unwrap();
     }
@@ -160,5 +160,126 @@ impl YamlFormatter {
             write!(out, "        ").unwrap();
         };
         writeln!(out, "{}", file_name).unwrap();
+    }
+}
+
+mod test_print_defs {
+    use super::*;
+    use super::super::*;
+    use std::str::FromStr;
+    use std::fs::{File, remove_file, read_to_string};
+
+    fn setup() -> BuildToolDefs {
+        let r = construct(Some(PathBuf::from_str("testdata/append_def.json").unwrap()), None).unwrap();
+        r
+    }
+
+    fn write_and_read(format: Format, path: &str) -> String {
+        {
+            let defs = setup();
+            let f = <dyn Formatter>::build(format);
+            let mut dest: Box<dyn Write> = Box::new(BufWriter::new(File::create(path).unwrap()));
+            f.print_defs(&mut dest, &defs);
+        }
+        let r = read_to_string(path).unwrap();
+        let _ = remove_file(path);
+        r.trim().to_string()
+    }
+
+
+    #[test]
+    fn test_json() {
+        let result = write_and_read(Format::Json, "dest1.json");
+        assert_eq!(r#"[{"name":"go","url":"https://go.dev/","build-files":["go.mod"]},{"name":"webpack","url":"https://webpack.js.org/","build-files":["webpack.config.js"]}]"#, result);
+    }
+
+    #[test]
+    fn test_default() {
+        let result = write_and_read(Format::Default, "dest1.txt");
+        assert_eq!(r#"go: go.mod
+webpack: webpack.config.js"#, result);
+    }
+
+    #[test]
+    fn test_xml() {
+        let result = write_and_read(Format::Xml, "dest1.xml");
+        assert_eq!(r#"<?xml version="1.0"?>
+<build-tool-defs><build-tool-def><name>go</name><url>https://go.dev/</url><build-files><file-name>go.mod</file-name></build-files></build-tool-def><build-tool-def><name>webpack</name><url>https://webpack.js.org/</url><build-files><file-name>webpack.config.js</file-name></build-files></build-tool-def></build-tool-defs>"#, result);
+    }
+
+    #[test]
+    fn test_yaml() {
+        let result = write_and_read(Format::Yaml, "dest1.yaml");
+        assert_eq!(r#"build-tools-defs
+  - name: go
+    url: https://go.dev/
+    file-names:
+      - go.mod
+  - name: webpack
+    url: https://webpack.js.org/
+    file-names:
+      - webpack.config.js"#, result);
+    }
+}
+
+#[cfg(test)]
+mod test_print_result {
+    use super::*;
+    use super::super::*;
+    use std::path::PathBuf;
+    use std::fs::{File, remove_file, read_to_string};
+    use std::io::{Write, BufWriter};
+    use std::str::FromStr;
+
+    fn setup() -> Vec<BuildTool> {
+        let defs = construct(None, None).unwrap();
+        let def1 = defs.get(11).unwrap();
+        let def2 = defs.get(8).unwrap();
+        let bt1 = BuildTool::new(PathBuf::from_str("testdata/fibonacci/build.gradle").unwrap(), def1.clone());
+        let bt2 = BuildTool::new(PathBuf::from_str("testdata/hello/Cargo.toml").unwrap(), def2.clone());
+        vec![bt1, bt2]
+    }
+
+    fn write_and_read(format: Format, path: &str) -> String {
+        {
+            let vec = setup();
+            let f = <dyn Formatter>::build(format);
+            let mut dest: Box<dyn Write> = Box::new(BufWriter::new(File::create(path).unwrap()));
+            f.print(&mut dest, &PathBuf::from_str("testdata").unwrap(), vec);
+        }
+        let r = read_to_string(path).unwrap();
+        let _ = remove_file(path);
+        r.trim().to_string()
+    }
+
+    #[test]
+    fn test_json() {
+        let result = write_and_read(Format::Json, "dest1.json");
+        assert_eq!(r#"{"base":"testdata","build-tools":[{"file-path":"testdata/fibonacci/build.gradle","tool-name":"Gradle"},{"file-path":"testdata/hello/Cargo.toml","tool-name":"Cargo"}]}"#, result);
+    }
+
+    #[test]
+    fn test_xml() {
+        let result = write_and_read(Format::Xml, "dest1.xml");
+        assert_eq!(r#"<?xml version="1.0"?>
+<build-tools><base>testdata</base><build-tool><file-path>testdata/fibonacci/build.gradle</file-path><tool-name>Gradle</tool-name></build-tool><build-tool><file-path>testdata/hello/Cargo.toml</file-path><tool-name>Cargo</tool-name></build-tool></build-tools>"#, result);
+    }
+
+    #[test]
+    fn test_yaml() {
+        let result = write_and_read(Format::Yaml, "dest1.yaml");
+        assert_eq!(r#"base: testdata
+  - file-path: testdata/fibonacci/build.gradle
+    tool-name: Gradle
+  - file-path: testdata/hello/Cargo.toml
+    tool-name: Cargo"#, result);
+    }
+
+    #[test]
+    fn test_default() {
+        let result = write_and_read(Format::Default, "dest1.txt");
+        assert_eq!(r#"testdata
+  testdata/fibonacci/build.gradle: Gradle
+  testdata/hello/Cargo.toml: Cargo"#, result);
     }
 }
