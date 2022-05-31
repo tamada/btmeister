@@ -4,10 +4,10 @@ use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use build_tool_defs::{BuildToolDef,BuildToolDefs,construct};
+use btmeister::{BuildToolDef,BuildToolDefs,construct};
 use ignore::WalkBuilder;
 
-mod build_tool_defs;
+mod btmeister;
 mod formatter;
 
 #[derive(Parser)]
@@ -81,11 +81,11 @@ pub enum Format {
 
 pub struct BuildTool {
     path: PathBuf,
-    def: build_tool_defs::BuildToolDef,
+    def: BuildToolDef,
 }
 
 impl BuildTool {
-    pub fn new(path: PathBuf, def: build_tool_defs::BuildToolDef) -> BuildTool {
+    pub fn new(path: PathBuf, def: BuildToolDef) -> BuildTool {
         BuildTool { path, def }
     }
 }
@@ -162,42 +162,34 @@ fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> 
     Ok(build_tools)
 }
 
-fn print_result(base: &PathBuf, results: Vec<BuildTool>, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
-    let mut out: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(stdout()));
-    Ok(formatter.print(&mut out, base, results))
-}
-
-fn perform_each(target: &PathBuf, defs: &build_tool_defs::BuildToolDefs, no_ignore: bool, formatter: &Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
+fn perform_each(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool,
+        formatter: &Box<dyn formatter::Formatter>,
+        dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
         Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
         match find_build_tools(target, defs, no_ignore) {
-            Ok(results) => print_result(target, results, formatter),
+            Ok(results) => Ok(formatter.print(dest, target, results)),
             Err(e) => Err(e),
         }
     }
 }
 
-fn print_defs(defs: &build_tool_defs::BuildToolDefs, formatter: Box<dyn formatter::Formatter>) -> Result<i32, Box<dyn Error>> {
-    let mut out: BufWriter<Box<dyn Write>> = BufWriter::new(Box::new(stdout()));
-    formatter.print_defs(&mut out, defs);
-    Ok(0)
-}
-
-fn perform(opts: Options) -> Result<i32, Box<dyn Error>> {
+fn perform(opts: Options, dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
     let defs = construct(opts.definition, opts.append_defs)?;
     let formatter = <dyn formatter::Formatter>::build(opts.format);
     if opts.list_defs {
-        print_defs(&defs, formatter)
+        formatter.print_defs(dest, &defs);
     } else {
         let targets = parse_targets(opts.project_list, opts.dirs)?;
         for target in targets {
-            if let Err(e) = perform_each(&target, &defs, opts.no_ignore, &formatter) {
+            if let Err(e) = perform_each(&target, &defs, opts.no_ignore, &formatter, dest) {
                 println!("{}", e);
             }
         }
-        Ok(0)
     }
+    dest.flush().unwrap();
+    Ok(0)
 }
 
 fn main() {
@@ -205,20 +197,14 @@ fn main() {
     if let Some(err) = opts.validate() {
         println!("{}", err)
     }
-    std::process::exit(match perform(opts) {
+
+    let mut dest: Box<dyn Write> = Box::new(BufWriter::new(stdout()));
+    std::process::exit(match perform(opts, &mut dest) {
         Err(err) => {
             println!("{}", err);
             1
         }
         Ok(code) => code,
-    })
-}
-
-fn hello(name: Option<String>) -> String {
-    return format!("Hello, {}", if let Some(n) = name {
-        n
-    } else {
-        "World".to_string()
     })
 }
 
@@ -228,7 +214,43 @@ mod tests {
 
     #[test]
     fn test_basic() {
-        assert_eq!("Hello, World", hello(None));
-        assert_eq!("Hello, Tamada", hello(Some("Tamada".to_string())));
+        let opts = Options::parse_from("testdata/fibonacci testdata/hello".split(" "));
+        let defs = btmeister::construct(opts.definition, opts.append_defs).unwrap();
+
+        let r1 = find_build_tools(&PathBuf::from("testdata/fibonacci"), &defs, false).unwrap();
+        assert_eq!(1, r1.len());
+        let item1 = r1.get(0).unwrap();
+
+        assert_eq!(PathBuf::from("testdata/fibonacci/build.gradle"), item1.path);
+        assert_eq!("Gradle", item1.def.name);
+    }
+
+    #[test]
+    fn test_validate() {
+        let opts = Options::parse_from(["btmeister", "testdata/fibonacci"]);
+        let r = opts.validate();
+        assert!(r.is_none());
+    }
+
+    #[test]
+    fn test_validate_both_project_list_dirs() {
+        let opts = Options::parse_from("btmeister -@ testdata/project_list.txt testdata/fibonacci".split(" "));
+        let r = opts.validate();
+        assert!(r.is_some());
+        println!("{}", r.unwrap());
+    }
+
+    #[test]
+    fn test_validate_no_project_given() {
+        let opts = Options::parse_from(["btmeister"]);
+        let r = opts.validate();
+        assert!(r.is_some());
+    }
+
+    #[test]
+    fn test_validate_ok() {
+        let opts = Options::parse_from(["btmeister", "testdata/fibonacci"]);
+        let r = opts.validate();
+        assert!(r.is_none());
     }
 }

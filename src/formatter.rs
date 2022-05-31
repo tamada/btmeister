@@ -1,33 +1,33 @@
-use std::io::{Write, BufWriter};
-use std::path::PathBuf;
+use std::io::Write;
+use std::path::Path;
 
-use super::build_tool_defs::{BuildToolDef, BuildToolDefs};
+use super::btmeister::{BuildToolDef, BuildToolDefs};
 use super::{BuildTool, Format};
 
 pub trait Formatter {
-    fn print(&self, out: &mut BufWriter<Box<dyn Write>>, base: &PathBuf, vector: Vec<BuildTool>) -> i32 {
+    fn print(&self, out: &mut Box<dyn Write>, base: &Path, vector: Vec<BuildTool>) -> i32 {
         self.print_header(out, base);
         vector.iter().enumerate()
                 .for_each(|item| self.print_each(out, item.1, item.0 == 0));
         self.print_footer(out);
         0
     }
-    fn print_each(&self, out: &mut BufWriter<Box<dyn Write>>, result: &BuildTool, first: bool);
-    fn print_header(&self, _out: &mut BufWriter<Box<dyn Write>>, _base: &PathBuf) {
+    fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, first: bool);
+    fn print_header(&self, _out: &mut Box<dyn Write>, _base: &Path) {
     }
-    fn print_footer(&self, _out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_footer(&self, _out: &mut Box<dyn Write>) {
     }
 
-    fn print_def(&self, out: &mut BufWriter<Box<dyn Write>>, def: &BuildToolDef, first: bool);
-    fn print_defs(&self, out: &mut BufWriter<Box<dyn Write>>, defs: &BuildToolDefs) {
+    fn print_def(&self, out: &mut Box<dyn Write>, def: &BuildToolDef, first: bool);
+    fn print_defs(&self, out: &mut Box<dyn Write>, defs: &BuildToolDefs) {
         self.print_def_header(out);
         defs.iter().enumerate()
                 .for_each(|item| self.print_def(out, item.1, item.0 == 0));
         self.print_def_footer(out);
     }
-    fn print_def_header(&self, _out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_header(&self, _out: &mut Box<dyn Write>) {
     }
-    fn print_def_footer(&self, _out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_footer(&self, _out: &mut Box<dyn Write>) {
     }
 }
 
@@ -55,39 +55,39 @@ pub struct YamlFormatter{
 }
 
 impl Formatter for DefaultFormatter {
-    fn print_header(&self, out: &mut BufWriter<Box<dyn Write>>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         writeln!(out, "{}", base.display()).unwrap();
     }
 
-    fn print_each(&self, out: &mut BufWriter<Box<dyn Write>>, result: &BuildTool, _first: bool) {
+    fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, _first: bool) {
         writeln!(out, "  {}: {}", result.path.display(), result.def.name).unwrap();
     }
-    fn print_def(&self, out: &mut BufWriter<Box<dyn Write>>, def: &BuildToolDef, _first: bool) {
+    fn print_def(&self, out: &mut Box<dyn Write>, def: &BuildToolDef, _first: bool) {
         writeln!(out, "{}: {}", def.name, def.build_files.join(", ")).unwrap();
     }
 }
 
 impl Formatter for JsonFormatter{
-    fn print_each(&self, out: &mut BufWriter<Box<dyn Write>>, result: &BuildTool, first: bool) {
+    fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, first: bool) {
         if !first {
             write!(out, ",").unwrap();
         }
         write!(out, "{{\"file-path\":\"{}\",\"tool-name\":\"{}\"}}",
                 result.path.display(), result.def.name).unwrap();
     }
-    fn print_header(&self, out: &mut BufWriter<Box<dyn Write>>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         write!(out, "{{\"base\":\"{}\",\"build-tools\":[", base.display()).unwrap();
     }
-    fn print_footer(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_footer(&self, out: &mut Box<dyn Write>) {
         writeln!(out, "]}}").unwrap();
     }
-    fn print_def_header(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_header(&self, out: &mut Box<dyn Write>) {
         write!(out, "[").unwrap();
     }
-    fn print_def_footer(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_footer(&self, out: &mut Box<dyn Write>) {
         write!(out, "]").unwrap();
     }
-    fn print_def(&self, out: &mut BufWriter<Box<dyn Write>>, def: &BuildToolDef, first: bool) {
+    fn print_def(&self, out: &mut Box<dyn Write>, def: &BuildToolDef, first: bool) {
         if !first {
             write!(out, ",").unwrap();
         }
@@ -103,26 +103,26 @@ impl Formatter for JsonFormatter{
 }
 
 impl Formatter for XmlFormatter{
-    fn print_header(&self, out: &mut BufWriter<Box<dyn Write>>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         writeln!(out, "<?xml version=\"1.0\"?>").unwrap();
         write!(out, "<build-tools><base>{}</base>", base.display()).unwrap();
     }
-    fn print_footer(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_footer(&self, out: &mut Box<dyn Write>) {
         writeln!(out, "</build-tools>").unwrap();
     }
-    fn print_each(&self, out: &mut BufWriter<Box<dyn Write>>, result: &BuildTool, _first: bool) {
+    fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, _first: bool) {
         write!(out, "<build-tool><file-path>{}</file-path><tool-name>{}</tool-name></build-tool>",
                 result.path.display(), result.def.name).unwrap();
     }
 
-    fn print_def_header(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_header(&self, out: &mut Box<dyn Write>) {
         writeln!(out, "<?xml version=\"1.0\"?>").unwrap();
         write!(out, "<build-tool-defs>").unwrap();
     }
-    fn print_def_footer(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_footer(&self, out: &mut Box<dyn Write>) {
         writeln!(out, "</build-tool-defs>").unwrap();
     }
-    fn print_def(&self, out: &mut BufWriter<Box<dyn Write>>, def: &BuildToolDef, _first: bool) {
+    fn print_def(&self, out: &mut Box<dyn Write>, def: &BuildToolDef, _first: bool) {
         write!(out, "<build-tool-def><name>{}</name><url>{}</url><build-files>", def.name, def.url).unwrap();
         def.build_files.iter()
                 .for_each(|item| write!(out, "<file-name>{}</file-name>", item).unwrap());
@@ -131,19 +131,19 @@ impl Formatter for XmlFormatter{
 }
 
 impl Formatter for YamlFormatter{
-    fn print_header(&self, out: &mut BufWriter<Box<dyn Write>>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         writeln!(out, "base: {}", base.display()).unwrap();
     }
-    fn print_each(&self, out: &mut BufWriter<Box<dyn Write>>, result: &BuildTool, _first: bool) {
+    fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, _first: bool) {
         writeln!(out, "  - file-path: {}", result.path.display()).unwrap();
         writeln!(out, "    tool-name: {}", result.def.name).unwrap();
     }
 
-    fn print_def_header(&self, out: &mut BufWriter<Box<dyn Write>>) {
+    fn print_def_header(&self, out: &mut Box<dyn Write>) {
         writeln!(out, "build-tools-defs").unwrap();
     }
 
-    fn print_def(&self, out: &mut BufWriter<Box<dyn Write>>, def: &BuildToolDef, _first: bool) {
+    fn print_def(&self, out: &mut Box<dyn Write>, def: &BuildToolDef, _first: bool) {
         writeln!(out, "  - name: {}", def.name).unwrap();
         writeln!(out, "    url: {}", def.url).unwrap();
         writeln!(out, "    file-names:").unwrap();
@@ -153,7 +153,7 @@ impl Formatter for YamlFormatter{
 }
 
 impl YamlFormatter {
-    fn print_file_name(&self, out: &mut BufWriter<Box<dyn Write>>, index: usize, file_name: &String) {
+    fn print_file_name(&self, out: &mut Box<dyn Write>, index: usize, file_name: &String) {
         if index == 0 {
             write!(out, "      - ").unwrap();
         } else {
