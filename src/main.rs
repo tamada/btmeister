@@ -253,4 +253,37 @@ mod tests {
         let r = opts.validate();
         assert!(r.is_none());
     }
+
+    #[test]
+    fn test_parse_targets() {
+        let r = parse_targets(Some("testdata/project_list.txt".to_string()), vec![]);
+        match r {
+            Ok(list) => {
+                assert_eq!(&PathBuf::from("testdata/fibonacci".to_string()), list.get(0).unwrap());
+                assert_eq!(&PathBuf::from("testdata/hello".to_string()), list.get(1).unwrap());
+            },
+            Err(_) => panic!("never come here!"),
+        }
+    }
+
+    #[test]
+    fn test_parse_targets2() {
+        let dirs: Vec<PathBuf> = vec!["testdata/hello", "testdata/fibonacci"].iter().map(|f| PathBuf::from(f.to_string())).collect();
+        let r = parse_targets(None, dirs);
+        match r {
+            Ok(list) => {
+                assert_eq!(&PathBuf::from("testdata/hello".to_string()), list.get(0).unwrap());
+                assert_eq!(&PathBuf::from("testdata/fibonacci".to_string()), list.get(1).unwrap());
+            },
+            Err(_) => panic!("never come here!"),
+        }
+    }
+
+    #[test]
+    fn test_parse_project_list_failed() {
+        match parse_project_list("does/not/exist/file.txt".to_string()) {
+            Ok(_) => panic!("never come here!"),
+            Err(_) => assert!(true),
+        }
+    }
 }
