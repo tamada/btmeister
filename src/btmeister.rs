@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::BufReader;
-use std::ops::Deref;
 use std::path::PathBuf;
 use rust_embed::RustEmbed;
 

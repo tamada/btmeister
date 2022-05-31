@@ -1,11 +1,11 @@
-use std::io::{Write, BufWriter};
-use std::path::PathBuf;
+use std::io::Write;
+use std::path::Path;
 
 use super::btmeister::{BuildToolDef, BuildToolDefs};
 use super::{BuildTool, Format};
 
 pub trait Formatter {
-    fn print(&self, out: &mut Box<dyn Write>, base: &PathBuf, vector: Vec<BuildTool>) -> i32 {
+    fn print(&self, out: &mut Box<dyn Write>, base: &Path, vector: Vec<BuildTool>) -> i32 {
         self.print_header(out, base);
         vector.iter().enumerate()
                 .for_each(|item| self.print_each(out, item.1, item.0 == 0));
@@ -13,7 +13,7 @@ pub trait Formatter {
         0
     }
     fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, first: bool);
-    fn print_header(&self, _out: &mut Box<dyn Write>, _base: &PathBuf) {
+    fn print_header(&self, _out: &mut Box<dyn Write>, _base: &Path) {
     }
     fn print_footer(&self, _out: &mut Box<dyn Write>) {
     }
@@ -55,7 +55,7 @@ pub struct YamlFormatter{
 }
 
 impl Formatter for DefaultFormatter {
-    fn print_header(&self, out: &mut Box<dyn Write>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         writeln!(out, "{}", base.display()).unwrap();
     }
 
@@ -75,7 +75,7 @@ impl Formatter for JsonFormatter{
         write!(out, "{{\"file-path\":\"{}\",\"tool-name\":\"{}\"}}",
                 result.path.display(), result.def.name).unwrap();
     }
-    fn print_header(&self, out: &mut Box<dyn Write>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         write!(out, "{{\"base\":\"{}\",\"build-tools\":[", base.display()).unwrap();
     }
     fn print_footer(&self, out: &mut Box<dyn Write>) {
@@ -103,7 +103,7 @@ impl Formatter for JsonFormatter{
 }
 
 impl Formatter for XmlFormatter{
-    fn print_header(&self, out: &mut Box<dyn Write>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         writeln!(out, "<?xml version=\"1.0\"?>").unwrap();
         write!(out, "<build-tools><base>{}</base>", base.display()).unwrap();
     }
@@ -131,7 +131,7 @@ impl Formatter for XmlFormatter{
 }
 
 impl Formatter for YamlFormatter{
-    fn print_header(&self, out: &mut Box<dyn Write>, base: &PathBuf) {
+    fn print_header(&self, out: &mut Box<dyn Write>, base: &Path) {
         writeln!(out, "base: {}", base.display()).unwrap();
     }
     fn print_each(&self, out: &mut Box<dyn Write>, result: &BuildTool, _first: bool) {
