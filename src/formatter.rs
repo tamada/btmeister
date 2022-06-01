@@ -153,7 +153,7 @@ impl Formatter for YamlFormatter{
 }
 
 impl YamlFormatter {
-    fn print_file_name(&self, out: &mut Box<dyn Write>, index: usize, file_name: &String) {
+    fn print_file_name(&self, out: &mut Box<dyn Write>, index: usize, file_name: &str) {
         if index == 0 {
             write!(out, "      - ").unwrap();
         } else {
@@ -163,20 +163,16 @@ impl YamlFormatter {
     }
 }
 
+#[cfg(test)]
 mod test_print_defs {
     use super::*;
     use super::super::*;
     use std::str::FromStr;
     use std::fs::{File, remove_file, read_to_string};
 
-    fn setup() -> BuildToolDefs {
-        let r = construct(Some(PathBuf::from_str("testdata/append_def.json").unwrap()), None).unwrap();
-        r
-    }
-
     fn write_and_read(format: Format, path: &str) -> String {
         {
-            let defs = setup();
+            let defs = construct(Some(PathBuf::from_str("testdata/append_def.json").unwrap()), None).unwrap();
             let f = <dyn Formatter>::build(format);
             let mut dest: Box<dyn Write> = Box::new(BufWriter::new(File::create(path).unwrap()));
             f.print_defs(&mut dest, &defs);
@@ -189,27 +185,27 @@ mod test_print_defs {
 
     #[test]
     fn test_json() {
-        let result = write_and_read(Format::Json, "dest1.json");
+        let result = write_and_read(Format::Json, "dest2.json");
         assert_eq!(r#"[{"name":"go","url":"https://go.dev/","build-files":["go.mod"]},{"name":"webpack","url":"https://webpack.js.org/","build-files":["webpack.config.js"]}]"#, result);
     }
 
     #[test]
     fn test_default() {
-        let result = write_and_read(Format::Default, "dest1.txt");
+        let result = write_and_read(Format::Default, "dest2.txt");
         assert_eq!(r#"go: go.mod
 webpack: webpack.config.js"#, result);
     }
 
     #[test]
     fn test_xml() {
-        let result = write_and_read(Format::Xml, "dest1.xml");
+        let result = write_and_read(Format::Xml, "dest2.xml");
         assert_eq!(r#"<?xml version="1.0"?>
 <build-tool-defs><build-tool-def><name>go</name><url>https://go.dev/</url><build-files><file-name>go.mod</file-name></build-files></build-tool-def><build-tool-def><name>webpack</name><url>https://webpack.js.org/</url><build-files><file-name>webpack.config.js</file-name></build-files></build-tool-def></build-tool-defs>"#, result);
     }
 
     #[test]
     fn test_yaml() {
-        let result = write_and_read(Format::Yaml, "dest1.yaml");
+        let result = write_and_read(Format::Yaml, "dest2.yaml");
         assert_eq!(r#"build-tools-defs
   - name: go
     url: https://go.dev/

@@ -148,7 +148,7 @@ fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToo
     None
 }
 
-fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> Result<Vec<BuildTool>, Box<dyn Error>> {
+fn find_build_tools(target: &Path, defs: &BuildToolDefs, no_ignore: bool) -> Result<Vec<BuildTool>, Box<dyn Error>> {
     let mut build_tools = Vec::new();
     for result in WalkBuilder::new(target)
             .ignore(!no_ignore).git_ignore(!no_ignore).build() {
@@ -162,7 +162,7 @@ fn find_build_tools(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool) -> 
     Ok(build_tools)
 }
 
-fn perform_each(target: &PathBuf, defs: &BuildToolDefs, no_ignore: bool,
+fn perform_each(target: &Path, defs: &BuildToolDefs, no_ignore: bool,
         formatter: &Box<dyn formatter::Formatter>,
         dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
