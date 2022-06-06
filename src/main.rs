@@ -214,7 +214,7 @@ mod tests {
 
     #[test]
     fn test_basic() {
-        let opts = Options::parse_from("testdata/fibonacci testdata/hello".split(" "));
+        let opts = Options::parse_from("testdata/fibonacci testdata/hello".split(' '));
         let defs = btmeister::construct(opts.definition, opts.append_defs).unwrap();
 
         let r1 = find_build_tools(&PathBuf::from("testdata/fibonacci"), &defs, false).unwrap();
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn test_validate_both_project_list_dirs() {
-        let opts = Options::parse_from("btmeister -@ testdata/project_list.txt testdata/fibonacci".split(" "));
+        let opts = Options::parse_from("btmeister -@ testdata/project_list.txt testdata/fibonacci".split(' '));
         let r = opts.validate();
         assert!(r.is_some());
         println!("{}", r.unwrap());
@@ -281,9 +281,7 @@ mod tests {
 
     #[test]
     fn test_parse_project_list_failed() {
-        match parse_project_list("does/not/exist/file.txt".to_string()) {
-            Ok(_) => panic!("never come here!"),
-            Err(_) => assert!(true),
-        }
+        let r = parse_project_list("does/not/exist/file.txt".to_string());
+        assert!(r.is_err());
     }
 }
