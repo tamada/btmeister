@@ -1,1 +1,1 @@
-dockers/distroless/Dockerfile
+dockers/alpine/Dockerfile
