@@ -23,4 +23,4 @@ keywords = ["build", "tools", "detection"]
 
 [package.metadata.scripts]
     hello = "echo \"Hello World\""
-    site = "hugo -s site"
+    site = "cargo llvm-cov --html; mkdir -p site/static/coverage; cp -r target/llvm-cov/html/* site/static/coverage/; hugo -s site"
