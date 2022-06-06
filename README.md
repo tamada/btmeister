@@ -6,7 +6,7 @@
 
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
-Build tools detector for the projects.
+Detecting the build tools in use.
 
 ![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/images/logo.png)
 
@@ -37,14 +37,14 @@ PROJECT
 ### Sample Output
 
 ```sh
-$ btmeister btmeister ~/go/src/github.com/tamada/rrh
-cargo       btmeister/Cargo.toml
+$ btmeister . ~/go/src/github.com/tamada/rrh
+cargo       ./Cargo.toml
 make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
-$ btmeister --format json btmeister rrh | jq .
+$ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 [
   {
     "project":"btmeister",
-    "path":"./btmeister",
+    "path":"./",
     "build-tools":[
       {
         "file-name":"Cargo.toml",
