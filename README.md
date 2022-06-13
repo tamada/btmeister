@@ -8,7 +8,7 @@
 
 Detecting the build tools in use.
 
-![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/images/logo.png)
+![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/static/images/logo.png)
 
 ## :speaking_head: Description
 
@@ -20,18 +20,27 @@ This tool finds the build files from the specified directories, and identifies t
 ## :runner: Usage
 
 ```sh
-btmeister [OPTIONS] <PROJECTs...>
-OPTIONS
-        --append-defs       additional definitions of build files.
-    -d, --definition <BUILD_FILE_DEFS>
-                            specify the build file definitions.
-    -f, --format <FORMAT>   specify the resultant format. 
-                            Available: default, json, yaml, and xml.
-    -@ <INPUT>              specify the input file contains project paths.
-                            if INPUT is dash ('-'), read from STDIN.
-    -h, --help              print this message.
-PROJECT
-    the target project of btmeister.
+btmeister 0.1.0
+Haruaki TAMADA
+A tool for detecting build tools in use of the projects
+
+USAGE:
+    btmeister [OPTIONS] [PROJECTs]...
+
+ARGS:
+    <PROJECTs>...    The target project directories for btmeister.
+
+OPTIONS:
+    -@ <INPUT>                       Specify the file contains project path list. If INPUT is dash
+                                     ('-'), read from STDIN.
+        --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
+    -d, --definition <DEFS_JSON>     Specify the definition of the build tools.
+    -f, --format <FORMAT>            Specify the output format [default: default] [possible values:
+                                     default, json, yaml, xml]
+    -h, --help                       Print help information
+    -L, --list-defs                  Print the build tools' definition list
+        --no-ignore                  Do not respect ignore files (.ignore, .gitignore, etc.)
+    -V, --version                    Print version information
 ```
 
 ### Sample Output

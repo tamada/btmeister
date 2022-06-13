@@ -7,7 +7,7 @@ use thiserror::Error;
 pub struct Options {
     #[clap(
         long,
-        value_name = "JSON",
+        value_name = "DEFS_JSON",
         help = "Specify the additional definitions of the build tools."
     )]
     pub append_defs: Option<PathBuf>,
@@ -15,7 +15,7 @@ pub struct Options {
     #[clap(
         short,
         long,
-        value_name = "JSON",
+        value_name = "DEFS_JSON",
         help = "Specify the definition of the build tools."
     )]
     pub definition: Option<PathBuf>,
@@ -30,7 +30,7 @@ pub struct Options {
     )]
     pub format: Format,
 
-    #[clap(short = 'L', long = "list-defs", help = "print the build tools' definition list")]
+    #[clap(short = 'L', long = "list-defs", help = "Print the build tools' definition list")]
     pub list_defs: bool,
 
     #[clap(long = "no-ignore", help = "Do not respect ignore files (.ignore, .gitignore, etc.)")]

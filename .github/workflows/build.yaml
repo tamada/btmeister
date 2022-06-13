@@ -14,30 +14,41 @@ jobs:
     steps:
       - name: Checkout project
         uses: actions/checkout@v2
-      - uses: actions/cache@v2
+      - uses: actions-rs/toolchain@v1
         with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-        key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
-      - name: Setup Rust
-        uses: ATiltedTree/setup-rust@v1
-        with:
-          rust-version: stable
+          toolchain: stable
+          override: true
           components: llvm-tools-preview
-      - name: Cargo install llvm-cov
-        uses: actions-rs/install@v0.1
-        with:
-          crate: cargo-llvm-cov
-          version: latest
-      - name: llvm-tools-preview
-        run:
-          rustup component add llvm-tools-preview
-      - name: Build 
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+      - name: Build and calculate coverages
         run: |
           cargo llvm-cov --lcov --output-path coverage.lcov
           cargo build
+      # - uses: actions/cache@v2
+      #   with:
+      #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+      #     path: |
+      #       ~/.cargo/registry
+      #       ~/.cargo/git
+      #       target
+      # - name: Setup Rust
+      #   uses: ATiltedTree/setup-rust@v1
+      #   with:
+      #     rust-version: stable
+      #     components: llvm-tools-preview
+      # - name: Cargo install llvm-cov
+      #   uses: actions-rs/install@v0.1
+      #   with:
+      #     crate: cargo-llvm-cov
+      #     version: latest
+      # - name: llvm-tools-preview
+      #   run:
+      #     rustup component add llvm-tools-preview
+      # - name: Build 
+      #   run: |
+      #     cargo llvm-cov --lcov --output-path coverage.lcov
+      #     cargo build
       - name: Send Coverage to Coveralls
         uses: coverallsapp/github-action@master
         if: matrix.os == 'ubuntu-latest'
