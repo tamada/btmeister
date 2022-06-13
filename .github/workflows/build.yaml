@@ -21,12 +21,10 @@ jobs:
           components: llvm-tools-preview
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
-      - uses: actions-rs/cargo@v1
-        with:
-          command: llvm-cov --lcov --output-path coverage.lcov
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
+      - name: Build and calculate coverages
+        run: |
+          cargo llvm-cov --lcov --output-path coverage.lcov
+          cargo build
       # - uses: actions/cache@v2
       #   with:
       #     key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
