@@ -53,5 +53,12 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 ## :whale: Docker
 
 ```sh
-docker run --rm -it tamada/btmeister 
+docker run --rm -v $PWD:/home/btmeister -it ghcr.io/tamada/btmeister:latest
 ```
+
+The working directory in the docker container is `/home/btmeister`.
+The target project should be on the directory with `-v` flag of docker.
+
+### Available versions
+
+* `0.1.3`, `latest`
