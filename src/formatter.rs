@@ -1,8 +1,9 @@
 use std::io::Write;
 use std::path::Path;
 
+use super::BuildTool;
 use super::btmeister::{BuildToolDef, BuildToolDefs};
-use super::{BuildTool, Format};
+use super::cli::Format;
 
 pub trait Formatter {
     fn print(&self, out: &mut Box<dyn Write>, base: &Path, vector: Vec<BuildTool>) -> i32 {

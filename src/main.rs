@@ -1,83 +1,14 @@
-use clap::{ArgEnum, Parser};
+use clap::{Parser};
 use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
-use thiserror::Error;
 use btmeister::{BuildToolDef,BuildToolDefs,construct};
 use ignore::WalkBuilder;
 
 mod btmeister;
 mod formatter;
-
-#[derive(Parser)]
-#[clap(author, version, about)]
-struct Options {
-    #[clap(
-        long,
-        value_name = "JSON",
-        help = "Specify the additional definitions of the build tools."
-    )]
-    append_defs: Option<PathBuf>,
-
-    #[clap(
-        short,
-        long,
-        value_name = "JSON",
-        help = "Specify the definition of the build tools."
-    )]
-    definition: Option<PathBuf>,
-
-    #[clap(
-        short,
-        long,
-        default_value = "default",
-        value_name = "FORMAT",
-        arg_enum,
-        help = "Specify the output format"
-    )]
-    format: Format,
-
-    #[clap(short = 'L', long = "list-defs", help = "print the build tools' definition list")]
-    list_defs: bool,
-
-    #[clap(long = "no-ignore", help = "Do not respect ignore files (.ignore, .gitignore, etc.)")]
-    no_ignore: bool,
-
-    #[clap(
-        short = '@',
-        value_name = "INPUT",
-        help = "Specify the file contains project path list. If INPUT is dash ('-'), read from STDIN."
-    )]
-    project_list: Option<String>,
-
-    #[clap(
-        value_name = "PROJECTs",
-        required = false,
-        help = "The target project directories for btmeister."
-    )]
-    dirs: Vec<PathBuf>,
-}
-
-impl Options {
-    pub fn validate(&self) -> Option<MeisterError> {
-        if self.project_list.is_some() && !self.dirs.is_empty() {
-            Some(MeisterError::BothTargetSpecified())
-        } else if !self.list_defs && self.project_list.is_none() && self.dirs.is_empty() {
-            Some(MeisterError::NoProjectSpecified())
-        } else {
-            None
-        }
-    }
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ArgEnum)]
-pub enum Format {
-    Default,
-    Json,
-    Yaml,
-    Xml,
-}
+mod cli;
 
 pub struct BuildTool {
     path: PathBuf,
@@ -88,16 +19,6 @@ impl BuildTool {
     pub fn new(path: PathBuf, def: BuildToolDef) -> BuildTool {
         BuildTool { path, def }
     }
-}
-
-#[derive(Error, Debug)]
-enum MeisterError {
-    #[error("{0}: project directory not found")]
-    ProjectNotFound(String),
-    #[error("no projects are specified")]
-    NoProjectSpecified(),
-    #[error("both project list and directories are specified")]
-    BothTargetSpecified(),
 }
 
 fn open_impl(file: String) -> Result<Box<dyn BufRead>, Box<dyn Error>> {
@@ -166,7 +87,7 @@ fn perform_each(target: &Path, defs: &BuildToolDefs, no_ignore: bool,
         formatter: &Box<dyn formatter::Formatter>,
         dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
-        Err(Box::new(MeisterError::ProjectNotFound(target.display().to_string())))
+        Err(Box::new(cli::MeisterError::ProjectNotFound(target.display().to_string())))
     } else {
         match find_build_tools(target, defs, no_ignore) {
             Ok(results) => Ok(formatter.print(dest, target, results)),
@@ -175,7 +96,7 @@ fn perform_each(target: &Path, defs: &BuildToolDefs, no_ignore: bool,
     }
 }
 
-fn perform(opts: Options, dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
+fn perform(opts: cli::Options, dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
     let defs = construct(opts.definition, opts.append_defs)?;
     let formatter = <dyn formatter::Formatter>::build(opts.format);
     if opts.list_defs {
@@ -193,7 +114,7 @@ fn perform(opts: Options, dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Erro
 }
 
 fn main() {
-    let opts = Options::parse();
+    let opts = cli::Options::parse();
     if let Some(err) = opts.validate() {
         println!("{}", err)
     }
@@ -211,6 +132,7 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::cli::*;
 
     #[test]
     fn test_basic() {
