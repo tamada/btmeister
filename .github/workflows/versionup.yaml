@@ -1,0 +1,45 @@
+name: Version up
+
+on:
+  push:
+    branches: 
+      - release/v*
+
+jobs:
+  version_up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git Tag name
+        id: vars
+        run: |
+          echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+          echo "::set-output name=tag::${GITHUB_REF##**/v}"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ steps.vars.outputs.branch }}
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Initialize Git
+        shell: bash
+        run: |
+          git config --global user.name  "GitHub Actions"
+          git config --global user.email "action@github.com"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+          git worktree add site/public gh-pages
+
+      - name: Version up
+        run: |
+          sed "s/^version = \"[0-9.]*\"$/version = \"${{ steps.vars.outputs.tag }}\"/" Cargo.toml > a
+          mv a Cargo.toml
+          git commit -a -m "version up to ${{ steps.vars.outputs.tag }}, ready to publish v${{ steps.vars.outputs.tag }}"
+          true
+
+      - name: Push branch
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ steps.vars.outputs.branch }}

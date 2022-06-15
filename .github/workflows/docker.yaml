@@ -4,8 +4,6 @@ on:
   workflow_run:
     workflows:
       - publish
-    branches:
-      - main
     types:
       - completed
 
