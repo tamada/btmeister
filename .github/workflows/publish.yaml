@@ -7,14 +7,20 @@ on:
 
 jobs:
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
     # ブランチ名が release/v から始まる場合のみに実行する．
     # プルリクエストがマージされた場合のみに実行する．
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     env:
       REPO: https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git
-    steps:
 
+    steps:
 # initialization
       - name: Checkout
         uses: actions/checkout@v2
@@ -37,32 +43,14 @@ jobs:
         run: |
           HEAD_REF=${{ github.head_ref }}
           echo "::set-output name=tag::${HEAD_REF##*/v}"
+          RUNNER_OS=${{ runner.os }}
+          DIST=btmeister-${HEAD_REF##*/v}-${RUNNER_OS,,}_${RUNNER_ARCH,,}
+          echo "::set-output name=dist::$DIST"
 
-# web page
-        # before relese it, must add gh-pages branch as a worktree, by the following command.
-        #     git switch --orphan gh-pages
-        #     git worktree add site/public gh-pages
-
-        # pandoc で README を html に変換する．とりあえず．
-      - name: Build Site
-        uses: docker://pandoc/core:2.9
-        with:
-          args: >-
-            --standalone
-            --output=site/public/index.html
-            --metadata title=btmeister
-            README.md
-
-      - name: Deploy Site
-        uses: peaceiris/actions-gh-pages@v3
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./site/public
-
-# publish release
       - name: Create release
         id: create_release
         uses: actions/create-release@v1.0.0
+        if: matrix.os == 'ubuntu-latest'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -70,3 +58,72 @@ jobs:
           release_name: Release v${{ steps.vars.outputs.tag }}
           draft: false
           prerelease: false
+          
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: llvm-tools-preview
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Build
+        run: |
+          cargo build --release
+
+# web page
+        # before relese it, must add gh-pages branch as a worktree, by the following command.
+        #     git switch --orphan gh-pages
+        #     git worktree add site/public gh-pages
+
+        # pandoc で README を html に変換する．とりあえず．
+      # - name: Build Site
+      #   uses: docker://pandoc/core:2.9
+      #   with:
+      #     args: >-
+      #       --standalone
+      #       --output=site/public/index.html
+      #       --metadata title=btmeister
+      #       README.md
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          hugo-version: '0.91.2'
+          extended: true
+
+      - name: Build site
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          cargo llvm-cov --html
+          mkdir -p site/static/coverage
+          cp -r target/llvm-cov/html/* site/static/coverage/
+          hugo -s site
+
+      - name: Deploy Site
+        if: matrix.os == 'ubuntu-latest'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site/public
+
+# publish release
+      - name: Create release file
+        run: |
+          DIST=${{ steps.vars.outputs.dist }}
+          mkdir $DIST
+          cp -r site/public $DIST/docs
+          cp -r README.md LICENSE target/release/btmeister target/completions $DIST
+          tar cvfz $DIST.tar.gz $DIST
+
+      - name: Upload release assets
+        id: upload-release-assets
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_path: ${{ steps.vars.outputs.dist }}.tar.gz
+          asset_name: ${{ steps.vars.outputs.dist }}.tar.gz
+          asset_content_type: application/x-gzip
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
