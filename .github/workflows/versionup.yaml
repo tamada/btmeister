@@ -9,10 +9,16 @@ jobs:
   version_up:
     runs-on: ubuntu-latest
     steps:
+      - name: Git Tag name
+        id: vars
+        run: |
+          echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
+          echo "::set-output name=tag::${GITHUB_REF##**/v}"
+
       - name: Checkout
         uses: actions/checkout@v2
         with:
-          ref: main
+          ref: ${{ steps.vars.outputs.branch }}
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
 
       - name: Initialize Git
@@ -24,12 +30,6 @@ jobs:
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
           git worktree add site/public gh-pages
-
-      - name: Git Tag name
-        id: vars
-        run: |
-          echo "::set-output name=branch::${GITHUB_REF#refs/heads/}"
-          echo "::set-output name=tag::${GITHUB_REF##**/v}"
 
       - name: Version up
         run: |
