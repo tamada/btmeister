@@ -44,7 +44,8 @@ jobs:
           HEAD_REF=${{ github.head_ref }}
           echo "::set-output name=tag::${HEAD_REF##*/v}"
           RUNNER_OS=${{ runner.os }}
-          DIST=btmeister-${HEAD_REF##*/v}-${RUNNER_OS,,}_${RUNNER_ARCH,,}
+          VERSION=${HEAD_REF##*/v}
+          DIST=$(echo "btmeister-$VERSION-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
           echo "::set-output name=dist::$DIST"
 
       - name: Create release
