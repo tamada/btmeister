@@ -1,4 +1,4 @@
-name: Publish Web Pages, and Docker Images
+name: Publish web pages, and release, and its assets
 on:
   pull_request:
     branches:
@@ -47,6 +47,7 @@ jobs:
           VERSION=${HEAD_REF##*/v}
           DIST=$(echo "btmeister-$VERSION-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
           echo "::set-output name=dist::$DIST"
+        shell: bash
 
       - name: Create release
         id: create_release
@@ -100,6 +101,7 @@ jobs:
           cargo llvm-cov --html
           mkdir -p site/static/coverage
           cp -r target/llvm-cov/html/* site/static/coverage/
+          git submodule update --init
           hugo -s site
 
       - name: Deploy Site
@@ -117,6 +119,7 @@ jobs:
           cp -r site/public $DIST/docs
           cp -r README.md LICENSE target/release/btmeister target/completions $DIST
           tar cvfz $DIST.tar.gz $DIST
+        shell: bash
 
       - name: Upload release assets
         id: upload-release-assets
