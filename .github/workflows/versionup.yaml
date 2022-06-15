@@ -35,7 +35,7 @@ jobs:
         run: |
           sed "s/^version = \"[0-9.]*\"$/version = \"${{ steps.vars.outputs.tag }}\"/" Cargo.toml > a
           mv a Cargo.toml
-          git commit -a -m "version up to ${{ steps.vars.outputs.tag }}", ready to publish v${{ steps.vars.outputs.tag }}
+          git commit -a -m "version up to ${{ steps.vars.outputs.tag }}, ready to publish v${{ steps.vars.outputs.tag }}"
           true
 
       - name: Push branch
