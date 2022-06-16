@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>:house: btmeister on btmeister</title>
+    <link>https://tamada.github.io/btmeister/</link>
+    <description>Recent content in :house: btmeister on btmeister</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language><atom:link href="https://tamada.github.io/btmeister/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>:anchor: Install</title>
+      <link>https://tamada.github.io/btmeister/install/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://tamada.github.io/btmeister/install/</guid>
+      <description>🍺 Homebrew btmeister supports installation via Homebrew.
+$ brew tap tamada/brew $ brew install btmeister 💪 Install yourself Clone the project from GitHub and compile it like follows.
+$ git clone https://github.com/tamada/btmeister.git $ cd btmeister $ cargo build --release Then, cargo build the resultant btmeister executable on target/release directory.</description>
+    </item>
+    
+    <item>
+      <title>:runner: Usage</title>
+      <link>https://tamada.github.io/btmeister/usage/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://tamada.github.io/btmeister/usage/</guid>
+      <description>CLI btmeister 0.1.0 Haruaki TAMADA A tool for detecting build tools of the projects USAGE: btmeister [OPTIONS] [PROJECTs]... ARGS: &amp;lt;PROJECTs&amp;gt;... The target project directories for btmeister. OPTIONS: -@ &amp;lt;INPUT&amp;gt; Specify the file contains project path list. If INPUT is dash (&amp;#39;-&amp;#39;), read from STDIN. --append-defs &amp;lt;DEFS_JSON&amp;gt; Specify the additional definitions of the build tools. -d, --definition &amp;lt;DEFS_JSON&amp;gt; Specify the definition of the build tools. -f, --format &amp;lt;FORMAT&amp;gt; Specify the output format [default: default] [possible values: default, json, yaml, xml] -h, --help Print help information -L, --list-defs Print the build tools&amp;#39; definition list --no-ignore Do not respect ignore files (.</description>
+    </item>
+    
+    <item>
+      <title>:smile: About</title>
+      <link>https://tamada.github.io/btmeister/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>https://tamada.github.io/btmeister/about/</guid>
+      <description>📜 License 
+ Permissions  👍 Commercial use 👍 Modification 👍 Distribution 👍 Private use   Limitations  ❌ Liability ❌ Warranty    Logo The logo of btmeister is as follows.
+This image is refered from freesvg.org by OpenClipart.
+Project Name btmeister btmeister is Build Tool MEISTER from its features.
+👨‍💼 Developers 👩‍💼  Haruaki Tamada (@tamada)  </description>
+    </item>
+    
+  </channel>
+</rss>

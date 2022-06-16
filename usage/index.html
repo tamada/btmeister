@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="generator" content="Hugo 0.91.2" />
+  <link rel="stylesheet" href="https://tamada.github.io/btmeister/css/normalize.css">
+  <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+  
+  
+  
+  <link rel="stylesheet" href="https://tamada.github.io/btmeister/css/cayman.ea0e967413f3851071cc8ace3621bc4205fe8fa79b2abe3d7bf94ff2841f0d47.css">
+  
+  
+  <link rel="stylesheet" href="https://tamada.github.io/btmeister/css/style.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.11.2/css/all.min.css">
+
+<script src="https://unpkg.com/mermaid@8.4.2/dist/mermaid.min.js"></script>
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/harry.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/harry.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/harry.png">
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true});</script>
+  <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({ tex2jax: { inlineMath: [['$','$'], ["\\(","\\)"]] } });
+</script>
+<script type="text/javascript"
+  src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.0/MathJax.js?config=TeX-AMS_CHTML">
+</script>
+<meta http-equiv="X-UA-Compatible" CONTENT="IE=EmulateIE7" />
+
+  <title>🏃‍♂️ Usage | btmeister</title>
+</head>
+
+<body>
+  <section class="page-header">
+  
+  <img src="https://tamada.github.io/btmeister/images/logo.svg" class="avatar" alt="project_logo">
+  
+  <h1 class="project-name">
+    btmeister
+  </h1>
+  <h2 class="project-tagline">
+    Detecting the build tools in use
+  </h2>
+  <nav>
+    
+    
+      
+      
+      
+      
+      <a href="/btmeister/" class="btn">🏠 Home</a>
+    
+      
+      
+      
+      
+      <a href="/btmeister/install/" class="btn">⚓ Install</a>
+    
+      
+      
+      
+      
+      <a href="/btmeister/usage/" class="btn">🏃‍♂️ Usage</a>
+    
+      
+      
+      
+      
+      <a href="/btmeister/coverage/" class="btn">📈 Coverage</a>
+    
+      
+      
+      
+      
+      <a href="/btmeister/about/" class="btn">😄 About</a>
+    
+  </nav>
+</section>
+
+  <section class="main-content">
+    
+  <h1>🏃‍♂️ Usage</h1>
+  <h2 id="cli">CLI</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">btmeister 0.1.0
+Haruaki TAMADA
+A tool <span style="color:#66d9ef">for</span> detecting build tools of the projects
+
+USAGE:
+    btmeister <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...
+
+ARGS:
+    &lt;PROJECTs&gt;...    The target project directories <span style="color:#66d9ef">for</span> btmeister.
+
+OPTIONS:
+    -@ &lt;INPUT&gt;                       Specify the file contains project path list. If INPUT is dash
+                                     <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;-&#39;</span><span style="color:#f92672">)</span>, read from STDIN.
+        --append-defs &lt;DEFS_JSON&gt;    Specify the additional definitions of the build tools.
+    -d, --definition &lt;DEFS_JSON&gt;     Specify the definition of the build tools.
+    -f, --format &lt;FORMAT&gt;            Specify the output format <span style="color:#f92672">[</span>default: default<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>possible values:
+                                     default, json, yaml, xml<span style="color:#f92672">]</span>
+    -h, --help                       Print help information
+    -L, --list-defs                  Print the build tools<span style="color:#960050;background-color:#1e0010">&#39;</span> definition list
+        --no-ignore                  Do not respect ignore files <span style="color:#f92672">(</span>.ignore, .gitignore, etc.<span style="color:#f92672">)</span>
+    -V, --version                    Print version information
+</code></pre></div><h3 id="sample-output">Sample Output</h3>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ btmeister . ~/go/src/github.com/tamada/rrh
+cargo       ./Cargo.toml
+make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
+$ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
+<span style="color:#f92672">[</span>
+  <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;project&#34;</span>:<span style="color:#e6db74">&#34;btmeister&#34;</span>,
+    <span style="color:#e6db74">&#34;path&#34;</span>:<span style="color:#e6db74">&#34;./&#34;</span>,
+    <span style="color:#e6db74">&#34;build-tools&#34;</span>:<span style="color:#f92672">[</span>
+      <span style="color:#f92672">{</span>
+        <span style="color:#e6db74">&#34;file-name&#34;</span>:<span style="color:#e6db74">&#34;Cargo.toml&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>:<span style="color:#e6db74">&#34;cargo&#34;</span>
+      <span style="color:#f92672">}</span>
+    <span style="color:#f92672">]</span>
+  <span style="color:#f92672">}</span>,
+  <span style="color:#f92672">{</span>
+    <span style="color:#e6db74">&#34;project&#34;</span>:<span style="color:#e6db74">&#34;rrh&#34;</span>,
+    <span style="color:#e6db74">&#34;path&#34;</span>:<span style="color:#e6db74">&#34;/Usrs/tamada/go/src/github.com/tamada/rrh&#34;</span>,
+    <span style="color:#e6db74">&#34;build-tools&#34;</span>:<span style="color:#f92672">[</span>
+      <span style="color:#f92672">{</span>
+        <span style="color:#e6db74">&#34;file-name&#34;</span>:<span style="color:#e6db74">&#34;Makefile&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>:<span style="color:#e6db74">&#34;make&#34;</span>
+      <span style="color:#f92672">}</span>
+    <span style="color:#f92672">]</span>
+  <span style="color:#f92672">}</span>
+<span style="color:#f92672">]</span>
+</code></pre></div><h2 id="-docker">🐳 Docker</h2>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -v $PWD:/home/btmeister -it ghcr.io/tamada/btmeister:latest
+</code></pre></div><p>The working directory in the docker container is <code>/home/btmeister</code>.
+The target project should be on the directory with <code>-v</code> flag of docker.</p>
+<h3 id="available-versions">Available versions</h3>
+<ul>
+<li><code>0.1.3</code>, <code>latest</code></li>
+</ul>
+
+
+    <footer class="site-footer">
+  <span class="site-footer-credits">
+    <a href="https://github.com/tamada/btmeister"><img src="https://img.shields.io/badge/GitHub-tamada/btmeister-blueviolet.svg?logo=github" alt="GitHub"></a> Made with <a href="https://gohugo.io/">Hugo</a>. Theme by <a href="https://github.com/zwbetz-gh/cayman-hugo-theme">Cayman</a>. Deployed to <a href="https://pages.github.com/">GitHub Pages</a>.
+  </span>
+</footer>
+
+  </section>
+  
+  
+
+</body>
+</html>
