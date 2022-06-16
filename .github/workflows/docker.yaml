@@ -14,6 +14,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      - uses: actions-ecosystem/action-release-label@v1
+        id: release-label
+        if: ${{ github.event.pull_request.merged == true }}
+
+      - name: Get latest tag name
+        uses: actions-ecosystem/action-get-latest-tag@v1
+        id: latest-tag
+        if: ${{ steps.release-label.outputs.level != null }}
+
       - name: Git Tag name
         id: vars
         run: |
@@ -36,6 +45,6 @@ jobs:
         with:
           push: true
           tags: |
-            ghcr.io/${{ github.repository_owner }}/btmeister:${{ steps.vars.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/btmeister:${{ steps.latest-tag.outputs.tag }}
             ghcr.io/${{ github.repository_owner }}/btmeister:latest
 
