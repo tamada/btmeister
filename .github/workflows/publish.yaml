@@ -34,23 +34,10 @@ jobs:
           draft: false
           prerelease: false
 
-  publish:
-    runs-on: ${{ matrix.os }}
+  site:
+    runs-on: ubuntu-latest
     needs: setup
-    strategy:
-      matrix:
-        os:
-          - ubuntu-latest
-          - macOS-latest
-          - windows-latest
-    # ブランチ名が release/v から始まる場合のみに実行する．
-    # プルリクエストがマージされた場合のみに実行する．
-    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
-    env:
-      REPO: https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git
-
     steps:
-# initialization
       - name: Checkout
         uses: actions/checkout@v2
         with:
@@ -76,33 +63,13 @@ jobs:
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
 
-      - name: Build
-        run: |
-          cargo build --release
-
-# web page
-        # before relese it, must add gh-pages branch as a worktree, by the following command.
-        #     git switch --orphan gh-pages
-        #     git worktree add site/public gh-pages
-
-        # pandoc で README を html に変換する．とりあえず．
-      # - name: Build Site
-      #   uses: docker://pandoc/core:2.9
-      #   with:
-      #     args: >-
-      #       --standalone
-      #       --output=site/public/index.html
-      #       --metadata title=btmeister
-      #       README.md
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
-        if: matrix.os == 'ubuntu-latest'
         with:
           hugo-version: '0.91.2'
           extended: true
 
       - name: Build site
-        if: matrix.os == 'ubuntu-latest'
         run: |
           cargo llvm-cov --html
           mkdir -p site/static/coverage
@@ -111,15 +78,57 @@ jobs:
           hugo -s site
 
       - name: Deploy Site
-        if: matrix.os == 'ubuntu-latest'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./site/public
 
+  publish:
+    runs-on: ${{ matrix.os }}
+    needs: site
+    strategy:
+      matrix:
+        os:
+          - ubuntu-latest
+          - macOS-latest
+          - windows-latest
+    # ブランチ名が release/v から始まる場合のみに実行する．
+    # プルリクエストがマージされた場合のみに実行する．
+    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
+    env:
+      REPO: https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git
+
+    steps:
+# initialization
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: main
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+
+      - name: Initialize Git
+        shell: bash
+        run: |
+          git config --global user.name  "GitHub Actions"
+          git config --global user.email "action@github.com"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+          git worktree add site/public gh-pages
+
+      - name: Build
+        run: |
+          cargo build --release
+
 # publish release
       - name: Create release file
         run: |
+          echo ${{ needs.setup.outputs.upload_url }}
           DIST=${{ needs.setup.outputs.dist }}
           mkdir $DIST
           cp -r site/public $DIST/docs
