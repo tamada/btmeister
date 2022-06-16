@@ -124,8 +124,9 @@ jobs:
 
       - name: Setup variable
         id: vars
+        shell: bash
         run: |
-          DIST=$(echo "btmeister-${{ steps.vars.outputs.tag }}-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
+          DIST=$(echo "btmeister-${{ needs.site.outputs.tag }}-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
           echo "::set-output name=dist::$DIST"
 
       - name: Build
@@ -153,4 +154,4 @@ jobs:
           asset_path: ${{ steps.vars.outputs.dist }}.tar.gz
           asset_name: ${{ steps.vars.outputs.dist }}.tar.gz
           asset_content_type: application/x-gzip
-          upload_url: ${{ needs.setup.outputs.upload_url }}
+          upload_url: ${{ needs.site.outputs.upload_url }}
