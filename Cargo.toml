@@ -1,6 +1,6 @@
 [package]
 name = "btmeister"
-version = "0.3.8"
+version = "0.3.9"
 edition = "2021"
 authors = [ "Haruaki TAMADA" ]
 license-file = "LICENSE"
