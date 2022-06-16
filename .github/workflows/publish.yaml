@@ -163,7 +163,7 @@ jobs:
           mkdir -p dist/$DIST/$DIR
           cp -r site/public dist/$DIST/$DIR/docs
           cp -r README.md LICENSE target/completions target/${{ matrix.target }}/release/${{ matrix.artifact_name }} dist/$DIST/$DIR
-          tar cvfz dist/${{ matrix.asset_name }}.tar.gz $DIR -C dist/$DIST
+          tar cvfz dist/${{ matrix.asset_name }}.tar.gz -C dist/$DIST $DIR
         shell: bash
 
       - name: Upload release assets
