@@ -126,7 +126,7 @@ jobs:
         shell: bash
         run: |
           rustup target list
-          DIR=$(echo "btmeister-${{ needs.site.outputs.tag }}"
+          DIR=$(echo "btmeister-${{ needs.site.outputs.tag }}")
           DIST=$(echo "$DIR-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
           echo "::set-output name=dir::$DIR"
           echo "::set-output name=dist::$DIST"
