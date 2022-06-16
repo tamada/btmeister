@@ -6,8 +6,37 @@ on:
     types: [closed]
 
 jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      dist: ${{ steps.vars.outputs.dist }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Git Tag name
+        id: vars
+        run: |
+          HEAD_REF=${{ github.head_ref }}
+          echo "::set-output name=tag::${HEAD_REF##*/v}"
+          RUNNER_OS=${{ runner.os }}
+          VERSION=${HEAD_REF##*/v}
+          DIST=$(echo "btmeister-$VERSION-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
+          echo "::set-output name=dist::$DIST"
+      - name: Create release
+        id: create_release
+        uses: actions/create-release@v1.0.0
+        if: matrix.os == 'ubuntu-latest'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ steps.vars.outputs.tag }}
+          release_name: Release v${{ steps.vars.outputs.tag }}
+          draft: false
+          prerelease: false
+
   publish:
     runs-on: ${{ matrix.os }}
+    needs: setup
     strategy:
       matrix:
         os:
@@ -37,29 +66,6 @@ jobs:
           git submodule sync --recursive
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
           git worktree add site/public gh-pages
-
-      - name: Git Tag name
-        id: vars
-        run: |
-          HEAD_REF=${{ github.head_ref }}
-          echo "::set-output name=tag::${HEAD_REF##*/v}"
-          RUNNER_OS=${{ runner.os }}
-          VERSION=${HEAD_REF##*/v}
-          DIST=$(echo "btmeister-$VERSION-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
-          echo "::set-output name=dist::$DIST"
-        shell: bash
-
-      - name: Create release
-        id: create_release
-        uses: actions/create-release@v1.0.0
-        if: matrix.os == 'ubuntu-latest'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: v${{ steps.vars.outputs.tag }}
-          release_name: Release v${{ steps.vars.outputs.tag }}
-          draft: false
-          prerelease: false
           
       - uses: actions-rs/toolchain@v1
         with:
@@ -114,7 +120,7 @@ jobs:
 # publish release
       - name: Create release file
         run: |
-          DIST=${{ steps.vars.outputs.dist }}
+          DIST=${{ needs.setup.outputs.dist }}
           mkdir $DIST
           cp -r site/public $DIST/docs
           cp -r README.md LICENSE target/release/btmeister target/completions $DIST
@@ -127,7 +133,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_path: ${{ steps.vars.outputs.dist }}.tar.gz
-          asset_name: ${{ steps.vars.outputs.dist }}.tar.gz
+          asset_path: ${{ needs.setup.outputs.dist }}.tar.gz
+          asset_name: ${{ needs.setup.outputs.dist }}.tar.gz
           asset_content_type: application/x-gzip
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          upload_url: ${{ needs.setup.outputs.upload_url }}
