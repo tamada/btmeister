@@ -81,6 +81,7 @@ jobs:
           cp -r target/llvm-cov/html/* site/static/coverage/
           git submodule update --init
           hugo -s site
+          rm site/public/favicon*
 
       - name: Deploy Site
         uses: peaceiris/actions-gh-pages@v3
@@ -136,9 +137,7 @@ jobs:
 # publish release
       - name: Create release file
         run: |
-          echo ${{ needs.site.outputs.upload_url }}
           DIST=${{ steps.vars.outputs.dist }}
-          tree .
           mkdir $DIST
           cp -r site/public $DIST/docs
           cp -r README.md LICENSE target/release/btmeister target/completions $DIST
