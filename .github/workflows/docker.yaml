@@ -14,11 +14,13 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
+      # タグ名を 1.2.3 のように付けていることが前提．
       - name: Git Tag name
         id: vars
         run: |
+          git tag --sort version:refname
           tag=$(git tag --sort version:refname | tail -1)
-          echo "::set-output name=tag::${tag#v}"
+          echo "::set-output name=tag::${tag}"
 
 # docker image
       - name: Docker Buildx

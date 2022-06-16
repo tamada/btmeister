@@ -6,6 +6,7 @@ title: ":house: btmeister"
 [![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=main)](https://coveralls.io/github/tamada/btmeister?branch=main)
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
 
+[![Version](https://img.shields.io/badge/Version-v0.3.17-green)](https://github.com/tamada/btmeister/releases/tag/v0.3.17)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
 ## :speaking_head: Description
@@ -20,7 +21,6 @@ This tool finds the build files from the specified directories, and identifies t
 * [:house: Home](./)
   * [:speaking_head: Description](#-desctiption)
 * [:anchor: Install](install)
-  * 
 * [:runner: Usage](usage)
 * [:chart_with_upwards_trend: Coverage](coverage)
 * [:smile: About](about)
