@@ -8,6 +8,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
       dist: ${{ steps.vars.outputs.dist }}
