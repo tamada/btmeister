@@ -38,7 +38,6 @@ jobs:
     needs: setup
     outputs:
       tag: ${{ needs.setup.outputs.tag }}
-      dist: ${{ needs.setup.outputs.dist }}
       upload_url: ${{ needs.setup.outputs.upload_url }}
     steps:
       - name: Checkout
@@ -120,12 +119,14 @@ jobs:
       - name: Initialize Git
         shell: bash
         run: |
-          git config --global user.name  "GitHub Actions"
-          git config --global user.email "action@github.com"
-          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
-          git submodule sync --recursive
-          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+          git submodule update --init
           git worktree add site/public gh-pages
+
+      - name: Setup variable
+        id: vars
+        run: |
+          DIST=$(echo "btmeister-${{ steps.vars.outputs.tag }}-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
+          echo "::set-output name=dist::$DIST"
 
       - name: Build
         run: |
@@ -134,8 +135,9 @@ jobs:
 # publish release
       - name: Create release file
         run: |
-          echo ${{ needs.setup.outputs.upload_url }}
-          DIST=${{ needs.setup.outputs.dist }}
+          echo ${{ needs.site.outputs.upload_url }}
+          DIST=${{ steps.vars.outputs.dist }}
+          tree .
           mkdir $DIST
           cp -r site/public $DIST/docs
           cp -r README.md LICENSE target/release/btmeister target/completions $DIST
@@ -148,7 +150,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_path: ${{ needs.setup.outputs.dist }}.tar.gz
-          asset_name: ${{ needs.setup.outputs.dist }}.tar.gz
+          asset_path: ${{ steps.vars.outputs.dist }}.tar.gz
+          asset_name: ${{ steps.vars.outputs.dist }}.tar.gz
           asset_content_type: application/x-gzip
           upload_url: ${{ needs.setup.outputs.upload_url }}
