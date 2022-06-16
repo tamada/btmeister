@@ -1,4 +1,4 @@
-name: version_up
+name: update_version
 
 on:
   push:
@@ -31,11 +31,15 @@ jobs:
           git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
           git worktree add site/public gh-pages
 
-      - name: Version up
+      - name: Update Version
         run: |
           sed "s/^version = \"[0-9.]*\"$/version = \"${{ steps.vars.outputs.tag }}\"/" Cargo.toml > a
           mv a Cargo.toml
-          git commit -a -m "version up to ${{ steps.vars.outputs.tag }}, ready to publish v${{ steps.vars.outputs.tag }}"
+          regex='s/v[0-9]*\.[0-9]*\.[0-9]*/v${{ steps.vars.outputs.tag }}/g'
+          sed $regex README.md > a ; mv a README.md
+          sed $regex site/content/_index.md > a ; mv a site/content/_index.md
+          git commit -a -m "update version to ${{ steps.vars.outputs.tag }}, ready to publish v${{ steps.vars.outputs.tag }}"
+          
           true
 
       - name: Push branch
