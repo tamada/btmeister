@@ -92,10 +92,27 @@ jobs:
     needs: site
     strategy:
       matrix:
-        os:
-          - ubuntu-latest
-          - macOS-latest
-          - windows-latest
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_amd64
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_amd64_musl
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_darwin_amd64
+          - os: macOS-latest
+            target: aarch64-apple-darwin
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_darwin_arm64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: btmeister.exe
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_amd64
     # ブランチ名が release/v から始まる場合のみに実行する．
     # プルリクエストがマージされた場合のみに実行する．
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
@@ -131,19 +148,22 @@ jobs:
           echo "::set-output name=dir::$DIR"
           echo "::set-output name=dist::$DIST"
 
-      - name: Build
-        run: |
-          cargo build --release
-
+      - name: Cross build with all features
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true 
+          command: build
+          args: --release --target ${{ matrix.target }} --all-features --verbose
+          
 # publish release
       - name: Create release file
         run: |
-          DIST=${{ steps.vars.outputs.dist }}
-          DIST=${{ steps.vars.outputs.dir }}
-          mkdir $DIR
-          cp -r site/public $DIR/docs
-          cp -r README.md LICENSE target/release/btmeister target/completions $DIR
-          tar cvfz $DIST.tar.gz $DIR
+          DIR=${{ steps.vars.outputs.dist }}
+          DIST=${{ matrix.target }}
+          mkdir -p dist/$DIST/$DIR
+          cp -r site/public dist/$DIST/$DIR/docs
+          cp -r README.md LICENSE target/completions target/${{ matrix.target }}/release/${{ matrix.artifact_name }} dist/$DIST/$DIR
+          tar cvfz dist/${{ matrix.asset_name }}.tar.gz $DIR -C dist/$DIST
         shell: bash
 
       - name: Upload release assets
@@ -152,7 +172,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          asset_path: ${{ steps.vars.outputs.dist }}.tar.gz
-          asset_name: ${{ steps.vars.outputs.dist }}.tar.gz
+          asset_path: dist/${{ matrix.target }}/${{ matrix.asset_name }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}.tar.gz
           asset_content_type: application/x-gzip
           upload_url: ${{ needs.site.outputs.upload_url }}
