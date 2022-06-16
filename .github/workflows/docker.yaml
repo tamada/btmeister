@@ -1,11 +1,9 @@
-name: Building docker image
+name: docker_image
 
 on:
   workflow_run:
     workflows:
-      - publish
-    branches:
-      - main
+      - "publish_site_release_assets"
     types:
       - completed
 
@@ -38,6 +36,6 @@ jobs:
         with:
           push: true
           tags: |
-            ghcr.io/{{ github.repository_owner }}/btmeister:${{ steps.vars.outputs.tag }}
-            ghcr.io/{{ github.repository_owner }}/btmeister:latest
+            ghcr.io/${{ github.repository_owner }}/btmeister:${{ steps.vars.outputs.tag }}
+            ghcr.io/${{ github.repository_owner }}/btmeister:latest
 

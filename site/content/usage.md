@@ -1,28 +1,13 @@
-# btmeister
+---
+title: ":runner: Usage"
+---
 
-[![build](https://github.com/tamada/btmeister/actions/workflows/build.yaml/badge.svg)](https://github.com/tamada/btmeister/actions/workflows/build.yaml)
-[![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=main)](https://coveralls.io/github/tamada/btmeister?branch=main)
-[![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
-
-[![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
-
-Detecting the build tools in use.
-
-![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/static/images/logo.png)
-
-## :speaking_head: Description
-
-This tool aims to detect the build tools in use for the project for surveying the share of the build tools.
-The build tools build a project along with the rules defined in the build files.
-The default names of the build files are fixed for each build tool.
-This tool finds the build files from the specified directories, and identifies the build tools in use.
-
-## :runner: Usage
+## CLI
 
 ```sh
 btmeister 0.1.0
 Haruaki TAMADA
-A tool for detecting build tools in use of the projects
+A tool for detecting build tools of the projects
 
 USAGE:
     btmeister [OPTIONS] [PROJECTs]...
@@ -77,13 +62,12 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 ## :whale: Docker
 
 ```sh
-docker run --rm -it tamada/btmeister 
+docker run --rm -v $PWD:/home/btmeister -it ghcr.io/tamada/btmeister:latest
 ```
 
+The working directory in the docker container is `/home/btmeister`.
+The target project should be on the directory with `-v` flag of docker.
 
-## :hammer_and_wrench: Related Tools
+### Available versions
 
-* [Licensee](https://github.com/licensee/licensee)
-  * License detector for the projects.
-* [linguist](https://github.com/github/linguist)
-  * Programming languages detector for the projects.
+* `0.1.3`, `latest`

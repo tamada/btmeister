@@ -1,0 +1,38 @@
+baseURL = 'https://tamada.github.io/btmeister'
+languageCode = 'en-us'
+title = 'btmeister'
+theme = 'cayman-hugo-theme'
+
+enableEmoji = 'true'
+hasCJKLanguage = 'false'
+paginate = 10
+
+[params]
+    project_name = 'btmeister'
+    project_tagline = 'Detecting the build tools in use'
+    project_logo = 'images/logo.svg'
+    date_format = 'Jan 02, 2006'
+    footer = "[![GitHub](https://img.shields.io/badge/GitHub-tamada/btmeister-blueviolet.svg?logo=github)](https://github.com/tamada/btmeister) Made with [Hugo](https://gohugo.io/). Theme by [Cayman](https://github.com/zwbetz-gh/cayman-hugo-theme). Deployed to [GitHub Pages](https://pages.github.com/)."
+    katex = true
+
+[menu]
+    [[menu.nav]]
+        name = ":house: Home"
+        url = "/"
+        weight = 1
+    [[menu.nav]]
+        name = ":anchor: Install"
+        url = "/install/"
+        weight = 2
+    [[menu.nav]]
+        name = ":runner: Usage"
+        url = "/usage/"
+        weight = 3
+    [[menu.nav]]
+        name = ":smile: About"
+        url = "/about/"
+        weight = 4
+    [[menu.nav]]
+        name = ":chart_with_upwards_trend: Coverage"
+        url = "/coverage/"
+        weight = 4
