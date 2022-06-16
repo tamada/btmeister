@@ -1,5 +1,4 @@
 name: Build products
-
 on:
   push:
 
@@ -20,8 +19,10 @@ jobs:
           toolchain: stable
           override: true
           components: llvm-tools-preview
+
       - name: Install cargo-llvm-cov
         uses: taiki-e/install-action@cargo-llvm-cov
+
       - name: Build and calculate coverages
         run: |
           cargo llvm-cov --lcov --output-path coverage.lcov
