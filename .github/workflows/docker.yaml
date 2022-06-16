@@ -17,7 +17,7 @@ jobs:
       - name: Git Tag name
         id: vars
         run: |
-          tag=$(git tag --sort version:refname | tail -1 | sed 's/v\([0-9.]*\)/\1/)'
+          tag=$(git tag --sort version:refname | tail -1)
           echo "::set-output name=tag::${tag#v}"
 
 # docker image
