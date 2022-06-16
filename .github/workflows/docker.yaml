@@ -1,9 +1,9 @@
-name: Building docker image
+name: docker_image
 
 on:
   workflow_run:
     workflows:
-      - publish
+      - "publish_site_release_assets"
     types:
       - completed
 
