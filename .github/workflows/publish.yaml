@@ -50,9 +50,6 @@ jobs:
       - name: Initialize Git
         shell: bash
         run: |
-          echo "tag:  ${{ needs.setup.outputs.tag }}"
-          echo "dist: ${{ needs.setup.outputs.dist }}"
-          echo "url:  ${{ needs.setup.outputs.upload_url }}"
           git config --global user.name  "GitHub Actions"
           git config --global user.email "action@github.com"
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
@@ -128,7 +125,10 @@ jobs:
         id: vars
         shell: bash
         run: |
-          DIST=$(echo "btmeister-${{ needs.site.outputs.tag }}-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
+          rustup target list
+          DIR=$(echo "btmeister-${{ needs.site.outputs.tag }}"
+          DIST=$(echo "$DIR-${{ runner.os }}_$RUNNER_ARCH" | awk '{ print tolower($0) }')
+          echo "::set-output name=dir::$DIR"
           echo "::set-output name=dist::$DIST"
 
       - name: Build
@@ -139,10 +139,11 @@ jobs:
       - name: Create release file
         run: |
           DIST=${{ steps.vars.outputs.dist }}
-          mkdir $DIST
-          cp -r site/public $DIST/docs
-          cp -r README.md LICENSE target/release/btmeister target/completions $DIST
-          tar cvfz $DIST.tar.gz $DIST
+          DIST=${{ steps.vars.outputs.dir }}
+          mkdir $DIR
+          cp -r site/public $DIR/docs
+          cp -r README.md LICENSE target/release/btmeister target/completions $DIR
+          tar cvfz $DIST.tar.gz $DIR
         shell: bash
 
       - name: Upload release assets
