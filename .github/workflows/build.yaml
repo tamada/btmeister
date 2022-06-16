@@ -1,4 +1,4 @@
-name: Build products
+name: build_products
 on:
   push:
 

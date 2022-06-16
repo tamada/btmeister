@@ -1,4 +1,4 @@
-name: Version up
+name: version_up
 
 on:
   push:
