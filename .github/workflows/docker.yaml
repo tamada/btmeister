@@ -18,9 +18,12 @@ jobs:
       - name: Git Tag name
         id: vars
         run: |
+          echo "GITHUB_REF: $GITHUB_REF"
+          echo "env.TAG: ${{ env.TAG }}"
+          gh release view --json tagName --jq .tagName
           git tag --sort version:refname
-          tag=$(git tag --sort version:refname | tail -1)
-          echo "::set-output name=tag::${tag}"
+          tag=$(gh release view --json tagName --jq .tagName)
+          echo "::set-output name=tag::${tag##v}"
 
 # docker image
       - name: Docker Buildx
