@@ -5,7 +5,7 @@ title: ":runner: Usage"
 ## CLI
 
 ```sh
-btmeister 0.1.0
+btmeister 0.3.20
 Haruaki TAMADA
 A tool for detecting build tools of the projects
 
@@ -62,7 +62,7 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 ## :whale: Docker
 
 ```sh
-docker run --rm -v $PWD:/home/btmeister -it ghcr.io/tamada/btmeister:latest
+docker run --rm -it -v $PWD:/home/btmeister ghcr.io/tamada/btmeister:latest
 ```
 
 The working directory in the docker container is `/home/btmeister`.

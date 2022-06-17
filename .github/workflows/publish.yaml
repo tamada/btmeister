@@ -95,9 +95,9 @@ jobs:
             artifact_name: btmeister
             asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_amd64
           - os: ubuntu-latest
-            target: x86_64-unknown-linux-musl
+            target: aarch64-unknown-linux-gnu
             artifact_name: btmeister
-            asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_amd64_musl
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_arm64
           - os: macOS-latest
             target: x86_64-apple-darwin
             artifact_name: btmeister
@@ -110,6 +110,10 @@ jobs:
             target: x86_64-pc-windows-msvc
             artifact_name: btmeister.exe
             asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_amd64
+          - os: windows-latest
+            target: aarch64-pc-windows-msvc
+            artifact_name: btmeister.exe
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_arm64
     # ブランチ名が release/v から始まる場合のみに実行する．
     # プルリクエストがマージされた場合のみに実行する．
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
