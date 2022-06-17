@@ -70,4 +70,4 @@ The target project should be on the directory with `-v` flag of docker.
 
 ### Available versions
 
-* `0.1.3`, `latest`
+* `0.3.19`, `latest`
