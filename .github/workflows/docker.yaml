@@ -17,6 +17,8 @@ jobs:
       # タグ名を 1.2.3 のように付けていることが前提．
       - name: Git Tag name
         id: vars
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag=$(gh release view --json tagName --jq .tagName)
           echo "::set-output name=tag::${tag##v}"
