@@ -85,7 +85,7 @@
     
   <h1>🏃‍♂️ Usage</h1>
   <h2 id="cli">CLI</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">btmeister 0.1.0
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">btmeister 0.3.20
 Haruaki TAMADA
 A tool <span style="color:#66d9ef">for</span> detecting build tools of the projects
 
@@ -134,7 +134,7 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
   <span style="color:#f92672">}</span>
 <span style="color:#f92672">]</span>
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -v $PWD:/home/btmeister -it ghcr.io/tamada/btmeister:latest
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -it -v $PWD:/home/btmeister ghcr.io/tamada/btmeister:latest
 </code></pre></div><p>The working directory in the docker container is <code>/home/btmeister</code>.
 The target project should be on the directory with <code>-v</code> flag of docker.</p>
 <h3 id="available-versions">Available versions</h3>
