@@ -8,6 +8,8 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
+    # ブランチ名が release/v から始まる場合のみに実行する．
+    # プルリクエストがマージされた場合のみに実行する．
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
@@ -16,10 +18,10 @@ jobs:
       - name: Git Tag name
         id: vars
         run: |
-          HEAD_REF=${{ github.head_ref }}
-          echo "::set-output name=tag::${HEAD_REF##*/v}"
-          RUNNER_OS=${{ runner.os }}
-          VERSION=${HEAD_REF##*/v}
+          # HEAD_REF=${{ github.head_ref }}
+          echo $GITHUB_HEAD_REF
+          echo "::set-output name=tag::${GITHUB_HEAD_REF##*/v}"
+
       - name: Create release
         id: create_release
         uses: actions/create-release@v1.0.0
@@ -110,15 +112,10 @@ jobs:
             target: x86_64-pc-windows-msvc
             artifact_name: btmeister.exe
             asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_amd64
-          - os: windows-latest
-            target: aarch64-pc-windows-msvc
-            artifact_name: btmeister.exe
-            asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_arm64
-    # ブランチ名が release/v から始まる場合のみに実行する．
-    # プルリクエストがマージされた場合のみに実行する．
-    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
-    env:
-      REPO: https://${{github.actor}}:${{secrets.GITHUB_TOKEN}}@github.com/${{github.repository}}.git
+          # - os: windows-latest
+          #   target: aarch64-pc-windows-msvc
+          #   artifact_name: btmeister.exe
+          #   asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_arm64
 
     steps:
 # initialization

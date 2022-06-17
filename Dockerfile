@@ -1,1 +1,1 @@
-dockers/alpine/Dockerfile
+dockers/amd64/Dockerfile
