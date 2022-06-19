@@ -1,7 +1,7 @@
+use clap::{Command, IntoApp};
 use clap_complete::Shell;
-use clap::{IntoApp, Command};
-use std::path::Path;
 use std::fs::File;
+use std::path::Path;
 
 include!("src/cli.rs");
 

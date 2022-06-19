@@ -23,4 +23,3 @@ $ cargo build --release
 
 Then, `cargo` build the resultant `btmeister` executable on `target/release` directory.
 
-

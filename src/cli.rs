@@ -30,10 +30,17 @@ pub struct Options {
     )]
     pub format: Format,
 
-    #[clap(short = 'L', long = "list-defs", help = "Print the build tools' definition list")]
+    #[clap(
+        short = 'L',
+        long = "list-defs",
+        help = "Print the build tools' definition list"
+    )]
     pub list_defs: bool,
 
-    #[clap(long = "no-ignore", help = "Do not respect ignore files (.ignore, .gitignore, etc.)")]
+    #[clap(
+        long = "no-ignore",
+        help = "Do not respect ignore files (.ignore, .gitignore, etc.)"
+    )]
     pub no_ignore: bool,
 
     #[clap(

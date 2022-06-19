@@ -22,7 +22,7 @@ This tool finds the build files from the specified directories, and identifies t
 ## :runner: Usage
 
 ```sh
-btmeister 0.1.0
+btmeister v0.3.21
 Haruaki TAMADA
 A tool for detecting build tools in use of the projects
 
@@ -79,8 +79,13 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 ## :whale: Docker
 
 ```sh
-docker run --rm -it tamada/btmeister 
+docker run --rm -it -v $PWD:/home/btmeister ghcr.io/tamada/btmeister:latest .
 ```
+
+* Container OS
+    * Working directory: `/home/btmeister`
+    * entry point: `/opt/btmeister/btmeister`
+    * user: `btmeister`
 
 
 ## :hammer_and_wrench: Related Tools

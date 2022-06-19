@@ -1,14 +1,14 @@
-use clap::{Parser};
+use btmeister::{construct, BuildToolDef, BuildToolDefs};
+use clap::Parser;
+use ignore::WalkBuilder;
 use std::error::Error;
 use std::fs::File;
 use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Write};
 use std::path::{Path, PathBuf};
-use btmeister::{BuildToolDef,BuildToolDefs,construct};
-use ignore::WalkBuilder;
 
 mod btmeister;
-mod formatter;
 mod cli;
+mod formatter;
 
 pub struct BuildTool {
     path: PathBuf,
@@ -58,7 +58,7 @@ fn extract_file_name(target: &Path) -> Option<&str> {
 
 fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToolDef> {
     if let Some(file_name) = extract_file_name(target) {
-       for def in defs {
+        for def in defs {
             for build_file in &def.build_files {
                 if file_name == build_file {
                     return Some(def.clone());
@@ -69,25 +69,40 @@ fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToo
     None
 }
 
-fn find_build_tools(target: &Path, defs: &BuildToolDefs, no_ignore: bool) -> Result<Vec<BuildTool>, Box<dyn Error>> {
+fn find_build_tools(
+    target: &Path,
+    defs: &BuildToolDefs,
+    no_ignore: bool,
+) -> Result<Vec<BuildTool>, Box<dyn Error>> {
     let mut build_tools = Vec::new();
     for result in WalkBuilder::new(target)
-            .ignore(!no_ignore).git_ignore(!no_ignore).build() {
+        .ignore(!no_ignore)
+        .git_ignore(!no_ignore)
+        .build()
+    {
         match result {
-            Ok(entry) => if let Some(def) = find_build_tools_impl(entry.path(), defs) {
-                build_tools.push(BuildTool::new(entry.path().to_path_buf(), def));
-            },
+            Ok(entry) => {
+                if let Some(def) = find_build_tools_impl(entry.path(), defs) {
+                    build_tools.push(BuildTool::new(entry.path().to_path_buf(), def));
+                }
+            }
             Err(err) => eprintln!("ERROR: {}", err),
         }
     }
     Ok(build_tools)
 }
 
-fn perform_each(target: &Path, defs: &BuildToolDefs, no_ignore: bool,
-        formatter: &Box<dyn formatter::Formatter>,
-        dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
+fn perform_each(
+    target: &Path,
+    defs: &BuildToolDefs,
+    no_ignore: bool,
+    formatter: &Box<dyn formatter::Formatter>,
+    dest: &mut Box<dyn Write>,
+) -> Result<i32, Box<dyn Error>> {
     if !target.exists() {
-        Err(Box::new(cli::MeisterError::ProjectNotFound(target.display().to_string())))
+        Err(Box::new(cli::MeisterError::ProjectNotFound(
+            target.display().to_string(),
+        )))
     } else {
         match find_build_tools(target, defs, no_ignore) {
             Ok(results) => Ok(formatter.print(dest, target, results)),
@@ -131,8 +146,8 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::cli::*;
+    use super::*;
 
     #[test]
     fn test_basic() {
@@ -156,7 +171,9 @@ mod tests {
 
     #[test]
     fn test_validate_both_project_list_dirs() {
-        let opts = Options::parse_from("btmeister -@ testdata/project_list.txt testdata/fibonacci".split(' '));
+        let opts = Options::parse_from(
+            "btmeister -@ testdata/project_list.txt testdata/fibonacci".split(' '),
+        );
         let r = opts.validate();
         assert!(r.is_some());
         println!("{}", r.unwrap());
@@ -181,22 +198,37 @@ mod tests {
         let r = parse_targets(Some("testdata/project_list.txt".to_string()), vec![]);
         match r {
             Ok(list) => {
-                assert_eq!(&PathBuf::from("testdata/fibonacci".to_string()), list.get(0).unwrap());
-                assert_eq!(&PathBuf::from("testdata/hello".to_string()), list.get(1).unwrap());
-            },
+                assert_eq!(
+                    &PathBuf::from("testdata/fibonacci".to_string()),
+                    list.get(0).unwrap()
+                );
+                assert_eq!(
+                    &PathBuf::from("testdata/hello".to_string()),
+                    list.get(1).unwrap()
+                );
+            }
             Err(_) => panic!("never come here!"),
         }
     }
 
     #[test]
     fn test_parse_targets2() {
-        let dirs: Vec<PathBuf> = vec!["testdata/hello", "testdata/fibonacci"].iter().map(|f| PathBuf::from(f.to_string())).collect();
+        let dirs: Vec<PathBuf> = vec!["testdata/hello", "testdata/fibonacci"]
+            .iter()
+            .map(|f| PathBuf::from(f.to_string()))
+            .collect();
         let r = parse_targets(None, dirs);
         match r {
             Ok(list) => {
-                assert_eq!(&PathBuf::from("testdata/hello".to_string()), list.get(0).unwrap());
-                assert_eq!(&PathBuf::from("testdata/fibonacci".to_string()), list.get(1).unwrap());
-            },
+                assert_eq!(
+                    &PathBuf::from("testdata/hello".to_string()),
+                    list.get(0).unwrap()
+                );
+                assert_eq!(
+                    &PathBuf::from("testdata/fibonacci".to_string()),
+                    list.get(1).unwrap()
+                );
+            }
             Err(_) => panic!("never come here!"),
         }
     }
