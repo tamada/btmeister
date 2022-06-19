@@ -21,7 +21,7 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          tag=$(gh release view --json tagName --jq .tagName)
+          tag=$(gh release view --repo tamada/btmeister --json tagName --jq .tagName)
           echo "::set-output name=tag::${tag##v}"
 
       - name: Setup Git
