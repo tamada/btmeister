@@ -1,0 +1,48 @@
+name: homebrew
+
+on:
+  workflow_run:
+    workflows:
+      - "publish_site_release_assets"
+    types:
+      - completed
+
+jobs:
+  build_and_push:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'tamada/homebrew-brew'
+
+      - name: Git Tag name
+        id: vars
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          tag=$(gh release view --json tagName --jq .tagName)
+          echo "::set-output name=tag::${tag##v}"
+
+      - name: Setup Git
+        run: |
+          git config --global user.name  "GitHub Actions"
+          git config --global user.email "action@github.com"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+
+      - name: Update btmeister.rb
+        run: |
+          VERSION=${{ steps.vars.outputs.tag }}
+          curl -o btmeister.tar.gz -L https://github.com/tamada/btmeister/releases/download/v${VERSION}/btmeister-${VERSION}_darwin_amd64.tar.gz
+          sha256=$(shasum -a 256 btmeister.tar.gz)
+          sed 's/VERSION = \".*\"/VERSION = \"${{ steps.vars.outputs.tag }}\"' Formula/btmeister.rb > a
+          sed "s/  sha256 \".*\"/  sha256 \"${sha256}\"" a > b
+          mv b Formula/btmeister.rb
+          git commit -a -m "update btmeister version to ${{ steps.vars.outputs.tag }}"
+
+      - name: Push branch
+        uses: ad-m/github-push-action@master
+        with:
+          repository: "tamada/homebrew-brew"
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: master

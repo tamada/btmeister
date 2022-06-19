@@ -1,8 +1,8 @@
+use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::path::PathBuf;
-use rust_embed::RustEmbed;
 
 #[derive(RustEmbed)]
 #[folder = "defs"]
@@ -64,7 +64,7 @@ pub fn construct(
     Ok(result)
 }
 
-#[cfg(test)] 
+#[cfg(test)]
 mod test {
     use super::*;
 
@@ -83,7 +83,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(2, result.len());
-        } 
+        }
     }
 
     #[test]
@@ -113,4 +113,3 @@ mod test {
         }
     }
 }
-

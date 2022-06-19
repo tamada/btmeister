@@ -18,8 +18,7 @@ jobs:
       - name: Git Tag name
         id: vars
         run: |
-          # HEAD_REF=${{ github.head_ref }}
-          echo $GITHUB_HEAD_REF
+          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF (${GITHUB_HEAD_REF##*/v})"
           echo "::set-output name=tag::${GITHUB_HEAD_REF##*/v}"
 
       - name: Create release

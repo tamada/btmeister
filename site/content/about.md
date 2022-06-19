@@ -19,7 +19,7 @@ title: ":smile: About"
 
 The logo of btmeister is as follows.
 
-![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/images/logo.png)
+![btmeister_logo](https://raw.githubusercontent.com/tamada/btmeister/main/site/static/images/logo.png)
 
 This image is refered from [freesvg.org](https://freesvg.org/worker-with-tool) by [OpenClipart](https://freesvg.org/by/OpenClipart).
 
