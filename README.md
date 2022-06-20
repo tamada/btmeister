@@ -6,7 +6,9 @@
 
 [![Version](https://img.shields.io/badge/Version-v0.4.7-green)](https://github.com/tamada/btmeister/releases/tag/v0.4.7)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-v0.4.7-green)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-v0.4.7-green?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+
+[![Homebrew](https://img.shields.io/badge/Homebrew-tamada/brew/btmeister-green?logo=homebrew)](https://github.com/tamada/homebrew-brew)
 
 Detecting the build tools in use.
 
