@@ -35,8 +35,8 @@ jobs:
           VERSION=${{ steps.vars.outputs.tag }}
           curl -o btmeister.tar.gz -L https://github.com/tamada/btmeister/releases/download/v${VERSION}/btmeister-${VERSION}_darwin_amd64.tar.gz
           sha256=$(shasum -a 256 btmeister.tar.gz)
-          sed 's/VERSION = \".*\"/VERSION = \"${{ steps.vars.outputs.tag }}\"' Formula/btmeister.rb > a
-          sed "s/  sha256 \".*\"/  sha256 \"${sha256}\"" a > b
+          sed 's/VERSION = \".*\"/VERSION = \"${{ steps.vars.outputs.tag }}\"/' Formula/btmeister.rb > a
+          sed 's/  sha256 \".*\"/  sha256 \"${sha256}\"/' a > b
           mv b Formula/btmeister.rb
           git commit -a -m "update btmeister version to ${{ steps.vars.outputs.tag }}"
 
