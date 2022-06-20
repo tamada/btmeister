@@ -1,11 +1,12 @@
 name: homebrew
 
 on:
-  workflow_run:
-    workflows:
-      - "publish_site_release_assets"
-    types:
-      - completed
+  # git pushに失敗するので，ひとまず放置．
+  # workflow_run:
+  #   workflows:
+  #     - "publish_site_release_assets"
+  #   types:
+  #     - completed
 
 jobs:
   pr_on_brew_repo:
