@@ -31,6 +31,9 @@ jobs:
           auth_header="$(git config --local --get http.https://github.com/.extraheader)"
 
       - name: Update btmeister.rb
+        with:
+          token: ${{ secrets.PR_TO_BREW_REPO }}
+          GH_TOKEN: ${{ secrets.PR_TO_BREW_REPO }}
         run: |
           VERSION=${{ steps.vars.outputs.tag }}
           curl -o btmeister.tar.gz -L https://github.com/tamada/btmeister/releases/download/v${VERSION}/btmeister-${VERSION}_darwin_amd64.tar.gz
@@ -38,11 +41,7 @@ jobs:
           sed 's/VERSION = \".*\"/VERSION = \"${{ steps.vars.outputs.tag }}\"/' Formula/btmeister.rb > a
           sed 's/  sha256 \".*\"/  sha256 \"${sha256}\"/' a > b
           mv b Formula/btmeister.rb
+          git switch -c btmeister/release/v${{ steps.vars.outputs.tag }}
           git commit -a -m "update btmeister version to ${{ steps.vars.outputs.tag }}"
-
-      - name: Push branch
-        uses: ad-m/github-push-action@master
-        with:
-          repository: "tamada/homebrew-brew"
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          branch: master
+          git push origin btmeister/release/v${{ steps.vars.outputs.tag }}
+          gh create --assignee tamada --base btmeister/release/${{ steps.vars.outputs.tag }} --title "btmeister ${{ steps.vars.outputs.tag }} released"
