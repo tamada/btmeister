@@ -8,8 +8,19 @@ on:
       - completed
 
 jobs:
-  build_and_push:
+  pr_on_brew_repo:
     runs-on: macos-latest
+    permissions:
+      actions: write
+      checks: write
+      contents: write
+      deployments: write
+      issues: write
+      packages: write
+      pull-requests: write
+      repository-projects: write
+      security-events: write
+      statuses: write      
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
