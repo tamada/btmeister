@@ -60,6 +60,13 @@
     "url": "https://buck.build/"
   },
   {
+    "name": "Buildpacks",
+    "build-files": [
+      "buildpack.toml"
+    ],
+    "url": "https://buildpacks.io"
+  },
+  {
     "name": "Cargo",
     "build-files": ["Cargo.toml"],
     "url": "https://github.com/rust-lang/cargo"

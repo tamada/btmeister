@@ -263,8 +263,8 @@ mod test_print_result {
 
     fn setup() -> Vec<BuildTool> {
         let defs = construct(None, None).unwrap();
-        let def1 = defs.get(11).unwrap();
-        let def2 = defs.get(8).unwrap();
+        let def1 = defs.get(12).unwrap();
+        let def2 = defs.get(9).unwrap();
         let bt1 = BuildTool::new(
             PathBuf::from_str("testdata/fibonacci/build.gradle").unwrap(),
             def1.clone(),

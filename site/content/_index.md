@@ -8,6 +8,8 @@ title: ":house: btmeister"
 
 [![Version](https://img.shields.io/badge/Version-v0.5.0-green)](https://github.com/tamada/btmeister/releases/tag/v0.5.0)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
+[![DOI](https://zenodo.org/badge/483071389.svg)](https://zenodo.org/badge/latestdoi/483071389)
+
 [![Docker](https://img.shields.io/badge/Docker-v0.5.0-green?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-tamada/brew/btmeister-green?logo=homebrew)](https://github.com/tamada/homebrew-brew)
 
