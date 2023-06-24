@@ -7,7 +7,6 @@ public class GlobMatcher implements BuildToolMatcher {
     private final PathMatcher matcher;
 
     public GlobMatcher(Path name) {
-        this.pattern = name;
         this.matcher = name.getFileSystem().getPathMatcher("glob:" + name.toString());
     }
 
