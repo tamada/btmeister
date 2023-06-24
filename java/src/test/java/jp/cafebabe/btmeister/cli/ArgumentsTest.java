@@ -14,7 +14,7 @@ public class ArgumentsTest {
                 .execute(".".split(" "));
         var either = main.args.manager();
         assertTrue(either.isRight());
-        assertEquals(33, either.get().stream().count());
+        assertEquals(35, either.get().stream().count());
     }
 
     @Test
@@ -24,7 +24,7 @@ public class ArgumentsTest {
                 .execute("--append-defs -d src/test/resources/append_tools.json .".split(" "));
         var either = main.args.manager();
         assertTrue(either.isRight());
-        assertEquals(34, either.get().stream().count());
+        assertEquals(36, either.get().stream().count());
     }
 
     @Test

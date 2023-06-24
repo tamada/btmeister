@@ -5,7 +5,6 @@ import java.nio.file.PathMatcher;
 
 public class GlobMatcher implements BuildToolMatcher {
     private final PathMatcher matcher;
-    private final Path pattern;
 
     public GlobMatcher(Path name) {
         this.pattern = name;

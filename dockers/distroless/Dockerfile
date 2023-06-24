@@ -1,10 +1,10 @@
-FROM rust:1.60.0 as builder
+FROM --platform=$BUILDPLATFORM rust:1.60.0 as builder
 
+ARG TARGETARCH
 WORKDIR /app
+COPY rust /app
 
-COPY . /app
-
-RUN cargo build --release
+RUN cargo build --release --target $BUILDPLATFORM
 
 FROM gcr.io/distroless/cc
 
