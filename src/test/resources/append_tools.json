@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Finch",
+    "build-files": [
+      "Dockerfile"
+    ],
+    "url": "https://github.com/runfinch/finch"
+  }
+]

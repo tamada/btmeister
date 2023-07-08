@@ -1,1 +1,0 @@
-dockers/amd64/Dockerfile
