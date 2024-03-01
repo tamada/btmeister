@@ -38,6 +38,7 @@
     "name": "Bazel",
     "build-files": [
       "WORKSPACE",
+      "WORKSPACE.bazel",
       "BUILD",
       "BUILD.bazel",
       "*.bzl"
@@ -63,6 +64,11 @@
     "name": "Cake",
     "build-files": [ "Cakefile", "build.cake" ],
     "url": "https://cakebuild.net/"
+  },
+  {
+    "name": "Cmake",
+    "build-files": [ "CMakeLists.txt" ],
+    "url": "https://cmake.org"
   },
   {
     "name": "Cargo",
@@ -156,6 +162,11 @@
     "url": "https://magefile.org/"
   },
   {
+    "name": "ninja",
+    "build-files": [ "build.ninja" ],
+    "url": "https://ninja-build.org"
+  },
+  {
     "name": "npm",
     "build-files": [
       "package.json"
@@ -187,6 +198,11 @@
       "Rakefile"
     ],
     "url": "https://github.com/ruby/rake"
+  },
+  {
+    "name": "SCons",
+    "url": "https://scons.org",
+    "build-files": [ "SConstruct", "SConscript" ]
   },
   {
     "name": "sbt",
