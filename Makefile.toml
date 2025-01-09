@@ -1,0 +1,35 @@
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+dependencies = ["format", "convert"]
+
+[tasks.test]
+command = "cargo"
+args = ["llvm-cov", "--html"]
+
+[tasks.post-test]
+description = "Run test and generate coverage report"
+script = [
+'''
+mkdir -p site/static/coverage/
+cp -r target/llvm-cov/html/* site/static/coverage/
+'''
+]
+dependencies = ["test"]
+
+[tasks.convert]
+description = "Convert the definition pkl file into json"
+script = ["pkl eval -f json -o assets/buildtools.json assets/buildtools.pkl"]
+
+[tasks.start]
+description = "Start the document server"
+script = ["hugo -s site server"]
+
+[tasks.site]
+description = "Build the site document"
+script = ["hugo -s site"]

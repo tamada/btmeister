@@ -1,0 +1,6 @@
+testdata/hello
+testdata/fibonacci
+not_exist_project
+# This is comment
+# The following line is not directory.
+testdata/project_list.txt

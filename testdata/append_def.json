@@ -1,0 +1,16 @@
+[
+    {
+      "name": "Dummy",
+      "build-files": [
+        "Dummyfile"
+      ],
+      "url": "https://example.com/"
+    },
+    {
+        "name": "Fake",
+        "url": "https://example.com/",
+        "build-files": [
+            "Fakefile"
+        ]
+    }
+]  
