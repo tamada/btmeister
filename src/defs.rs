@@ -48,7 +48,7 @@ impl BuildToolDefs {
         }
     }
 
-    fn parse_from_asset() -> Result<BuildToolDefs> {
+    pub fn parse_from_asset() -> Result<BuildToolDefs> {
         if let Some(f) = Asset::get("buildtools.json") {
             match std::str::from_utf8(f.data.as_ref()) {
                 Ok(string) => match serde_json::from_str(string) {
