@@ -1,9 +1,8 @@
-use std::path::PathBuf;
 use std::io::Write;
 
-use btmeister::{BuildTool, MeisterError, Result};
 use crate::defs;
 use crate::fmt::Formatter as FormatterTrait;
+use btmeister::{BuildTools, MeisterError, Result};
 
 pub(super) struct Formatter {}
 
@@ -39,25 +38,33 @@ impl FormatterTrait for Formatter {
         );
         Ok(result)
     }
-    fn format_files(&self, base: &PathBuf, tools: &Vec<BuildTool>, _: bool) -> Result<String> {
+    fn format_files(&self, tools: &BuildTools, _: bool) -> Result<String> {
         let mut result = Vec::<u8>::new();
-        let _ = writeln!(result, r#"    <project>
+        let _ = writeln!(
+            result,
+            r#"    <project>
         <base-path>{}</base-path>
-        <build-files>
-"#, base.display());
-        for bt in tools {
-            if let Ok(p) = bt.path.strip_prefix(base.clone()) {
-                let _ = writeln!(result, r#"            <build-file tool-name=\"{}\">{}</build-file>"#, bt.def.name, p.display());
+        <build-files>"#,
+            tools.base.display()
+        );
+        for bt in &tools.tools {
+            if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                let _ = writeln!(
+                    result,
+                    r#"            <build-file tool-name="{}">{}</build-file>"#,
+                    bt.def.name,
+                    p.display()
+                );
             }
         }
         let _ = writeln!(result, "        </build-files>\n    </project>");
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }
-    
+
     fn header_files(&self) -> Option<String> {
-        Some("<? xml version=\"1.0\" ?>\n<build-tools>\n".to_string())
+        Some("<? xml version=\"1.0\" ?>\n<build-tools>".to_string())
     }
-    
+
     fn footer_files(&self) -> Option<String> {
         Some("</build-tools>".to_string())
     }
@@ -99,5 +106,37 @@ mod tests {
             Some("</build-tool-defs>".to_string()),
             formatter.footer_defs()
         );
+    }
+
+    #[test]
+    fn test_format_buildtools() {
+        let formatter = Formatter {};
+        let tools = crate::fmt::fake_build_tools();
+        let result = formatter.format_files(&tools, false);
+        assert!(result.is_ok());
+        if let Ok(r) = result {
+            assert_eq!(
+                r#"    <project>
+        <base-path>fake/base/dir</base-path>
+        <build-files>
+            <build-file tool-name="Fake">Fakefile</build-file>
+            <build-file tool-name="Make">Makefile</build-file>
+        </build-files>
+    </project>
+"#
+                .to_string(),
+                r
+            );
+        }
+    }
+
+    #[test]
+    fn test_header_and_footer2() {
+        let formatter = Formatter {};
+        assert_eq!(
+            Some("<? xml version=\"1.0\" ?>\n<build-tools>".to_string()),
+            formatter.header_files()
+        );
+        assert_eq!(Some("</build-tools>".to_string()), formatter.footer_files());
     }
 }

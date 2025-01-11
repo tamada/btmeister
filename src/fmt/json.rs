@@ -1,9 +1,8 @@
-use std::path::PathBuf;
 use std::io::Write;
 
-use btmeister::{BuildTool, MeisterError, Result};
 use crate::defs;
 use crate::fmt::Formatter as FormatterTrait;
+use btmeister::{BuildTools, MeisterError, Result};
 
 pub(super) struct Formatter {}
 
@@ -36,27 +35,38 @@ impl FormatterTrait for crate::fmt::json::Formatter {
         Ok(result)
     }
 
-    fn format_files(&self, base: &PathBuf, tools: &Vec<BuildTool>, first: bool) -> Result<String> {
+    fn format_files(&self, tools: &BuildTools, first: bool) -> Result<String> {
         let mut result = Vec::<u8>::new();
         let comma = if first { "" } else { "," };
-        let _ = writeln!(result, r#"{}{{"base":"{}","build-tools":["#, comma, base.display());
-        for (uindex, bt) in tools.iter().enumerate() {
-            let path = if let Ok(p) = bt.path.strip_prefix(base.clone()) {
+        let _ = writeln!(
+            result,
+            r#"{}{{"base":"{}","build-tools":["#,
+            comma,
+            tools.base.display()
+        );
+        for (uindex, bt) in tools.tools.iter().enumerate() {
+            let path = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
                 p
             } else {
                 bt.path.as_path()
             };
             let separator = if uindex == 0 { "" } else { "," };
-            let _ = writeln!(result, r#"{}{{"path":"{}","tool-name":"{}"}}"#, separator, path.display(), bt.def.name);
+            let _ = writeln!(
+                result,
+                r#"{}{{"path":"{}","tool-name":"{}"}}"#,
+                separator,
+                path.display(),
+                bt.def.name
+            );
         }
         let _ = writeln!(result, "]}}");
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }
-    
+
     fn header_files(&self) -> Option<String> {
         Some("[".to_string())
     }
-    
+
     fn footer_files(&self) -> Option<String> {
         Some("]".to_string())
     }
@@ -98,5 +108,26 @@ mod tests {
 
         assert_eq!(Some("[".to_string()), formatter.header_defs());
         assert_eq!(Some("]".to_string()), formatter.footer_defs());
+    }
+
+    #[test]
+    fn test_format_buildtools() {
+        let formatter = Formatter {};
+        let tools = crate::fmt::fake_build_tools();
+        let result = formatter.format_files(&tools, false);
+        assert!(result.is_ok());
+        if let Ok(r) = result {
+            assert_eq!(
+                r#",{"base":"fake/base/dir","build-tools":[
+{"path":"Fakefile","tool-name":"Fake"}
+,{"path":"Makefile","tool-name":"Make"}
+]}
+"#
+                .to_string(),
+                r
+            );
+        }
+        assert_eq!(Some("[".to_string()), formatter.header_files());
+        assert_eq!(Some("]".to_string()), formatter.footer_files());
     }
 }

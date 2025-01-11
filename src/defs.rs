@@ -5,12 +5,13 @@ use std::path::PathBuf;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
-use crate::{verbose, Result, MeisterError};
+use crate::{verbose, MeisterError, Result};
 
 #[derive(RustEmbed)]
 #[folder = "assets"]
 struct Asset;
 
+/// BuildToolDef represents a build tool definition.
 #[derive(Serialize, Deserialize, Clone)]
 pub struct BuildToolDef {
     pub name: String,
@@ -21,6 +22,7 @@ pub struct BuildToolDef {
     // matchers: Vec<Box<dyn Matcher>>,
 }
 
+/// BuildToolDefs represents a collection of build tool definitions.
 #[derive(Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BuildToolDefs {
@@ -29,10 +31,12 @@ pub struct BuildToolDefs {
 }
 
 impl BuildToolDefs {
+    /// new creates a new BuildToolDefs object from the given definitions.
     pub fn new(defs: Vec<BuildToolDef>) -> BuildToolDefs {
         BuildToolDefs { defs: defs }
     }
 
+    /// parse parses the defitions of the build tools from the given file and build an object of BuildToolDefs.
     pub fn parse(path: PathBuf) -> Result<BuildToolDefs> {
         match OpenOptions::new().read(true).open(path) {
             Ok(file) => {
@@ -46,6 +50,8 @@ impl BuildToolDefs {
         }
     }
 
+    /// parse_from_asset parses the defitions of the build tools from the asset file included in the library,
+    /// and build an object of BuildToolDefs.
     pub fn parse_from_asset() -> Result<BuildToolDefs> {
         if let Some(f) = Asset::get("buildtools.json") {
             match std::str::from_utf8(f.data.as_ref()) {
@@ -62,24 +68,29 @@ impl BuildToolDefs {
         }
     }
 
+    /// len returns the number of the build tool definitions.
     pub fn len(&self) -> usize {
         self.defs.len()
     }
 
+    /// iter returns an iterator of the build tool definitions.
     pub fn iter(&self) -> impl Iterator<Item = &BuildToolDef> + '_ {
         self.defs.iter()
     }
 
+    /// extend appends the build tool definitions of the second object to the first object.
     pub fn extend(&mut self, second: BuildToolDefs) {
         self.defs.extend(second.defs);
     }
 
+    /// append appends the build tool definitions of the second object to the first object.
     pub fn append(&mut self, other: &mut BuildToolDefs) {
         self.defs.append(&mut other.defs);
     }
 }
 
 impl BuildToolDef {
+    /// new creates a new BuildToolDef object with the given name, build files, and URL.
     pub fn new(name: String, build_files: Vec<String>, url: String) -> Self {
         BuildToolDef {
             name,
@@ -87,17 +98,10 @@ impl BuildToolDef {
             url,
         }
     }
-
-    // pub fn matches(&self, p: &PathBuf) -> bool {
-    //     for matcher in self.matchers.iter() {
-    //         if matcher.matches(&p) {
-    //             return true;
-    //         }
-    //     }
-    //     false
-    // }
 }
 
+/// construct creates a BuildToolDefs object from the given definition file and append file.
+/// If defs is None, it reads the definition from the asset file.
 pub fn construct(
     defs: Option<PathBuf>,
     append: Option<PathBuf>,

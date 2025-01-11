@@ -1,10 +1,10 @@
 pub mod defs;
 pub mod verbose;
 
-use std::path::{Path, PathBuf};
 use clap::ValueEnum;
 use path_matchers::{glob, PathMatcher};
 use serde_json::Error as JsonError;
+use std::path::{Path, PathBuf};
 
 use defs::{BuildToolDef, BuildToolDefs};
 
@@ -32,18 +32,35 @@ pub enum IgnoreType {
 
 pub type Result<T> = std::result::Result<T, MeisterError>;
 
+/// Meister is a object for detecting the build tools in the specified directory.
+/// This object contains the definitions of the build tools.
+/// In use of user own build tool definitions, use `Meister::new` method for building the object.
+/// 
+/// ```
+/// let meister = Meister::new_as_default();
+/// match meister.find(PathBuf::from(".")) {
+///    Ok(r) => {
+///        for bt in r.tools {
+///            println!("  {}: {}", bt.def.name, bt.path.display());
+///        }
+///    },
+///    Err(e) => panic!("error: {}", e),
+/// ```
 pub struct Meister {
     defs: Vec<BuildToolDef>,
     matchers: Vec<MultipleMatcher>,
     its: Vec<IgnoreType>,
 }
 
+/// BuildTools represents a result of the `Meister::find` method.
+/// This object contains the project directory and the detected files of build tools.
 #[derive(Clone)]
 pub struct BuildTools {
     pub base: PathBuf,
     pub tools: Vec<BuildTool>,
 }
 
+/// BuildTool represents a detected file for build tool.
 #[derive(Clone)]
 pub struct BuildTool {
     pub path: PathBuf,
@@ -55,6 +72,7 @@ trait Matcher {
 }
 
 impl BuildTools {
+    /// path_of returns the relative path of the detected file from the project path.
     pub fn path_of(&self, index: usize) -> Result<String> {
         if let Some(bt) = self.tools.get(index) {
             if let Ok(p) = bt.path.strip_prefix(self.base.clone()) {
@@ -69,6 +87,7 @@ impl BuildTools {
 }
 
 impl Meister {
+    /// new_as_default creates a Meister object with the default build tool definitions.
     pub fn new_as_default() -> Result<Self> {
         match BuildToolDefs::parse_from_asset() {
             Ok(r) => Meister::new(r, vec![IgnoreType::Default]),
@@ -76,7 +95,8 @@ impl Meister {
         }
     }
 
-    pub fn new(defs: BuildToolDefs, its: Vec<IgnoreType>) -> Result<Self>{
+    /// new creates a Meister object with the specified build tool definitions and ignore types.
+    pub fn new(defs: BuildToolDefs, its: Vec<IgnoreType>) -> Result<Self> {
         match build_matchers(defs.defs.clone()) {
             Ok(m) => Ok(Self {
                 defs: defs.defs.clone(),
@@ -85,9 +105,9 @@ impl Meister {
             }),
             Err(e) => Err(e),
         }
-
     }
 
+    /// find detects the build tools in the specified directory.
     pub fn find(&self, base: PathBuf) -> Result<BuildTools> {
         let mut result = vec![];
         let mut errs = vec![];
@@ -118,7 +138,10 @@ fn find_build_tool(meister: &Meister, path: &Path) -> Option<BuildTool> {
     for (def, matcher) in meister.defs.iter().zip(meister.matchers.iter()) {
         let pb = path.to_path_buf();
         if matcher.matches(&pb) {
-            return Some(BuildTool { path: pb, def: def.clone() });
+            return Some(BuildTool {
+                path: pb,
+                def: def.clone(),
+            });
         }
     }
     None
@@ -156,7 +179,7 @@ fn build_matcher(def: BuildToolDef) -> Result<MultipleMatcher> {
         }
     }
     if errs.is_empty() {
-        Ok(MultipleMatcher{matchers: matchers})
+        Ok(MultipleMatcher { matchers: matchers })
     } else {
         Err(MeisterError::Array(errs))
     }
@@ -237,8 +260,8 @@ impl PathGlobMatcher {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::path::PathBuf;
     use crate::defs::BuildToolDef;
+    use std::path::PathBuf;
 
     #[test]
 

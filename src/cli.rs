@@ -2,13 +2,13 @@ use clap::{Parser, ValueEnum};
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
-use btmeister::{IgnoreType, Result, MeisterError};
+use btmeister::{IgnoreType, MeisterError, Result};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, arg_required_else_help = true)]
 pub(crate) struct Options {
-    #[arg(short, long, help = "Show verbose output.")]
-    pub(crate) verbose: bool,
+    #[clap(flatten)]
+    pub(crate) defopts: DefOpts,
 
     #[clap(flatten)]
     pub(crate) inputs: InputOpts,
@@ -16,8 +16,30 @@ pub(crate) struct Options {
     #[clap(flatten)]
     pub(crate) outputs: OutputOpts,
 
+    #[arg(short, long, help = "Show verbose output.")]
+    pub(crate) verbose: bool,
+
     #[clap(flatten)]
-    pub(crate) defopts: DefOpts,
+    pub(crate) compopts: CompletionOpts,
+}
+
+#[derive(Parser, Debug)]
+pub(crate) struct CompletionOpts {
+    #[arg(
+        long = "generate-completion-files",
+        help = "Generate completion files",
+        hide = true
+    )]
+    pub(crate) completion: bool,
+
+    #[arg(
+        long = "completion-out-dir",
+        value_name = "DIR",
+        default_value = "assets/completions",
+        help = "Output directory of completion files",
+        hide = true
+    )]
+    pub(crate) dest: PathBuf,
 }
 
 #[derive(Parser, Debug, Clone)]
@@ -44,6 +66,13 @@ pub(crate) struct InputOpts {
 #[derive(Parser, Debug, Clone)]
 pub(crate) struct OutputOpts {
     #[arg(
+        short = 'L',
+        long = "list-defs",
+        help = "Print the build tools' definition list"
+    )]
+    pub(crate) list_defs: bool,
+
+    #[arg(
         short,
         long,
         default_value_t = Format::Default,
@@ -53,31 +82,24 @@ pub(crate) struct OutputOpts {
         help = "Specify the output format"
     )]
     pub(crate) format: Format,
-
-    #[arg(
-        short = 'L',
-        long = "list-defs",
-        help = "Print the build tools' definition list"
-    )]
-    pub(crate) list_defs: bool,
 }
 
 #[derive(Parser, Debug, Clone)]
 pub(crate) struct DefOpts {
+    #[arg(
+        short = 'D',
+        long,
+        value_name = "DEFS_JSON",
+        help = "Specify the definition of the build tools."
+    )]
+    pub(crate) definition: Option<PathBuf>,
+
     #[arg(
         long,
         value_name = "DEFS_JSON",
         help = "Specify the additional definitions of the build tools."
     )]
     pub(crate) append_defs: Option<PathBuf>,
-
-    #[arg(
-        short,
-        long,
-        value_name = "DEFS_JSON",
-        help = "Specify the definition of the build tools."
-    )]
-    pub(crate) definition: Option<PathBuf>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]

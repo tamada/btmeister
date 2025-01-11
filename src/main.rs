@@ -1,19 +1,15 @@
-mod fmt;
 mod cli;
+mod fmt;
 
-use clap::Parser;
-use btmeister::{BuildTools, Meister, MeisterError};
-use btmeister::defs::{self, BuildToolDefs};
-use btmeister::Result;
-use btmeister::verbose::{self, Verboser};
-use crate::fmt::Formatter;
 use crate::cli::InputOpts;
+use crate::fmt::Formatter;
+use btmeister::defs::{self, BuildToolDefs};
+use btmeister::verbose::{self, Verboser};
+use btmeister::Result;
+use btmeister::{BuildTools, Meister, MeisterError};
+use clap::Parser;
 
-fn list_defs(
-    defs: BuildToolDefs,
-    f: Box<dyn Formatter>,
-    _: &mut Box<dyn Verboser>,
-) -> Result<()> {
+fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verboser>) -> Result<()> {
     if let Some(header) = f.header_defs() {
         println!("{}", header);
     }
@@ -40,8 +36,9 @@ fn print_results(r: Vec<BuildTools>, f: &Box<dyn Formatter>) -> Result<()> {
         println!("{}", header);
     }
     for (i, bt) in r.iter().enumerate() {
-        if let Err(e) = f.format_files(&bt.base, &bt.tools, i == 0) {
-            errs.push(e);
+        match f.format_files(bt, i == 0) {
+            Ok(s) => print!("{}", s),
+            Err(e) => errs.push(e),
         }
     }
     if let Some(footer) = f.footer_files() {
@@ -79,20 +76,66 @@ fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
     }
 }
 
+mod gencomp {
+    use crate::cli::Options;
+    use btmeister::verbose::Verboser;
+    use btmeister::Result;
+    use clap::{Command, CommandFactory};
+    use clap_complete::Shell;
+    use std::{fs::File, path::PathBuf};
+
+    fn generate(
+        s: Shell,
+        app: &mut Command,
+        outdir: &PathBuf,
+        file: &str,
+        v: &mut Box<dyn Verboser>,
+    ) {
+        let destfile = outdir.join(file);
+        v.log(format!("generate completions for {}: {}", s, destfile.display()).as_str());
+        std::fs::create_dir_all(destfile.parent().unwrap()).unwrap();
+        let mut dest = File::create(destfile).unwrap();
+        clap_complete::generate(s, app, "btmeister", &mut dest);
+    }
+
+    pub(crate) fn generate_completions(outdir: PathBuf, v: &mut Box<dyn Verboser>) -> Result<()> {
+        let mut app = Options::command();
+        app.set_bin_name("btmeister");
+
+        generate(Shell::Bash, &mut app, &outdir, "bash/btmeister", v);
+        generate(Shell::Elvish, &mut app, &outdir, "elvish/btmeister", v);
+        generate(Shell::Fish, &mut app, &outdir, "fish/btmeister", v);
+        generate(
+            Shell::PowerShell,
+            &mut app,
+            &outdir,
+            "powershell/btmeister",
+            v,
+        );
+        generate(Shell::Zsh, &mut app, &outdir, "zsh/_btmeister", v);
+        Ok(())
+    }
+}
+
 fn perform(opts: cli::Options) -> Result<()> {
     let mut verboser = verbose::new(opts.verbose);
-    let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
+    let (input_opts, output_opts, defopts, compopts) =
+        (opts.inputs, opts.outputs, opts.defopts, opts.compopts);
     let defs = match defs::construct(defopts.definition, defopts.append_defs, &mut verboser) {
         Err(e) => return Err(e),
         Ok(defs) => defs,
     };
-    let formatter = fmt::build_formatter(output_opts.format);
-    if output_opts.list_defs {
-        list_defs(defs, formatter, &mut verboser)
+    if compopts.completion {
+        gencomp::generate_completions(compopts.dest, &mut verboser)
     } else {
-        match find_bt(defs, input_opts) {
-            Ok(r) => print_results(r, &formatter),
-            Err(e) => Err(e),
+        let formatter = fmt::build_formatter(output_opts.format);
+        if output_opts.list_defs {
+            list_defs(defs, formatter, &mut verboser)
+        } else {
+            match find_bt(defs, input_opts) {
+                Ok(r) => print_results(r, &formatter),
+                Err(e) => Err(e),
+            }
         }
     }
 }
@@ -127,6 +170,4 @@ fn main() {
 }
 
 #[cfg(test)]
-mod tests {
-    use super::*;
-}
+mod tests {}

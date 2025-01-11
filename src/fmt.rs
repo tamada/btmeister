@@ -4,9 +4,6 @@ mod json;
 mod xml;
 mod yaml;
 
-use std::path::PathBuf;
-
-use btmeister::{BuildTool, Result};
 use crate::cli::Format;
 use crate::defs::BuildToolDef;
 use crate::fmt::csv::Formatter as CsvFormatter;
@@ -14,6 +11,7 @@ use crate::fmt::default::Formatter as DefaultFormatter;
 use crate::fmt::json::Formatter as JsonFormatter;
 use crate::fmt::xml::Formatter as XmlFormatter;
 use crate::fmt::yaml::Formatter as YamlFormatter;
+use btmeister::{BuildTools, Result};
 
 pub trait Formatter {
     #[cfg(test)]
@@ -26,7 +24,7 @@ pub trait Formatter {
 
     fn header_files(&self) -> Option<String>;
     fn footer_files(&self) -> Option<String>;
-    fn format_files(&self, path: &PathBuf, def: &Vec<BuildTool>, first: bool) -> Result<String>;
+    fn format_files(&self, tools: &BuildTools, first: bool) -> Result<String>;
 }
 
 pub fn build_formatter(format: Format) -> Box<dyn Formatter> {
@@ -46,6 +44,27 @@ pub fn fake_build_def() -> BuildToolDef {
         vec!["Fakefile".to_string()],
         "https://example.com".to_string(),
     )
+}
+
+#[cfg(test)]
+pub fn fake_build_tools() -> btmeister::BuildTools {
+    btmeister::BuildTools {
+        base: std::path::PathBuf::from("fake/base/dir"),
+        tools: vec![
+            btmeister::BuildTool {
+                path: "fake/base/dir/Fakefile".into(),
+                def: fake_build_def(),
+            },
+            btmeister::BuildTool {
+                path: "fake/base/dir/Makefile".into(),
+                def: BuildToolDef::new(
+                    "Make".to_string(),
+                    vec!["Makefile".to_string()],
+                    "https://example.com".to_string(),
+                ),
+            },
+        ],
+    }
 }
 
 #[cfg(test)]
