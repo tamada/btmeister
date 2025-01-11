@@ -1,21 +1,8 @@
 use clap::{Parser, ValueEnum};
-use serde_json::Error as JsonError;
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
-#[derive(Debug)]
-pub enum MeisterError {
-    Array(Vec<MeisterError>),
-    Fatal(String),
-    Io(std::io::Error),
-    Json(JsonError),
-    NotImplemented,
-    NoProjectSpecified(),
-    ProjectNotFound(String),
-    Warning(String),
-}
-
-pub type Result<T> = std::result::Result<T, MeisterError>;
+use btmeister::{IgnoreType, Result, MeisterError};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, arg_required_else_help = true)]
@@ -91,16 +78,6 @@ pub(crate) struct DefOpts {
         help = "Specify the definition of the build tools."
     )]
     pub(crate) definition: Option<PathBuf>,
-}
-
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
-pub enum IgnoreType {
-    Default,    // hidden, ignore, gitignore, gitglobal, gitexclude. default.
-    Hidden,     // ignore hidden file
-    Ignore,     // ignore respecting .ignore file
-    GitIgnore,  // ignore respecting .gitignore file
-    GitGlobal,  // ignore respecting global git ignore file.
-    GitExclude, // ignore respecting .git/info/exclude file
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]

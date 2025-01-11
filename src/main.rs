@@ -1,19 +1,16 @@
-mod btmeister;
-mod cli;
-mod defs;
 mod fmt;
-mod verbose;
+mod cli;
 
-use std::path::PathBuf;
-
-use btmeister::{BuildTools, Meister};
 use clap::Parser;
-use cli::Result;
-use fmt::Formatter;
-use verbose::Verboser;
+use btmeister::{BuildTools, Meister, MeisterError};
+use btmeister::defs::{self, BuildToolDefs};
+use btmeister::Result;
+use btmeister::verbose::{self, Verboser};
+use crate::fmt::Formatter;
+use crate::cli::InputOpts;
 
 fn list_defs(
-    defs: defs::BuildToolDefs,
+    defs: BuildToolDefs,
     f: Box<dyn Formatter>,
     _: &mut Box<dyn Verboser>,
 ) -> Result<()> {
@@ -33,40 +30,31 @@ fn list_defs(
     if errs.len() == 0 {
         Ok(())
     } else {
-        Err(cli::MeisterError::Array(errs))
+        Err(MeisterError::Array(errs))
     }
 }
 
 fn print_results(r: Vec<BuildTools>, f: &Box<dyn Formatter>) -> Result<()> {
     let mut errs = vec![];
-    for bt in r {
-        if let Err(e) = print_result(bt, f) {
+    if let Some(header) = f.header_files() {
+        println!("{}", header);
+    }
+    for (i, bt) in r.iter().enumerate() {
+        if let Err(e) = f.format_files(&bt.base, &bt.tools, i == 0) {
             errs.push(e);
         }
+    }
+    if let Some(footer) = f.footer_files() {
+        println!("{}", footer);
     }
     if errs.is_empty() {
         Ok(())
     } else {
-        Err(cli::MeisterError::Array(errs))
+        Err(MeisterError::Array(errs))
     }
 }
 
-fn print_result(r: BuildTools, f: &Box<dyn Formatter>) -> Result<()> {
-    let base = r.base.clone();
-    println!("{}", r.base.display());
-    for bt in r.tools {
-        if let Ok(p) = bt.path.strip_prefix(base.clone()) {
-            println!("    {}: {}", p.display(), bt.def.name);
-        }
-    }
-    Ok(())
-}
-
-fn find_each(meister: &btmeister::Meister, base: PathBuf) -> Result<BuildTools> {
-    meister.find(base.clone())
-}
-
-fn find_bt(defs: defs::BuildToolDefs, opts: cli::InputOpts) -> Result<Vec<BuildTools>> {
+fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
     let meister = match Meister::new(defs, opts.ignore_types.clone()) {
         Ok(m) => m,
         Err(e) => return Err(e),
@@ -77,7 +65,7 @@ fn find_bt(defs: defs::BuildToolDefs, opts: cli::InputOpts) -> Result<Vec<BuildT
         Err(e) => return Err(e),
         Ok(projects) => {
             for project in projects {
-                match find_each(&meister, project) {
+                match meister.find(project) {
                     Ok(r) => result.push(r),
                     Err(e) => errs.push(e),
                 }
@@ -87,11 +75,11 @@ fn find_bt(defs: defs::BuildToolDefs, opts: cli::InputOpts) -> Result<Vec<BuildT
     if errs.is_empty() {
         Ok(result)
     } else {
-        Err(cli::MeisterError::Array(errs))
+        Err(MeisterError::Array(errs))
     }
 }
 
-fn perform(opts: cli::Options) -> cli::Result<()> {
+fn perform(opts: cli::Options) -> Result<()> {
     let mut verboser = verbose::new(opts.verbose);
     let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
     let defs = match defs::construct(defopts.definition, defopts.append_defs, &mut verboser) {
@@ -109,8 +97,8 @@ fn perform(opts: cli::Options) -> cli::Result<()> {
     }
 }
 
-fn print_error(e: cli::MeisterError) {
-    use cli::MeisterError::*;
+fn print_error(e: MeisterError) {
+    use MeisterError::*;
     match e {
         Array(errs) => {
             for e in errs {

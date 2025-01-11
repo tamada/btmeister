@@ -5,8 +5,7 @@ use std::path::PathBuf;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
-use crate::cli::{MeisterError, Result};
-use crate::verbose;
+use crate::{verbose, Result, MeisterError};
 
 #[derive(RustEmbed)]
 #[folder = "assets"]
@@ -99,7 +98,7 @@ impl BuildToolDef {
     // }
 }
 
-pub(crate) fn construct(
+pub fn construct(
     defs: Option<PathBuf>,
     append: Option<PathBuf>,
     v: &mut Box<dyn verbose::Verboser>,
@@ -131,15 +130,6 @@ pub(crate) fn construct(
             result
         }
     }
-}
-
-#[cfg(test)]
-pub(crate) fn fake_build_def() -> BuildToolDef {
-    BuildToolDef::new(
-        "Fake".to_string(),
-        vec!["Fakefile".to_string()],
-        "https://example.com".to_string(),
-    )
 }
 
 #[cfg(test)]

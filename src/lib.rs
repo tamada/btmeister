@@ -1,8 +1,36 @@
-use std::path::{Path, PathBuf};
-use path_matchers::{glob, PathMatcher};
+pub mod defs;
+pub mod verbose;
 
-use crate::cli::{IgnoreType, MeisterError, Result};
-use crate::defs::{BuildToolDef, BuildToolDefs};
+use std::path::{Path, PathBuf};
+use clap::ValueEnum;
+use path_matchers::{glob, PathMatcher};
+use serde_json::Error as JsonError;
+
+use defs::{BuildToolDef, BuildToolDefs};
+
+#[derive(Debug)]
+pub enum MeisterError {
+    Array(Vec<MeisterError>),
+    Fatal(String),
+    Io(std::io::Error),
+    Json(JsonError),
+    NotImplemented,
+    NoProjectSpecified(),
+    ProjectNotFound(String),
+    Warning(String),
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub enum IgnoreType {
+    Default,    // hidden, ignore, gitignore, gitglobal, gitexclude. default.
+    Hidden,     // ignore hidden file
+    Ignore,     // ignore respecting .ignore file
+    GitIgnore,  // ignore respecting .gitignore file
+    GitGlobal,  // ignore respecting global git ignore file.
+    GitExclude, // ignore respecting .git/info/exclude file
+}
+
+pub type Result<T> = std::result::Result<T, MeisterError>;
 
 pub struct Meister {
     defs: Vec<BuildToolDef>,

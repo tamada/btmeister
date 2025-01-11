@@ -4,7 +4,10 @@ mod json;
 mod xml;
 mod yaml;
 
-use crate::cli::{Format, Result};
+use std::path::PathBuf;
+
+use btmeister::{BuildTool, Result};
+use crate::cli::Format;
 use crate::defs::BuildToolDef;
 use crate::fmt::csv::Formatter as CsvFormatter;
 use crate::fmt::default::Formatter as DefaultFormatter;
@@ -13,6 +16,7 @@ use crate::fmt::xml::Formatter as XmlFormatter;
 use crate::fmt::yaml::Formatter as YamlFormatter;
 
 pub trait Formatter {
+    #[cfg(test)]
     fn name(&self) -> &'static str;
 
     fn header_defs(&self) -> Option<String>;
@@ -20,9 +24,9 @@ pub trait Formatter {
 
     fn format_def(&self, def: &BuildToolDef, first: bool) -> Result<String>;
 
-    // fn header_files() -> Option<String>;
-    // fn footer_files() -> Option<String>;
-    // fn format_file(&self, path: PathBuf, def: &BuildToolDef) -> Result<String>;
+    fn header_files(&self) -> Option<String>;
+    fn footer_files(&self) -> Option<String>;
+    fn format_files(&self, path: &PathBuf, def: &Vec<BuildTool>, first: bool) -> Result<String>;
 }
 
 pub fn build_formatter(format: Format) -> Box<dyn Formatter> {
@@ -33,6 +37,15 @@ pub fn build_formatter(format: Format) -> Box<dyn Formatter> {
         Format::Xml => Box::new(XmlFormatter {}),
         Format::Yaml => Box::new(YamlFormatter {}),
     }
+}
+
+#[cfg(test)]
+pub fn fake_build_def() -> BuildToolDef {
+    BuildToolDef::new(
+        "Fake".to_string(),
+        vec!["Fakefile".to_string()],
+        "https://example.com".to_string(),
+    )
 }
 
 #[cfg(test)]

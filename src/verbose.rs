@@ -1,5 +1,3 @@
-use std::io::Write;
-
 pub trait Verboser {
     fn log(&mut self, msg: &str);
 
@@ -53,17 +51,15 @@ pub fn none() -> Box<dyn Verboser> {
 }
 
 mod tests {
-    use super::*;
-
     #[test]
     fn test_verbose_out() {
-        let verbose = new(true);
+        let verbose = super::new(true);
         assert_eq!(verbose.name(), "VerboseImpl".to_string())
     }
 
     #[test]
     fn test_verbose_none() {
-        let verbose = new(false);
+        let verbose = super::new(false);
         assert_eq!(verbose.name(), "NoVerbose".to_string())
     }
 }

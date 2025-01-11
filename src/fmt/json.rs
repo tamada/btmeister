@@ -1,10 +1,14 @@
-use crate::cli;
+use std::path::PathBuf;
+use std::io::Write;
+
+use btmeister::{BuildTool, MeisterError, Result};
 use crate::defs;
 use crate::fmt::Formatter as FormatterTrait;
 
 pub(super) struct Formatter {}
 
 impl FormatterTrait for crate::fmt::json::Formatter {
+    #[cfg(test)]
     fn name(&self) -> &'static str {
         "json"
     }
@@ -17,7 +21,7 @@ impl FormatterTrait for crate::fmt::json::Formatter {
         Some("]".to_string())
     }
 
-    fn format_def(&self, def: &defs::BuildToolDef, first: bool) -> cli::Result<String> {
+    fn format_def(&self, def: &defs::BuildToolDef, first: bool) -> Result<String> {
         let files = &def
             .build_files
             .iter()
@@ -31,12 +35,37 @@ impl FormatterTrait for crate::fmt::json::Formatter {
         );
         Ok(result)
     }
+
+    fn format_files(&self, base: &PathBuf, tools: &Vec<BuildTool>, first: bool) -> Result<String> {
+        let mut result = Vec::<u8>::new();
+        let comma = if first { "" } else { "," };
+        let _ = writeln!(result, r#"{}{{"base":"{}","build-tools":["#, comma, base.display());
+        for (uindex, bt) in tools.iter().enumerate() {
+            let path = if let Ok(p) = bt.path.strip_prefix(base.clone()) {
+                p
+            } else {
+                bt.path.as_path()
+            };
+            let separator = if uindex == 0 { "" } else { "," };
+            let _ = writeln!(result, r#"{}{{"path":"{}","tool-name":"{}"}}"#, separator, path.display(), bt.def.name);
+        }
+        let _ = writeln!(result, "]}}");
+        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
+    }
+    
+    fn header_files(&self) -> Option<String> {
+        Some("[".to_string())
+    }
+    
+    fn footer_files(&self) -> Option<String> {
+        Some("]".to_string())
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::defs::fake_build_def;
+    use crate::fmt::fake_build_def;
 
     #[test]
     fn test_format_csv() {
