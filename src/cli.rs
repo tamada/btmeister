@@ -20,17 +20,6 @@ pub type Result<T> = std::result::Result<T, MeisterError>;
 #[derive(Parser, Debug)]
 #[clap(author, version, about, arg_required_else_help = true)]
 pub(crate) struct Options {
-    #[arg(
-        short = 'i',
-        long = "ignore-type",
-        default_value = "default",
-        ignore_case = true,
-        value_enum,
-        value_name = "IGNORE_TYPE",
-        help = "specify the ignore type."
-    )]
-    pub(crate) ignore_types: Vec<IgnoreType>,
-
     #[arg(short, long, help = "Show verbose output.")]
     pub(crate) verbose: bool,
 
@@ -46,6 +35,17 @@ pub(crate) struct Options {
 
 #[derive(Parser, Debug, Clone)]
 pub(crate) struct InputOpts {
+    #[arg(
+        short = 'i',
+        long = "ignore-type",
+        default_value = "default",
+        ignore_case = true,
+        value_enum,
+        value_name = "IGNORE_TYPE",
+        help = "specify the ignore type."
+    )]
+    pub(crate) ignore_types: Vec<IgnoreType>,
+
     #[arg(
         value_name = "PROJECTs",
         required = false,
@@ -145,11 +145,11 @@ fn convert_and_push_item(item: &str, result: &mut Vec<PathBuf>, errs: &mut Vec<M
     }
 }
 
-impl Options {
+impl InputOpts {
     pub(crate) fn projects(&self) -> Result<Vec<PathBuf>> {
         let mut errs = vec![];
         let mut result = vec![];
-        for item in self.inputs.dirs.clone() {
+        for item in self.dirs.clone() {
             if item == "-" {
                 match read_from_stdin() {
                     Err(e) => errs.push(e),
@@ -189,7 +189,7 @@ mod tests {
     #[test]
     fn test_projects1() {
         let opts = Options::parse_from(&["meister", "testdata/fibonacci", "testdata/hello"]);
-        let projects = opts.projects();
+        let projects = opts.inputs.projects();
         assert!(projects.is_ok());
         if let Ok(p) = projects {
             assert_eq!(2, p.len());
@@ -201,7 +201,7 @@ mod tests {
     #[test]
     fn test_projects2() {
         let opts = Options::parse_from(&["meister", "@testdata/project_list.txt"]);
-        let projects = opts.projects();
+        let projects = opts.inputs.projects();
         assert!(projects.is_ok());
         if let Ok(p) = projects {
             assert_eq!(2, p.len());
@@ -213,7 +213,7 @@ mod tests {
     #[test]
     fn test_not_exist_project() {
         let opts = Options::parse_from(&["meister", "not_exist_project"]);
-        let projects = opts.projects();
+        let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(1, e.len());
@@ -226,7 +226,7 @@ mod tests {
     #[test]
     fn test_invalid_project_list() {
         let opts = Options::parse_from(&["meister", "@testdata/invalid_project_list.txt"]);
-        let projects = opts.projects();
+        let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(2, e.len());
@@ -242,7 +242,7 @@ mod tests {
     #[test]
     fn test_unknownfile() {
         let opts = Options::parse_from(&["meister", "@unknownfile"]);
-        let projects = opts.projects();
+        let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(1, e.len());

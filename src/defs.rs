@@ -2,7 +2,6 @@ use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::path::PathBuf;
 
-use path_matchers::{glob, PathMatcher};
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
@@ -13,21 +12,21 @@ use crate::verbose;
 #[folder = "assets"]
 struct Asset;
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub struct BuildToolDef {
     pub name: String,
     #[serde(rename = "build-files")]
     pub build_files: Vec<String>,
     pub url: String,
-    #[serde(skip)]
-    matchers: Vec<Box<dyn Matcher>>,
+    // #[serde(skip)]
+    // matchers: Vec<Box<dyn Matcher>>,
 }
 
 #[derive(Serialize, Deserialize)]
 #[serde(transparent)]
 pub struct BuildToolDefs {
     #[serde(flatten)]
-    defs: Vec<BuildToolDef>,
+    pub(crate) defs: Vec<BuildToolDef>,
 }
 
 impl BuildToolDefs {
@@ -40,7 +39,7 @@ impl BuildToolDefs {
             Ok(file) => {
                 let reader = BufReader::new(file);
                 match serde_json::from_reader(reader) {
-                    Ok(defs) => Ok(build_matchers(defs)),
+                    Ok(defs) => Ok(defs),
                     Err(e) => Err(MeisterError::Json(e)),
                 }
             }
@@ -52,7 +51,7 @@ impl BuildToolDefs {
         if let Some(f) = Asset::get("buildtools.json") {
             match std::str::from_utf8(f.data.as_ref()) {
                 Ok(string) => match serde_json::from_str(string) {
-                    Ok(defs) => Ok(build_matchers(defs)),
+                    Ok(defs) => Ok(defs),
                     Err(e) => Err(MeisterError::Json(e)),
                 },
                 Err(e) => Err(MeisterError::Fatal(e.to_string())),
@@ -81,41 +80,23 @@ impl BuildToolDefs {
     }
 }
 
-trait Matcher {
-    fn matches(&self, p: &PathBuf) -> bool;
-}
-
 impl BuildToolDef {
-    pub fn new(name: String, build_files: Vec<String>, url: String) -> Result<BuildToolDef> {
-        let mut errs = vec![];
-        let mut matchers = vec![];
-        for filename in build_files.iter() {
-            match build_matcher(filename.clone()) {
-                Ok(m) => matchers.push(m),
-                Err(e) => errs.push(e),
-            }
-        }
-        let def = BuildToolDef {
+    pub fn new(name: String, build_files: Vec<String>, url: String) -> Self {
+        BuildToolDef {
             name,
             build_files,
             url,
-            matchers,
-        };
-        if errs.len() > 0 {
-            Err(MeisterError::Array(errs))
-        } else {
-            Ok(def)
         }
     }
 
-    pub fn matches(&self, p: &PathBuf) -> bool {
-        for matcher in self.matchers.iter() {
-            if matcher.matches(&p) {
-                return true;
-            }
-        }
-        false
-    }
+    // pub fn matches(&self, p: &PathBuf) -> bool {
+    //     for matcher in self.matchers.iter() {
+    //         if matcher.matches(&p) {
+    //             return true;
+    //         }
+    //     }
+    //     false
+    // }
 }
 
 pub(crate) fn construct(
@@ -152,74 +133,6 @@ pub(crate) fn construct(
     }
 }
 
-struct FileNameMatcher {
-    name: String,
-}
-struct PathGlobMatcher {
-    pattern: Box<dyn PathMatcher>,
-}
-
-impl Matcher for FileNameMatcher {
-    fn matches(&self, p: &PathBuf) -> bool {
-        if let Some(filename) = p.file_name() {
-            if let Some(name) = filename.to_str() {
-                return name == self.name;
-            }
-        }
-        false
-    }
-}
-
-impl Matcher for PathGlobMatcher {
-    fn matches(&self, p: &PathBuf) -> bool {
-        self.pattern.matches(p)
-    }
-}
-
-impl FileNameMatcher {
-    pub fn new(name: String) -> FileNameMatcher {
-        FileNameMatcher { name }
-    }
-}
-
-impl PathGlobMatcher {
-    pub fn new(pattern: String) -> Result<PathGlobMatcher> {
-        match glob(pattern.as_str()) {
-            Ok(g) => Ok(PathGlobMatcher {
-                pattern: Box::new(g),
-            }),
-            Err(e) => Err(MeisterError::Fatal(e.to_string())),
-        }
-    }
-}
-
-fn build_matcher(filename: String) -> Result<Box<dyn Matcher>> {
-    if filename.contains("/") || filename.contains("*") {
-        match PathGlobMatcher::new(filename) {
-            Ok(p) => Ok(Box::new(p) as Box<dyn Matcher>),
-            Err(e) => Err(e),
-        }
-    } else {
-        Ok(Box::new(FileNameMatcher::new(filename)) as Box<dyn Matcher>)
-    }
-}
-
-fn build_matchers(defs: BuildToolDefs) -> BuildToolDefs {
-    let mut result = vec![];
-    for mut def in defs.defs {
-        let mut matchers = vec![];
-        for file in def.build_files.iter() {
-            match build_matcher(file.clone()) {
-                Ok(m) => matchers.push(m),
-                Err(e) => panic!("fatal: {:?}", e),
-            }
-        }
-        def.matchers = matchers;
-        result.push(def);
-    }
-    BuildToolDefs::new(result)
-}
-
 #[cfg(test)]
 pub(crate) fn fake_build_def() -> BuildToolDef {
     BuildToolDef::new(
@@ -227,7 +140,6 @@ pub(crate) fn fake_build_def() -> BuildToolDef {
         vec!["Fakefile".to_string()],
         "https://example.com".to_string(),
     )
-    .unwrap()
 }
 
 #[cfg(test)]
@@ -286,49 +198,6 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());
-        }
-    }
-
-    #[test]
-    fn test_matches1() {
-        let def = BuildToolDef::new(
-            "test".to_string(),
-            vec!["*.rs".to_string()],
-            "http://example.com".to_string(),
-        );
-        assert!(def.is_ok());
-        if let Ok(d) = def {
-            assert_eq!(true, d.matches(&PathBuf::from("testdata/file1.rs")));
-            assert_eq!(true, d.matches(&PathBuf::from("file2.rs")));
-        }
-    }
-
-    #[test]
-    fn test_matches2() {
-        let def = BuildToolDef::new(
-            "test2".to_string(),
-            vec!["some/dir/*.yaml".to_string()],
-            "http://example.com".to_string(),
-        );
-        assert!(def.is_ok());
-        if let Ok(d) = def {
-            assert_eq!(false, d.matches(&PathBuf::from("hoge.yaml")));
-            assert_eq!(true,  d.matches(&PathBuf::from("some/dir/file2.yaml")));
-            assert_eq!(false, d.matches(&PathBuf::from("not/some/dir/file3.yaml")));
-        }
-    }
-
-    #[test]
-    fn test_matches3() {
-        let def = BuildToolDef::new(
-            "test2".to_string(),
-            vec!["Somefile".to_string()],
-            "http://example.com".to_string(),
-        );
-        assert!(def.is_ok());
-        if let Ok(d) = def {
-            assert_eq!(true, d.matches(&PathBuf::from("Somefile")));
-            assert_eq!(true, d.matches(&PathBuf::from("some/dir/Somefile")));
         }
     }
 }
