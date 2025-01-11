@@ -108,7 +108,7 @@ impl BuildToolDef {
         }
     }
 
-    pub fn matches(&self, p: PathBuf) -> bool {
+    pub fn matches(&self, p: &PathBuf) -> bool {
         for matcher in self.matchers.iter() {
             if matcher.matches(&p) {
                 return true;
@@ -161,8 +161,10 @@ struct PathGlobMatcher {
 
 impl Matcher for FileNameMatcher {
     fn matches(&self, p: &PathBuf) -> bool {
-        if let Some(name) = p.file_name().unwrap().to_str() {
-            return name == self.name;
+        if let Some(filename) = p.file_name() {
+            if let Some(name) = filename.to_str() {
+                return name == self.name;
+            }
         }
         false
     }
@@ -171,6 +173,12 @@ impl Matcher for FileNameMatcher {
 impl Matcher for PathGlobMatcher {
     fn matches(&self, p: &PathBuf) -> bool {
         self.pattern.matches(p)
+    }
+}
+
+impl FileNameMatcher {
+    pub fn new(name: String) -> FileNameMatcher {
+        FileNameMatcher { name }
     }
 }
 
@@ -192,7 +200,7 @@ fn build_matcher(filename: String) -> Result<Box<dyn Matcher>> {
             Err(e) => Err(e),
         }
     } else {
-        Ok(Box::new(FileNameMatcher { name: filename }) as Box<dyn Matcher>)
+        Ok(Box::new(FileNameMatcher::new(filename)) as Box<dyn Matcher>)
     }
 }
 
@@ -290,8 +298,8 @@ mod test {
         );
         assert!(def.is_ok());
         if let Ok(d) = def {
-            assert_eq!(true, d.matches(PathBuf::from("testdata/file1.rs")));
-            assert_eq!(true, d.matches(PathBuf::from("file2.rs")));
+            assert_eq!(true, d.matches(&PathBuf::from("testdata/file1.rs")));
+            assert_eq!(true, d.matches(&PathBuf::from("file2.rs")));
         }
     }
 
@@ -304,9 +312,9 @@ mod test {
         );
         assert!(def.is_ok());
         if let Ok(d) = def {
-            assert_eq!(false, d.matches(PathBuf::from("hoge.yaml")));
-            assert_eq!(true, d.matches(PathBuf::from("some/dir/file2.yaml")));
-            assert_eq!(false, d.matches(PathBuf::from("not/some/dir/file3.yaml")));
+            assert_eq!(false, d.matches(&PathBuf::from("hoge.yaml")));
+            assert_eq!(true,  d.matches(&PathBuf::from("some/dir/file2.yaml")));
+            assert_eq!(false, d.matches(&PathBuf::from("not/some/dir/file3.yaml")));
         }
     }
 
@@ -319,8 +327,8 @@ mod test {
         );
         assert!(def.is_ok());
         if let Ok(d) = def {
-            assert_eq!(true, d.matches(PathBuf::from("Somefile")));
-            assert_eq!(true, d.matches(PathBuf::from("some/dir/Somefile")));
+            assert_eq!(true, d.matches(&PathBuf::from("Somefile")));
+            assert_eq!(true, d.matches(&PathBuf::from("some/dir/Somefile")));
         }
     }
 }

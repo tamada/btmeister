@@ -12,6 +12,7 @@ pub enum MeisterError {
     NotImplemented,
     NoProjectSpecified(),
     ProjectNotFound(String),
+    Warning(String),
 }
 
 pub type Result<T> = std::result::Result<T, MeisterError>;
@@ -20,10 +21,15 @@ pub type Result<T> = std::result::Result<T, MeisterError>;
 #[clap(author, version, about, arg_required_else_help = true)]
 pub(crate) struct Options {
     #[arg(
-        long = "no-ignore",
-        help = "Do not respect ignore files (.ignore, .gitignore, etc.)"
+        short = 'i',
+        long = "ignore-type",
+        default_value = "default",
+        ignore_case = true,
+        value_enum,
+        value_name = "IGNORE_TYPE",
+        help = "specify the ignore type."
     )]
-    pub(crate) no_ignore: bool,
+    pub(crate) ignore_types: Vec<IgnoreType>,
 
     #[arg(short, long, help = "Show verbose output.")]
     pub(crate) verbose: bool,
@@ -38,7 +44,7 @@ pub(crate) struct Options {
     pub(crate) defopts: DefOpts,
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub(crate) struct InputOpts {
     #[arg(
         value_name = "PROJECTs",
@@ -48,7 +54,7 @@ pub(crate) struct InputOpts {
     pub dirs: Vec<String>,
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub(crate) struct OutputOpts {
     #[arg(
         short,
@@ -69,7 +75,7 @@ pub(crate) struct OutputOpts {
     pub(crate) list_defs: bool,
 }
 
-#[derive(Parser, Debug)]
+#[derive(Parser, Debug, Clone)]
 pub(crate) struct DefOpts {
     #[arg(
         long,
@@ -85,6 +91,16 @@ pub(crate) struct DefOpts {
         help = "Specify the definition of the build tools."
     )]
     pub(crate) definition: Option<PathBuf>,
+}
+
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+pub enum IgnoreType {
+    Default,    // hidden, ignore, gitignore, gitglobal, gitexclude. default.
+    Hidden,     // ignore hidden file
+    Ignore,     // ignore respecting .ignore file
+    GitIgnore,  // ignore respecting .gitignore file
+    GitGlobal,  // ignore respecting global git ignore file.
+    GitExclude, // ignore respecting .git/info/exclude file
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
@@ -156,10 +172,12 @@ impl Options {
                 convert_and_push_item(item.as_str(), &mut result, &mut errs);
             }
         }
-        if errs.len() == 0 {
-            Ok(result)
-        } else {
+        if errs.len() != 0 {
             Err(MeisterError::Array(errs))
+        } else if result.len() == 0 {
+            Err(MeisterError::NoProjectSpecified())
+        } else {
+            Ok(result)
         }
     }
 }
