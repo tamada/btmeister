@@ -22,6 +22,13 @@ cp -r target/llvm-cov/html/* site/static/coverage/
 ]
 dependencies = ["test"]
 
+[tasks.post-build]
+description = "Generate completion files after build"
+script = [
+    "mkdir -p target/completions",
+    "cargo run -- --generate-completion-files --completion-out-dir target/completions"
+]
+
 [tasks.convert]
 description = "Convert the definition pkl file into json"
 script = ["pkl eval -f json -o assets/buildtools.json assets/buildtools.pkl"]
