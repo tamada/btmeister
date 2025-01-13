@@ -14,9 +14,14 @@ args = ["llvm-cov", "--html"]
 
 [tasks.post-test]
 description = "Run test and generate coverage report"
-script = [
+script = [ # want to run `mkdir -p site/static/coverage` but it's not supported on Windows.
 '''
-mkdir -p site/static/coverage/
+mkdir -p site
+cd site
+mkdir -p  static
+cd static
+mkdir -p  coverage
+cd ../..
 cp -r target/llvm-cov/html/* site/static/coverage/
 '''
 ]

@@ -158,9 +158,13 @@ fn print_error(e: MeisterError) {
     }
 }
 
+fn rust_main(args: Vec<String>) -> Result<()> {
+    let opts = cli::Options::parse_from(args);
+    perform(opts)
+}
+
 fn main() {
-    let opts = cli::Options::parse();
-    match perform(opts) {
+    match rust_main(std::env::args().collect()) {
         Ok(_) => {}
         Err(e) => {
             print_error(e);
@@ -170,4 +174,39 @@ fn main() {
 }
 
 #[cfg(test)]
-mod tests {}
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_success() {
+        let r = rust_main(
+            vec!["btmeister", "testdata/fibonacci"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        assert!(r.is_ok());
+    }
+
+    #[test]
+    fn test_success_list_defs() {
+        let r = rust_main(
+            vec!["btmeister", "testdata/fibonacci", "--list-defs"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        assert!(r.is_ok());
+    }
+
+    #[test]
+    fn test_project_not_found() {
+        let r = rust_main(
+            vec!["btmeister", "unknown/project"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        assert!(r.is_err());
+    }
+}
