@@ -36,6 +36,8 @@ jobs:
         run: |
           sed "s/^version = \"[0-9.]*\"$/version = \"${{ steps.vars.outputs.tag }}\"/" Cargo.toml > a
           mv a Cargo.toml
+          sed "s/^ARG VERSION=[0-9.]*$/ARG VERSION=${{ steps.vars.outputs.tag }}/" Dockerfile > a
+          mv a Dockerfile
           regex='s/v[0-9]*\.[0-9]*\.[0-9]*/v${{ steps.vars.outputs.tag }}/g'
           sed $regex README.md > a ; mv a README.md
           sed $regex site/content/_index.md > a ; mv a site/content/_index.md

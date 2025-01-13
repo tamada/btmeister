@@ -6,9 +6,10 @@ title: ":anchor: Install"
 
 `btmeister` supports installation via [Homebrew](https://brew.sh/).
 
+![Homebrew](https://img.shields.io/badge/Homebrew-tamada/tap/btmeister-blue?logo=homebrew)
+
 ```sh
-$ brew tap tamada/brew
-$ brew install btmeister
+brew install tamada/tap/btmeister
 ```
 
 ### :muscle: Install yourself
@@ -22,4 +23,3 @@ $ cargo build --release
 ```
 
 Then, `cargo` build the resultant `btmeister` executable on `target/release` directory.
-

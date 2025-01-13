@@ -4,11 +4,11 @@
 [![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=main)](https://coveralls.io/github/tamada/btmeister?branch=main)
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
 
-[![Version](https://img.shields.io/badge/Version-v0.5.0-green)](https://github.com/tamada/btmeister/releases/tag/v0.5.0)
+[![Version](https://img.shields.io/badge/Version-v0.6.0-green)](https://github.com/tamada/btmeister/releases/tag/v0.6.0)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-v0.5.0-green?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 
-[![Homebrew](https://img.shields.io/badge/Homebrew-tamada/brew/btmeister-green?logo=homebrew)](https://github.com/tamada/homebrew-brew)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.0-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Homebrew](https://img.shields.io/badge/Homebrew-tamada/tap/btmeister-blue?logo=homebrew)](https://github.com/tamada/homebrew-tap)
 
 Detecting the build tools in use.
 
@@ -24,54 +24,61 @@ This tool finds the build files from the specified directories, and identifies t
 ## :runner: Usage
 
 ```sh
-btmeister v0.5.0
-Haruaki TAMADA
-A tool for detecting build tools in use of the projects
+Detecting build tools/task runners in use of the projects
 
-USAGE:
-    btmeister [OPTIONS] [PROJECTs]...
+Usage: btmeister [OPTIONS] [PROJECTs]...
 
-ARGS:
-    <PROJECTs>...    The target project directories for btmeister.
+Arguments:
+  [PROJECTs]...  The target project paths. If "-" was given, reads from stdin,
+                 and "@" was put on the first character, read from the file.
 
-OPTIONS:
-    -@ <INPUT>                       Specify the file contains project path list. If INPUT is dash
-                                     ('-'), read from STDIN.
-        --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
-    -d, --definition <DEFS_JSON>     Specify the definition of the build tools.
-    -f, --format <FORMAT>            Specify the output format [default: default] [possible values:
-                                     default, json, yaml, xml]
-    -h, --help                       Print help information
-    -L, --list-defs                  Print the build tools' definition list
-        --no-ignore                  Do not respect ignore files (.ignore, .gitignore, etc.)
-    -V, --version                    Print version information
+Options:
+  -D, --definition <DEFS_JSON>     Specify the definition of the build tools.
+      --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
+  -i, --ignore-type <IGNORE_TYPE>  specify the ignore type. [default: default] 
+                                   [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -L, --list-defs                  Print the build tools' definition list
+  -f, --format <FORMAT>            Specify the output format [default: default]
+                                   [possible values: csv, default, json, xml, yaml]
+  -v, --verbose                    Show verbose output.
+  -h, --help                       Print help (see more with '--help')
+  -V, --version                    Print version
 ```
 
 ### Sample Output
 
 ```sh
-$ btmeister . ~/go/src/github.com/tamada/rrh
-cargo       ./Cargo.toml
-make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
-$ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
+$ btmeister ~/github.com/tamada/gibo-wrapper
+/Users/tamada/github.com/tamada/gibo-wrapper
+    Cargo.toml: Cargo
+    Dockerfile: Docker
+    legacy/go.mod: Go
+    legacy/Makefile: Make
+    build.rs: Cargo
+$ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 [
   {
-    "project":"btmeister",
-    "path":"./",
-    "build-tools":[
+    "base": "/Users/tamada/products/gibo-wrapper",
+    "build-tools": [
       {
-        "file-name":"Cargo.toml",
-        "tool-name":"cargo"
-      }
-    ]
-  },
-  {
-    "project":"rrh",
-    "path":"/Usrs/tamada/go/src/github.com/tamada/rrh",
-    "build-tools":[
+        "path": "Cargo.toml",
+        "tool-name": "Cargo"
+      },
       {
-        "file-name":"Makefile",
-        "tool-name":"make"
+        "path": "Dockerfile",
+        "tool-name": "Docker"
+      },
+      {
+        "path": "legacy/go.mod",
+        "tool-name": "Go"
+      },
+      {
+        "path": "legacy/Makefile",
+        "tool-name": "Make"
+      },
+      {
+        "path": "build.rs",
+        "tool-name": "Cargo"
       }
     ]
   }
@@ -81,14 +88,13 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 ## :whale: Docker
 
 ```sh
-docker run --rm -it -v $PWD:/home/btmeister ghcr.io/tamada/btmeister:latest .
+docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
 ```
 
 * Container OS
-    * Working directory: `/home/btmeister`
-    * entry point: `/opt/btmeister/btmeister`
-    * user: `btmeister`
-
+  * Working directory: `/app`
+  * entry point: `/opt/btmeister/btmeister`
+  * user: `nonroot`
 
 ## :hammer_and_wrench: Related Tools
 
