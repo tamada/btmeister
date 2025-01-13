@@ -7,13 +7,13 @@ title: ":smile: About"
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
 * Permissions
-    * :+1: Commercial use
-    * :+1: Modification
-    * :+1: Distribution
-    * :+1: Private use
+  * :+1: Commercial use
+  * :+1: Modification
+  * :+1: Distribution
+  * :+1: Private use
 * Limitations
-    * :x: Liability
-    * :x: Warranty
+  * :x: Liability
+  * :x: Warranty
 
 ## Logo
 
@@ -30,6 +30,3 @@ This image is refered from [freesvg.org](https://freesvg.org/worker-with-tool) b
 ## :man_office_worker: Developers :woman_office_worker:
 
 * [Haruaki Tamada](https://tamada.github.io/) ([@tamada](https://github.com/tamada))
-
-
-

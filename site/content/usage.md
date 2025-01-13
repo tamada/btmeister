@@ -5,54 +5,61 @@ title: ":runner: Usage"
 ## CLI
 
 ```sh
-btmeister 0.3.20
-Haruaki TAMADA
-A tool for detecting build tools of the projects
+Detecting build tools/task runners in use of the projects
 
-USAGE:
-    btmeister [OPTIONS] [PROJECTs]...
+Usage: btmeister [OPTIONS] [PROJECTs]...
 
-ARGS:
-    <PROJECTs>...    The target project directories for btmeister.
+Arguments:
+  [PROJECTs]...  The target project paths. If "-" was given, reads from stdin,
+                 and "@" was put on the first character, read from the file.
 
-OPTIONS:
-    -@ <INPUT>                       Specify the file contains project path list. If INPUT is dash
-                                     ('-'), read from STDIN.
-        --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
-    -d, --definition <DEFS_JSON>     Specify the definition of the build tools.
-    -f, --format <FORMAT>            Specify the output format [default: default] [possible values:
-                                     default, json, yaml, xml]
-    -h, --help                       Print help information
-    -L, --list-defs                  Print the build tools' definition list
-        --no-ignore                  Do not respect ignore files (.ignore, .gitignore, etc.)
-    -V, --version                    Print version information
+Options:
+  -D, --definition <DEFS_JSON>     Specify the definition of the build tools.
+      --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
+  -i, --ignore-type <IGNORE_TYPE>  specify the ignore type. [default: default] 
+                                   [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -L, --list-defs                  Print the build tools' definition list
+  -f, --format <FORMAT>            Specify the output format [default: default]
+                                   [possible values: csv, default, json, xml, yaml]
+  -v, --verbose                    Show verbose output.
+  -h, --help                       Print help (see more with '--help')
+  -V, --version                    Print version
 ```
 
 ### Sample Output
 
 ```sh
-$ btmeister . ~/go/src/github.com/tamada/rrh
-cargo       ./Cargo.toml
-make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
-$ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
+$ btmeister ~/github.com/tamada/gibo-wrapper
+/Users/tamada/github.com/tamada/gibo-wrapper
+    Cargo.toml: Cargo
+    Dockerfile: Docker
+    legacy/go.mod: Go
+    legacy/Makefile: Make
+    build.rs: Cargo
+$ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 [
   {
-    "project":"btmeister",
-    "path":"./",
-    "build-tools":[
+    "base": "/Users/tamada/products/gibo-wrapper",
+    "build-tools": [
       {
-        "file-name":"Cargo.toml",
-        "tool-name":"cargo"
-      }
-    ]
-  },
-  {
-    "project":"rrh",
-    "path":"/Usrs/tamada/go/src/github.com/tamada/rrh",
-    "build-tools":[
+        "path": "Cargo.toml",
+        "tool-name": "Cargo"
+      },
       {
-        "file-name":"Makefile",
-        "tool-name":"make"
+        "path": "Dockerfile",
+        "tool-name": "Docker"
+      },
+      {
+        "path": "legacy/go.mod",
+        "tool-name": "Go"
+      },
+      {
+        "path": "legacy/Makefile",
+        "tool-name": "Make"
+      },
+      {
+        "path": "build.rs",
+        "tool-name": "Cargo"
       }
     ]
   }
@@ -61,13 +68,18 @@ $ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
 
 ## :whale: Docker
 
+![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.0-blue?logo=docker)
+
 ```sh
-docker run --rm -it -v $PWD:/home/btmeister ghcr.io/tamada/btmeister:latest
+docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
 ```
 
-The working directory in the docker container is `/home/btmeister`.
-The target project should be on the directory with `-v` flag of docker.
+* Container OS
+  * Working directory: `/app`
+  * entry point: `/opt/btmeister/btmeister`
+  * user: `nonroot`
 
 ### Available versions
 
-* `0.3.19`, `latest`
+* latest, 0.6.0
+* [0.5.0](https://github.com/tamada/btmeister/pkgs/container/btmeister/26088262?tag=0.5.0)

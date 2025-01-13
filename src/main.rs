@@ -82,7 +82,8 @@ mod gencomp {
     use btmeister::Result;
     use clap::{Command, CommandFactory};
     use clap_complete::Shell;
-    use std::{fs::File, path::PathBuf};
+    use std::fs::File;
+    use std::path::PathBuf;
 
     fn generate(
         s: Shell,
@@ -90,30 +91,42 @@ mod gencomp {
         outdir: &PathBuf,
         file: &str,
         v: &mut Box<dyn Verboser>,
-    ) {
+    ) -> Result<()> {
         let destfile = outdir.join(file);
         v.log(format!("generate completions for {}: {}", s, destfile.display()).as_str());
-        std::fs::create_dir_all(destfile.parent().unwrap()).unwrap();
-        let mut dest = File::create(destfile).unwrap();
-        clap_complete::generate(s, app, "btmeister", &mut dest);
+        if let Err(e) = std::fs::create_dir_all(destfile.parent().unwrap()) {
+            return Err(btmeister::MeisterError::Io(e));
+        }
+        match File::create(destfile) {
+            Ok(mut dest) => {
+                clap_complete::generate(s, app, "btmeister", &mut dest);
+                Ok(())
+            }
+            Err(e) => Err(btmeister::MeisterError::Io(e)),
+        }
     }
 
     pub(crate) fn generate_completions(outdir: PathBuf, v: &mut Box<dyn Verboser>) -> Result<()> {
         let mut app = Options::command();
         app.set_bin_name("btmeister");
-
-        generate(Shell::Bash, &mut app, &outdir, "bash/btmeister", v);
-        generate(Shell::Elvish, &mut app, &outdir, "elvish/btmeister", v);
-        generate(Shell::Fish, &mut app, &outdir, "fish/btmeister", v);
-        generate(
-            Shell::PowerShell,
-            &mut app,
-            &outdir,
-            "powershell/btmeister",
-            v,
-        );
-        generate(Shell::Zsh, &mut app, &outdir, "zsh/_btmeister", v);
-        Ok(())
+        let mut errs = vec![];
+        let shells = vec![
+            (Shell::Bash, "bash/btmeister"),
+            (Shell::Elvish, "elvish/btmeister"),
+            (Shell::Fish, "fish/btmeister"),
+            (Shell::PowerShell, "powershell/btmeister"),
+            (Shell::Zsh, "zsh/_btmeister"),
+        ];
+        for (shell, file) in shells {
+            if let Err(e) = generate(shell, &mut app, &outdir, file, v) {
+                errs.push(e);
+            }
+        }
+        if errs.is_empty() {
+            Ok(())
+        } else {
+            Err(btmeister::MeisterError::Array(errs))
+        }
     }
 }
 
@@ -180,7 +193,7 @@ mod tests {
     #[test]
     fn test_success() {
         let r = rust_main(
-            vec!["btmeister", "testdata/fibonacci"]
+            vec!["btmeister", "testdata/fibonacci", "--format", "json"]
                 .iter()
                 .map(|s| s.to_string())
                 .collect(),
@@ -191,10 +204,9 @@ mod tests {
     #[test]
     fn test_success_list_defs() {
         let r = rust_main(
-            vec!["btmeister", "testdata/fibonacci", "--list-defs"]
-                .iter()
-                .map(|s| s.to_string())
-                .collect(),
+            vec!["btmeister", "testdata/fibonacci", "--list-defs", "--format", "json" ]
+            .iter().map(|s| s.to_string())
+            .collect(),
         );
         assert!(r.is_ok());
     }

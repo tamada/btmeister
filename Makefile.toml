@@ -12,21 +12,6 @@ dependencies = ["format"]
 command = "cargo"
 args = ["llvm-cov", "--html"]
 
-[tasks.post-test]
-description = "Run test and generate coverage report"
-script = [ # want to run `mkdir -p site/static/coverage` but it's not supported on Windows.
-'''
-mkdir -p site
-cd site
-mkdir -p  static
-cd static
-mkdir -p  coverage
-cd ../..
-cp -r target/llvm-cov/html/* site/static/coverage/
-'''
-]
-dependencies = ["test"]
-
 [tasks.post-build]
 description = "Generate completion files after build"
 script = [
@@ -48,3 +33,9 @@ script = ["hugo -s site server"]
 [tasks.site]
 description = "Build the site document"
 script = ["hugo -s site"]
+
+[tasks.docker]
+description = "Build the docker image"
+script = [
+    "docker buildx build --platform linux/arm64/v8,linux/amd64 --output=type=image,push=true -t ghcr.io/tamada/btmeister:latest -t ghcr.io/tamada/btmeister:${CARGO_MAKE_WORKSPACE_PACKAGE_VERSION} ."
+]
