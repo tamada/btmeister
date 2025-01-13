@@ -1,3 +1,25 @@
+/*!
+ * This is a module for the build tool definitions.
+ * Meister supports the following ways for building the definitions:
+ * 
+ * - Load from the asset file included in the library.
+ * - Load from the given file.
+ * - Load from the asset file and append the definitions from the other file.
+ * - Load from the given file and append the definitions from the other file.
+ * 
+ * The definition file must be a JSON format file ([JSON schema](https://github.com/tamada/btmeister/blob/main/assets/buildtools.json.schema)).
+ * The example of the definition file is as follows and the default definition file is [here](https://github.com/tamada/btmeister/blob/main/assets/buildtools.json).
+ * 
+ * ```json
+ * [
+ *   {
+ *     "name": "Fake",
+ *     "build-files": ["Fakefile"],
+ *     "url": "https://example.com"
+ *   }
+ * ]
+ * ```
+ */
 use std::fs::OpenOptions;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -100,8 +122,18 @@ impl BuildToolDef {
     }
 }
 
-/// construct creates a BuildToolDefs object from the given definition file and append file.
+/// The `construct` function creates a BuildToolDefs object from the given definition file and append file.
 /// If defs is None, it reads the definition from the asset file.
+/// This function supports four building definition ways.
+/// 
+/// - Load from the asset file included in the library.
+///   - gives both `defs` and `append` is `None`.
+/// - Load from the given file.
+///   - gives `defs` is `Some` and `append` is `None`.
+/// - Load from the asset file and append the definitions from the other file.
+///   - gives `defs` is `None` and `append` is `Some`.
+/// - Load from the given file and append the definitions from the other file.
+///   - gives both `defs` and `append` is `Some`.
 pub fn construct(
     defs: Option<PathBuf>,
     append: Option<PathBuf>,

@@ -1,3 +1,40 @@
+/*!
+ * BtMeister aims to detect the build tools in the specified directory.
+ * For this, the following steps should be performed:
+ *
+ * At first, read the build tool definitions from the specified file or
+ * the default definitions, and build an instance of [BuildToolDefs].
+ *
+ * ```
+ * let defs_result = BuildToolDefs::parse_from_assets();
+ * ```
+ * or 
+ * ```
+ * let defs_result = BuildToolDefs::parse(PathBuf::from("buildtools.json"));
+ * ```
+ * 
+ * Next, build an object of [Meister] with the definitions and
+ * directory traversing options (`its`: ignore types).
+ * If the its is empty vector, the default value [IgnoreType::Default] will be used.
+ * 
+ * ```
+ * let meister = Meister::new(defs_result.unwrap(), vec![]);
+ * ```
+ * 
+ * Finally, detect the build tools in the specified directory and print the result.
+ * 
+ * ```
+ * match meister.find(PathBuf::from("path/to/project")) {
+ *     Ok(r) => {
+ *        println!("project: {}", r.base.display());
+ *        for bt in r.tools {
+ *            println!("  {}: {}", bt.def.name, bt.path.display());
+ *         }
+ *     },
+ *     Err(e) => panic!("error: {}", e),
+ * }
+ *  ```
+ */
 pub mod defs;
 pub mod verbose;
 
@@ -8,44 +45,51 @@ use std::path::{Path, PathBuf};
 
 use defs::{BuildToolDef, BuildToolDefs};
 
+/// MeisterError represents an error of the project.
 #[derive(Debug)]
 pub enum MeisterError {
+    /// arrays of [MeisterError].
     Array(Vec<MeisterError>),
+    /// Fatal error.
     Fatal(String),
+    /// IO error.
     Io(std::io::Error),
+    /// JSON error.
     Json(JsonError),
+    /// NotImplemented error.
     NotImplemented,
+    /// if no project was specified.
     NoProjectSpecified(),
+    /// The given project does not exist.
     ProjectNotFound(String),
+    /// warning message.
     Warning(String),
 }
 
+/// IgnoreType represents the type of traversing options for [Meister].
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
 pub enum IgnoreType {
-    Default,    // hidden, ignore, gitignore, gitglobal, gitexclude. default.
-    Hidden,     // ignore hidden file
-    Ignore,     // ignore respecting .ignore file
-    GitIgnore,  // ignore respecting .gitignore file
-    GitGlobal,  // ignore respecting global git ignore file.
-    GitExclude, // ignore respecting .git/info/exclude file
+    /// [IgnoreType::Hidden], [IgnoreType::Ignore], [IgnoreType::GitIgnore], [IgnoreType::GitGlobal], and [IgnoreType::GitExclude].
+    /// All of the ignore types are enabled.
+    Default,    
+    /// ignore hidden file.
+    Hidden,     
+    /// ignore respecting `.ignore` file.
+    Ignore,     
+    /// ignore respecting `.gitignore` file.
+    GitIgnore,  
+    /// ignore respecting global git ignore file.
+    GitGlobal,  
+    /// ignore respecting `.git/info/exclude` file.
+    GitExclude, 
 }
 
+/// a result of the project.
 pub type Result<T> = std::result::Result<T, MeisterError>;
 
 /// Meister is a object for detecting the build tools in the specified directory.
 /// This object contains the definitions of the build tools.
 /// In use of user own build tool definitions, use `Meister::new` method for building the object.
-/// 
-/// ```
-/// let meister = Meister::new_as_default();
-/// match meister.find(PathBuf::from(".")) {
-///    Ok(r) => {
-///        for bt in r.tools {
-///            println!("  {}: {}", bt.def.name, bt.path.display());
-///        }
-///    },
-///    Err(e) => panic!("error: {}", e),
-/// ```
 pub struct Meister {
     defs: Vec<BuildToolDef>,
     matchers: Vec<MultipleMatcher>,
@@ -56,14 +100,18 @@ pub struct Meister {
 /// This object contains the project directory and the detected files of build tools.
 #[derive(Clone)]
 pub struct BuildTools {
+    /// The base directory of the project.
     pub base: PathBuf,
+    /// The detected files of build tools.
     pub tools: Vec<BuildTool>,
 }
 
 /// BuildTool represents a detected file for build tool.
 #[derive(Clone)]
 pub struct BuildTool {
+    /// path of the detected file.
     pub path: PathBuf,
+    /// the build tool definition corresponding to the detected file.
     pub def: BuildToolDef,
 }
 
@@ -96,12 +144,18 @@ impl Meister {
     }
 
     /// new creates a Meister object with the specified build tool definitions and ignore types.
+    /// If its was the empty, the default value ([IgnoreType::Default]) will be used.
     pub fn new(defs: BuildToolDefs, its: Vec<IgnoreType>) -> Result<Self> {
+        let its2 = if its.is_empty() {
+            vec![IgnoreType::Default]
+        } else {
+            its
+        };
         match build_matchers(defs.defs.clone()) {
             Ok(m) => Ok(Self {
                 defs: defs.defs.clone(),
                 matchers: m,
-                its: its,
+                its: its2,
             }),
             Err(e) => Err(e),
         }
