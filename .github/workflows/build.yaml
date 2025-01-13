@@ -31,6 +31,11 @@ jobs:
           cargo install cargo-make
           cargo make
 
+      - name: Generate the coverage report as lcov format.
+        if: matrix.os == 'ubuntu-latest'
+        run:
+          cargo llvm-cov --lcov --output-path coverage.lcov
+
       - name: Send Coverage to Coveralls
         uses: coverallsapp/github-action@master
         if: matrix.os == 'ubuntu-latest'
