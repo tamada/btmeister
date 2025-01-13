@@ -40,7 +40,7 @@ jobs:
       upload_url: ${{ needs.setup.outputs.upload_url }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
@@ -119,7 +119,7 @@ jobs:
     steps:
 # initialization
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           ref: main
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
@@ -157,7 +157,7 @@ jobs:
           DIST=${{ matrix.target }}
           mkdir -p dist/$DIST/$DIR
           cp -r site/public dist/$DIST/$DIR/docs
-          cp -r README.md LICENSE target/completions target/${{ matrix.target }}/release/${{ matrix.artifact_name }} dist/$DIST/$DIR
+          cp -r README.md LICENSE assets target/${{ matrix.target }}/release/${{ matrix.artifact_name }} dist/$DIST/$DIR
           tar cvfz dist/${{ matrix.asset_name }}.tar.gz -C dist/$DIST $DIR
         shell: bash
 
