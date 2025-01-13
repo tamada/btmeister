@@ -226,4 +226,18 @@ mod test {
             assert_eq!(47, result.len());
         }
     }
+
+    #[test]
+    fn test_new_and_extend() {
+        let mut defs1 = BuildToolDefs::new(vec![]);
+        let defs2 = BuildToolDefs::new(vec![BuildToolDef::new(
+            "Fake".to_string(),
+            vec!["Fakefile".to_string()],
+            "https://example.com".to_string(),
+        )]);
+        assert_eq!(0, defs1.len());
+        assert_eq!(1, defs2.len());
+        defs1.extend(defs2);
+        assert_eq!(1, defs1.len());
+    }
 }
