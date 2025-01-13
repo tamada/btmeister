@@ -4,8 +4,8 @@
  * `none` function creates a new `Verboser` object that does nothing.
  */
 
- /// The `Verboser` trait provides the logging mechanism.
- pub trait Verboser {
+/// The `Verboser` trait provides the logging mechanism.
+pub trait Verboser {
     /// print the given message as a log message.
     fn log(&mut self, msg: &str);
 

@@ -8,21 +8,21 @@
  * ```
  * let defs_result = BuildToolDefs::parse_from_assets();
  * ```
- * or 
+ * or
  * ```
  * let defs_result = BuildToolDefs::parse(PathBuf::from("buildtools.json"));
  * ```
- * 
+ *
  * Next, build an object of [Meister] with the definitions and
  * directory traversing options (`its`: ignore types).
  * If the its is empty vector, the default value [IgnoreType::Default] will be used.
- * 
+ *
  * ```
  * let meister = Meister::new(defs_result.unwrap(), vec![]);
  * ```
- * 
+ *
  * Finally, detect the build tools in the specified directory and print the result.
- * 
+ *
  * ```
  * match meister.find(PathBuf::from("path/to/project")) {
  *     Ok(r) => {
@@ -71,17 +71,17 @@ pub enum MeisterError {
 pub enum IgnoreType {
     /// [IgnoreType::Hidden], [IgnoreType::Ignore], [IgnoreType::GitIgnore], [IgnoreType::GitGlobal], and [IgnoreType::GitExclude].
     /// All of the ignore types are enabled.
-    Default,    
+    Default,
     /// ignore hidden file.
-    Hidden,     
+    Hidden,
     /// ignore respecting `.ignore` file.
-    Ignore,     
+    Ignore,
     /// ignore respecting `.gitignore` file.
-    GitIgnore,  
+    GitIgnore,
     /// ignore respecting global git ignore file.
-    GitGlobal,  
+    GitGlobal,
     /// ignore respecting `.git/info/exclude` file.
-    GitExclude, 
+    GitExclude,
 }
 
 /// a result of the project.
