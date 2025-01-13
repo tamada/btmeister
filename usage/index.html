@@ -85,61 +85,77 @@
     
   <h1>🏃‍♂️ Usage</h1>
   <h2 id="cli">CLI</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">btmeister 0.3.20
-Haruaki TAMADA
-A tool <span style="color:#66d9ef">for</span> detecting build tools of the projects
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">Detecting build tools/task runners in use of the projects
 
-USAGE:
-    btmeister <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...
+Usage: btmeister <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...
 
-ARGS:
-    &lt;PROJECTs&gt;...    The target project directories <span style="color:#66d9ef">for</span> btmeister.
+Arguments:
+  <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...  The target project paths. If <span style="color:#e6db74">&#34;-&#34;</span> was given, reads from stdin,
+                 and <span style="color:#e6db74">&#34;@&#34;</span> was put on the first character, read from the file.
 
-OPTIONS:
-    -@ &lt;INPUT&gt;                       Specify the file contains project path list. If INPUT is dash
-                                     <span style="color:#f92672">(</span><span style="color:#e6db74">&#39;-&#39;</span><span style="color:#f92672">)</span>, read from STDIN.
-        --append-defs &lt;DEFS_JSON&gt;    Specify the additional definitions of the build tools.
-    -d, --definition &lt;DEFS_JSON&gt;     Specify the definition of the build tools.
-    -f, --format &lt;FORMAT&gt;            Specify the output format <span style="color:#f92672">[</span>default: default<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>possible values:
-                                     default, json, yaml, xml<span style="color:#f92672">]</span>
-    -h, --help                       Print help information
-    -L, --list-defs                  Print the build tools<span style="color:#960050;background-color:#1e0010">&#39;</span> definition list
-        --no-ignore                  Do not respect ignore files <span style="color:#f92672">(</span>.ignore, .gitignore, etc.<span style="color:#f92672">)</span>
-    -V, --version                    Print version information
+Options:
+  -D, --definition &lt;DEFS_JSON&gt;     Specify the definition of the build tools.
+      --append-defs &lt;DEFS_JSON&gt;    Specify the additional definitions of the build tools.
+  -i, --ignore-type &lt;IGNORE_TYPE&gt;  specify the ignore type. <span style="color:#f92672">[</span>default: default<span style="color:#f92672">]</span> 
+                                   <span style="color:#f92672">[</span>possible values: default, hidden, ignore, git-ignore, git-global, git-exclude<span style="color:#f92672">]</span>
+  -L, --list-defs                  Print the build tools<span style="color:#e6db74">&#39; definition list
+</span><span style="color:#e6db74">  -f, --format &lt;FORMAT&gt;            Specify the output format [default: default]
+</span><span style="color:#e6db74">                                   [possible values: csv, default, json, xml, yaml]
+</span><span style="color:#e6db74">  -v, --verbose                    Show verbose output.
+</span><span style="color:#e6db74">  -h, --help                       Print help (see more with &#39;</span>--help<span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#f92672">)</span>
+  -V, --version                    Print version
 </code></pre></div><h3 id="sample-output">Sample Output</h3>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ btmeister . ~/go/src/github.com/tamada/rrh
-cargo       ./Cargo.toml
-make        /Users/tamada/go/src/github.com/tamada/rrh/Makefile
-$ btmeister --format json . ~/go/src/github.com/tamada/rrh | jq .
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ btmeister ~/github.com/tamada/gibo-wrapper
+/Users/tamada/github.com/tamada/gibo-wrapper
+    Cargo.toml: Cargo
+    Dockerfile: Docker
+    legacy/go.mod: Go
+    legacy/Makefile: Make
+    build.rs: Cargo
+$ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 <span style="color:#f92672">[</span>
   <span style="color:#f92672">{</span>
-    <span style="color:#e6db74">&#34;project&#34;</span>:<span style="color:#e6db74">&#34;btmeister&#34;</span>,
-    <span style="color:#e6db74">&#34;path&#34;</span>:<span style="color:#e6db74">&#34;./&#34;</span>,
-    <span style="color:#e6db74">&#34;build-tools&#34;</span>:<span style="color:#f92672">[</span>
+    <span style="color:#e6db74">&#34;base&#34;</span>: <span style="color:#e6db74">&#34;/Users/tamada/products/gibo-wrapper&#34;</span>,
+    <span style="color:#e6db74">&#34;build-tools&#34;</span>: <span style="color:#f92672">[</span>
       <span style="color:#f92672">{</span>
-        <span style="color:#e6db74">&#34;file-name&#34;</span>:<span style="color:#e6db74">&#34;Cargo.toml&#34;</span>,
-        <span style="color:#e6db74">&#34;tool-name&#34;</span>:<span style="color:#e6db74">&#34;cargo&#34;</span>
-      <span style="color:#f92672">}</span>
-    <span style="color:#f92672">]</span>
-  <span style="color:#f92672">}</span>,
-  <span style="color:#f92672">{</span>
-    <span style="color:#e6db74">&#34;project&#34;</span>:<span style="color:#e6db74">&#34;rrh&#34;</span>,
-    <span style="color:#e6db74">&#34;path&#34;</span>:<span style="color:#e6db74">&#34;/Usrs/tamada/go/src/github.com/tamada/rrh&#34;</span>,
-    <span style="color:#e6db74">&#34;build-tools&#34;</span>:<span style="color:#f92672">[</span>
+        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;Cargo.toml&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Cargo&#34;</span>
+      <span style="color:#f92672">}</span>,
       <span style="color:#f92672">{</span>
-        <span style="color:#e6db74">&#34;file-name&#34;</span>:<span style="color:#e6db74">&#34;Makefile&#34;</span>,
-        <span style="color:#e6db74">&#34;tool-name&#34;</span>:<span style="color:#e6db74">&#34;make&#34;</span>
+        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;Dockerfile&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Docker&#34;</span>
+      <span style="color:#f92672">}</span>,
+      <span style="color:#f92672">{</span>
+        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;legacy/go.mod&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Go&#34;</span>
+      <span style="color:#f92672">}</span>,
+      <span style="color:#f92672">{</span>
+        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;legacy/Makefile&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Make&#34;</span>
+      <span style="color:#f92672">}</span>,
+      <span style="color:#f92672">{</span>
+        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;build.rs&#34;</span>,
+        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Cargo&#34;</span>
       <span style="color:#f92672">}</span>
     <span style="color:#f92672">]</span>
   <span style="color:#f92672">}</span>
 <span style="color:#f92672">]</span>
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
-<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -it -v $PWD:/home/btmeister ghcr.io/tamada/btmeister:latest
-</code></pre></div><p>The working directory in the docker container is <code>/home/btmeister</code>.
-The target project should be on the directory with <code>-v</code> flag of docker.</p>
+<p><img src="https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.0-blue?logo=docker" alt="Docker"></p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
+</code></pre></div><ul>
+<li>Container OS
+<ul>
+<li>Working directory: <code>/app</code></li>
+<li>entry point: <code>/opt/btmeister/btmeister</code></li>
+<li>user: <code>nonroot</code></li>
+</ul>
+</li>
+</ul>
 <h3 id="available-versions">Available versions</h3>
 <ul>
-<li><code>0.3.19</code>, <code>latest</code></li>
+<li>latest, 0.6.0</li>
+<li><a href="https://github.com/tamada/btmeister/pkgs/container/btmeister/26088262?tag=0.5.0">0.5.0</a></li>
 </ul>
 
 
