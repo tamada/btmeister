@@ -1,0 +1,48 @@
+
+using namespace System.Management.Automation
+using namespace System.Management.Automation.Language
+
+Register-ArgumentCompleter -Native -CommandName 'btmeister' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    $commandElements = $commandAst.CommandElements
+    $command = @(
+        'btmeister'
+        for ($i = 1; $i -lt $commandElements.Count; $i++) {
+            $element = $commandElements[$i]
+            if ($element -isnot [StringConstantExpressionAst] -or
+                $element.StringConstantType -ne [StringConstantType]::BareWord -or
+                $element.Value.StartsWith('-') -or
+                $element.Value -eq $wordToComplete) {
+                break
+        }
+        $element.Value
+    }) -join ';'
+
+    $completions = @(switch ($command) {
+        'btmeister' {
+            [CompletionResult]::new('-D', '-D ', [CompletionResultType]::ParameterName, 'Specify the definition of the build tools.')
+            [CompletionResult]::new('--definition', '--definition', [CompletionResultType]::ParameterName, 'Specify the definition of the build tools.')
+            [CompletionResult]::new('--append-defs', '--append-defs', [CompletionResultType]::ParameterName, 'Specify the additional definitions of the build tools.')
+            [CompletionResult]::new('-i', '-i', [CompletionResultType]::ParameterName, 'specify the ignore type.')
+            [CompletionResult]::new('--ignore-type', '--ignore-type', [CompletionResultType]::ParameterName, 'specify the ignore type.')
+            [CompletionResult]::new('-f', '-f', [CompletionResultType]::ParameterName, 'Specify the output format')
+            [CompletionResult]::new('--format', '--format', [CompletionResultType]::ParameterName, 'Specify the output format')
+            [CompletionResult]::new('-d', '-d', [CompletionResultType]::ParameterName, 'Output directory of completion files')
+            [CompletionResult]::new('--dest', '--dest', [CompletionResultType]::ParameterName, 'Output directory of completion files')
+            [CompletionResult]::new('-L', '-L ', [CompletionResultType]::ParameterName, 'Print the build tools'' definition list')
+            [CompletionResult]::new('--list-defs', '--list-defs', [CompletionResultType]::ParameterName, 'Print the build tools'' definition list')
+            [CompletionResult]::new('-v', '-v', [CompletionResultType]::ParameterName, 'Show verbose output.')
+            [CompletionResult]::new('--verbose', '--verbose', [CompletionResultType]::ParameterName, 'Show verbose output.')
+            [CompletionResult]::new('--generate-completion-files', '--generate-completion-files', [CompletionResultType]::ParameterName, 'Generate completion files')
+            [CompletionResult]::new('-h', '-h', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('--help', '--help', [CompletionResultType]::ParameterName, 'Print help')
+            [CompletionResult]::new('-V', '-V ', [CompletionResultType]::ParameterName, 'Print version')
+            [CompletionResult]::new('--version', '--version', [CompletionResultType]::ParameterName, 'Print version')
+            break
+        }
+    })
+
+    $completions.Where{ $_.CompletionText -like "$wordToComplete*" } |
+        Sort-Object -Property ListItemText
+}

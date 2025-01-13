@@ -1,16 +1,16 @@
 [
     {
-      "name": "go",
+      "name": "Dummy",
       "build-files": [
-        "go.mod"
+        "Dummyfile"
       ],
-      "url": "https://go.dev/"
+      "url": "https://example.com/"
     },
     {
-        "name": "webpack",
-        "url": "https://webpack.js.org/",
+        "name": "Fake",
+        "url": "https://example.com/",
         "build-files": [
-            "webpack.config.js"
+            "Fakefile"
         ]
     }
 ]  

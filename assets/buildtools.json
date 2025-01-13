@@ -1,0 +1,341 @@
+[
+  {
+    "name": "Apache Ant",
+    "build-files": [
+      "build.xml"
+    ],
+    "url": "https://ant.apache.org/"
+  },
+  {
+    "name": "Apache Ivy",
+    "build-files": [
+      "ivy.xml"
+    ],
+    "url": "https://ant.apache.org/ivy/"
+  },
+  {
+    "name": "Apache Maven",
+    "build-files": [
+      "pom.xml"
+    ],
+    "url": "https://maven.apache.org/"
+  },
+  {
+    "name": "autoconf",
+    "build-files": [
+      "configure.in"
+    ],
+    "url": "https://www.gnu.org/software/autoconf/"
+  },
+  {
+    "name": "automake",
+    "build-files": [
+      "Makefile.am"
+    ],
+    "url": "https://www.gnu.org/software/automake/"
+  },
+  {
+    "name": "Bazel",
+    "build-files": [
+      "WORKSPACE",
+      "WORKSPACE.bazel",
+      "BUILD",
+      "BUILD.bazel",
+      "*.bzl",
+      "*.bazel"
+    ],
+    "url": "https://bazel.build/"
+  },
+  {
+    "name": "Blade",
+    "build-files": [
+      "BUILD"
+    ],
+    "url": "https://github.com/chen3feng/blade-build"
+  },
+  {
+    "name": "Buck",
+    "build-files": [
+      ".buckconfig",
+      "BUCK"
+    ],
+    "url": "https://buck.build/"
+  },
+  {
+    "name": "Cake",
+    "build-files": [
+      "Cakefile",
+      "build.cake"
+    ],
+    "url": "https://cakebuild.net/"
+  },
+  {
+    "name": "Cmake",
+    "build-files": [
+      "CMakeLists.txt"
+    ],
+    "url": "https://cmake.org"
+  },
+  {
+    "name": "Cargo",
+    "build-files": [
+      "Cargo.toml",
+      "build.rs"
+    ],
+    "url": "https://www.rust-lang.org"
+  },
+  {
+    "name": "Cargo make",
+    "build-files": [
+      "Makefile.toml"
+    ],
+    "url": "https://sagiegurari.github.io/cargo-make/"
+  },
+  {
+    "name": "Circle CI",
+    "build-files": [
+      ".circleci/config.yml",
+      "circle.yml"
+    ],
+    "url": "https://circleci.com"
+  },
+  {
+    "name": "deno",
+    "build-files": [
+      "deno.json",
+      "deno.jsonc"
+    ],
+    "url": "https://deno.land/"
+  },
+  {
+    "name": "Docker",
+    "build-files": [
+      "Dockerfile"
+    ],
+    "url": "https://www.docker.com"
+  },
+  {
+    "name": "Docker Compose",
+    "build-files": [
+      "docker-compose.yml",
+      "docker-compose.yaml",
+      "compose.yml",
+      "compose.yaml"
+    ],
+    "url": "https://docs.docker.com/compose/"
+  },
+  {
+    "name": "Earthly",
+    "build-files": [
+      "Earthfile"
+    ],
+    "url": "https://earthly.dev/"
+  },
+  {
+    "name": "GitHub Actions",
+    "build-files": [
+      ".github/workflows/*.yml",
+      ".github/workflows/*.yaml"
+    ],
+    "url": "https://github.com/"
+  },
+  {
+    "name": "Go",
+    "build-files": [
+      "go.mod"
+    ],
+    "url": "https://golang.org/"
+  },
+  {
+    "name": "GitLab CI/CD",
+    "build-files": [
+      ".gitlab-ci.yml"
+    ],
+    "url": "https://docs.gitlab.com/ee/ci/"
+  },
+  {
+    "name": "Gradle",
+    "build-files": [
+      "build.gradle",
+      "build.gradle.kts"
+    ],
+    "url": "https://gradle.org/"
+  },
+  {
+    "name": "Grunt",
+    "build-files": [
+      "Gruntfile.js"
+    ],
+    "url": "https://gruntjs.com/"
+  },
+  {
+    "name": "Gulp",
+    "build-files": [
+      "gulpfile.babel.js",
+      "gulpfile.js"
+    ],
+    "url": "https://gulpjs.com/"
+  },
+  {
+    "name": "Jenkins",
+    "build-files": [
+      "Jenkinsfile"
+    ],
+    "url": "https://www.jenkins.io"
+  },
+  {
+    "name": "just",
+    "build-files": [
+      "Justfile"
+    ],
+    "url": "https://github.com/casey/just"
+  },
+  {
+    "name": "latexmk",
+    "build-files": [
+      ".latexmkrc"
+    ],
+    "url": "https://personal.psu.edu/jcc8/software/latexmk/"
+  },
+  {
+    "name": "llmk",
+    "build-files": [
+      "llmk.toml"
+    ],
+    "url": "https://github.com/wtsnjp/llmk"
+  },
+  {
+    "name": "Make",
+    "build-files": [
+      "Makefile"
+    ],
+    "url": "https://www.gnu.org/software/make/"
+  },
+  {
+    "name": "Mage",
+    "build-files": [
+      "Magefile"
+    ],
+    "url": "https://magefile.org/"
+  },
+  {
+    "name": "mise",
+    "build-files": [
+      "mise.toml",
+      "mise.local.toml"
+    ],
+    "url": "https://mise.jdx.dev"
+  },
+  {
+    "name": "ninja",
+    "build-files": [
+      "build.ninja"
+    ],
+    "url": "https://ninja-build.org"
+  },
+  {
+    "name": "npm",
+    "build-files": [
+      "package.json"
+    ],
+    "url": "https://www.npmjs.com/"
+  },
+  {
+    "name": "Pants",
+    "build-files": [
+      "BUILD"
+    ],
+    "url": "https://www.pantsbuild.org/"
+  },
+  {
+    "name": "please.build",
+    "build-files": [
+      "BUILD"
+    ],
+    "url": "https://please.build/"
+  },
+  {
+    "name": "PyBuilder",
+    "build-files": [
+      "build.py"
+    ],
+    "url": "https://pybuilder.io/"
+  },
+  {
+    "name": "Rake",
+    "build-files": [
+      "Rakefile"
+    ],
+    "url": "https://github.com/ruby/rake"
+  },
+  {
+    "name": "rollup.js",
+    "build-files": [
+      "rollup.config.js",
+      "rollup.config.mjs"
+    ],
+    "url": "https://rollupjs.org"
+  },
+  {
+    "name": "SCons",
+    "build-files": [
+      "SConstruct",
+      "SConscript"
+    ],
+    "url": "https://scons.org"
+  },
+  {
+    "name": "sbt",
+    "build-files": [
+      "build.sbt"
+    ],
+    "url": "https://www.scala-sbt.org/index.html"
+  },
+  {
+    "name": "Task",
+    "build-files": [
+      "Taskfile.yml",
+      "Taskfile.yaml",
+      "Taskfile.dist.yml",
+      "Taskfile.dist.yaml",
+      "Taskfile"
+    ],
+    "url": "https://taskfile.dev/"
+  },
+  {
+    "name": "Travis",
+    "build-files": [
+      ".travis.yml",
+      ".travis.yaml"
+    ],
+    "url": "https://www.travis-ci.com"
+  },
+  {
+    "name": "Terraform",
+    "build-files": [
+      "*.tf"
+    ],
+    "url": "https://www.terraform.io"
+  },
+  {
+    "name": "distutils/setuptools/distribution",
+    "build-files": [
+      "setup.py"
+    ],
+    "url": "https://setuptools.pypa.io/en/latest/"
+  },
+  {
+    "name": "vagrant",
+    "build-files": [
+      "Vagrantfile"
+    ],
+    "url": "https://www.vagrantup.com"
+  },
+  {
+    "name": "Webpack",
+    "build-files": [
+      "webpack.config.js"
+    ],
+    "url": "https://webpack.js.org/"
+  }
+]

@@ -1,0 +1,310 @@
+class BuildToolDef {
+  name = string
+  `build-files`: Listing<String>
+  url = string
+}
+
+buildtools = new Listing<BuildToolDef> {
+  new {
+    name = "Apache Ant"
+    `build-files` = new {
+      "build.xml"
+    }
+    url = "https://ant.apache.org/"
+  }
+  new {
+    name = "Apache Ivy"
+    `build-files` = new {
+      "ivy.xml"
+    }
+    url = "https://ant.apache.org/ivy/"
+  }
+  new {
+    name = "Apache Maven"
+    `build-files` = new {
+      "pom.xml"
+    }
+    url = "https://maven.apache.org/"
+  }
+  new {
+    name = "autoconf"
+    `build-files` = new {
+      "configure.in"
+    }
+    url = "https://www.gnu.org/software/autoconf/"
+  }
+  new {
+    name = "automake"
+    `build-files` = new {
+      "Makefile.am"
+    }
+    url = "https://www.gnu.org/software/automake/"
+  }
+  new {
+    name = "Bazel"
+    `build-files` = new {
+      "WORKSPACE"
+      "WORKSPACE.bazel"
+      "BUILD"
+      "BUILD.bazel"
+      "*.bzl"
+      "*.bazel"
+    }
+    url = "https://bazel.build/"
+  }
+  new {
+    name = "Blade"
+    `build-files` = new {
+      "BUILD"
+    }
+    url = "https://github.com/chen3feng/blade-build"
+  }
+  new {
+    name = "Buck"
+    `build-files` = new {
+      ".buckconfig"
+      "BUCK"
+    }
+    url = "https://buck.build/"
+  }
+  new {
+    name = "Cake"
+    `build-files` = new { "Cakefile" "build.cake" }
+    url = "https://cakebuild.net/"
+  }
+  new {
+    name = "Cmake"
+    `build-files` = new { "CMakeLists.txt" }
+    url = "https://cmake.org"
+  }
+  new {
+    name = "Cargo"
+    `build-files` = new { "Cargo.toml" "build.rs" }
+    url = "https://www.rust-lang.org"
+  }
+  new {
+    name = "Cargo make"
+    `build-files` = new { "Makefile.toml" }
+    url = "https://sagiegurari.github.io/cargo-make/"
+  }
+  new {
+    name = "Circle CI"
+    `build-files` = new { ".circleci/config.yml" "circle.yml" }
+    url = "https://circleci.com"
+  }
+  new {
+    name = "deno"
+    `build-files` = new { "deno.json" "deno.jsonc" }
+    url = "https://deno.land/"
+  }
+  new {
+    name = "Docker"
+    `build-files` = new { "Dockerfile" }
+    url = "https://www.docker.com"
+  }
+  new {
+    name = "Docker Compose"
+    `build-files` = new {
+      "docker-compose.yml"
+      "docker-compose.yaml"
+      "compose.yml"
+      "compose.yaml"
+    }
+    url = "https://docs.docker.com/compose/"
+  }
+  new {
+    name = "Earthly"
+    `build-files` = new {
+      "Earthfile"
+    }
+    url = "https://earthly.dev/"
+  }
+  new {
+    name = "GitHub Actions"
+    `build-files` = new {
+      ".github/workflows/*.yml"
+      ".github/workflows/*.yaml"
+    }
+    url = "https://github.com/"
+  }
+  new {
+    name = "Go"
+    `build-files` = new {
+      "go.mod"
+    }
+    url = "https://golang.org/"
+  }
+  new {
+    name = "GitLab CI/CD"
+    `build-files` = new { ".gitlab-ci.yml" }
+    url = "https://docs.gitlab.com/ee/ci/"
+  }
+  new {
+    name = "Gradle"
+    `build-files` = new {
+      "build.gradle"
+      "build.gradle.kts"
+    }
+    url = "https://gradle.org/"
+  }
+  new {
+    name = "Grunt"
+    `build-files` = new {"Gruntfile.js"}
+    url = "https://gruntjs.com/"
+  }
+  new {
+    name = "Gulp"
+    `build-files` = new {"gulpfile.babel.js" "gulpfile.js"}
+    url = "https://gulpjs.com/"
+  }
+  new {
+    name = "Jenkins"
+    `build-files` = new { "Jenkinsfile" }
+    url = "https://www.jenkins.io"
+  }
+  new {
+    name = "just"
+    `build-files` = new { "Justfile" }
+    url = "https://github.com/casey/just"
+  }
+  new {
+    name = "latexmk"
+    `build-files` = new { ".latexmkrc" }
+    url = "https://personal.psu.edu/jcc8/software/latexmk/"
+  }
+  new {
+    name = "llmk"
+    `build-files` = new {
+      "llmk.toml"
+    }
+    url = "https://github.com/wtsnjp/llmk"
+  }
+  new {
+    name = "Make"
+    `build-files` = new {
+      "Makefile"
+    }
+    url = "https://www.gnu.org/software/make/"
+  }
+  new {
+    name = "Mage"
+    `build-files` = new {
+      "Magefile"
+    }
+    url = "https://magefile.org/"
+  }
+  new {
+    name = "mise"
+    `build-files` = new {
+      "mise.toml"
+      "mise.local.toml"
+    }
+    url = "https://mise.jdx.dev"
+  }
+  new {
+    name = "ninja"
+    `build-files` = new { "build.ninja" }
+    url = "https://ninja-build.org"
+  }
+  new {
+    name = "npm"
+    `build-files` = new {
+      "package.json"
+    }
+    url = "https://www.npmjs.com/"
+  }
+  new {
+    name = "Pants"
+    `build-files` = new {
+      "BUILD"
+    }
+    url = "https://www.pantsbuild.org/"
+  }
+  new {
+    name = "please.build"
+    `build-files` = new {"BUILD"}
+    url = "https://please.build/"
+  }
+  new {
+    name = "PyBuilder"
+    `build-files` = new {
+      "build.py"
+    }
+    url = "https://pybuilder.io/"
+  }
+  new {
+    name = "Rake"
+    `build-files` = new {
+      "Rakefile"
+    }
+    url = "https://github.com/ruby/rake"
+  }
+  new {
+    name = "rollup.js"
+    `build-files` = new {
+      "rollup.config.js"
+      "rollup.config.mjs"
+    }
+    url = "https://rollupjs.org"
+  }
+  new {
+    name = "SCons"
+    url = "https://scons.org"
+    `build-files` = new { "SConstruct" "SConscript" }
+  }
+  new {
+    name = "sbt"
+    `build-files` = new {
+      "build.sbt"
+    }
+    url = "https://www.scala-sbt.org/index.html"
+  }
+  new {
+    name = "Task"
+    `build-files` = new {
+      "Taskfile.yml"
+      "Taskfile.yaml"
+      "Taskfile.dist.yml"
+      "Taskfile.dist.yaml"
+      "Taskfile"
+    }
+    url = "https://taskfile.dev/"
+  }
+  new {
+    name = "Travis"
+    `build-files` = new {
+      ".travis.yml"
+      ".travis.yaml"
+    }
+    url = "https://www.travis-ci.com"
+  }
+  new {
+    name = "Terraform"
+    `build-files` = new {
+      "*.tf"
+    }
+    url = "https://www.terraform.io"
+  }
+  new {
+    name = "distutils/setuptools/distribution"
+    `build-files` = new {
+      "setup.py"
+    }
+    url = "https://setuptools.pypa.io/en/latest/"
+  }
+  new {
+    name = "vagrant"
+    `build-files` = new { "Vagrantfile" }
+    url = "https://www.vagrantup.com"
+  }
+  new {
+    name = "Webpack"
+    `build-files` = new {"webpack.config.js"}
+    url = "https://webpack.js.org/"
+  }
+}
+
+output {
+  value = buildtools
+}
+

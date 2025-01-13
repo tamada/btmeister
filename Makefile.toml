@@ -1,0 +1,50 @@
+[tasks.format]
+install_crate = "rustfmt"
+command = "cargo"
+args = ["fmt", "--", "--emit=files"]
+
+[tasks.build]
+command = "cargo"
+args = ["build"]
+dependencies = ["format"]
+
+[tasks.test]
+command = "cargo"
+args = ["llvm-cov", "--html"]
+
+[tasks.post-test]
+description = "Run test and generate coverage report"
+script = [ # want to run `mkdir -p site/static/coverage` but it's not supported on Windows.
+'''
+mkdir -p site
+cd site
+mkdir -p  static
+cd static
+mkdir -p  coverage
+cd ../..
+cp -r target/llvm-cov/html/* site/static/coverage/
+'''
+]
+dependencies = ["test"]
+
+[tasks.post-build]
+description = "Generate completion files after build"
+script = [
+    "mkdir -p target/completions",
+    "cargo run -- --generate-completion-files --completion-out-dir target/completions"
+]
+
+[tasks.convert]
+description = "Convert the definition pkl file into json"
+script = [
+    "pkl eval -f json -o assets/buildtools.json assets/buildtools.pkl"
+    # "docker run --rm -v $PWD:/app jesscarlos/pkl-cli:latest eval -f json -o assets/buildtools.json assets/buildtools.pkl"
+]
+
+[tasks.start]
+description = "Start the document server"
+script = ["hugo -s site server"]
+
+[tasks.site]
+description = "Build the site document"
+script = ["hugo -s site"]

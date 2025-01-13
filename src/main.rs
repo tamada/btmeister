@@ -1,241 +1,236 @@
-use btmeister::{construct, BuildToolDef, BuildToolDefs};
-use clap::Parser;
-use ignore::WalkBuilder;
-use std::error::Error;
-use std::fs::File;
-use std::io::{stdin, stdout, BufRead, BufReader, BufWriter, Write};
-use std::path::{Path, PathBuf};
-
-mod btmeister;
 mod cli;
-mod formatter;
+mod fmt;
 
-pub struct BuildTool {
-    path: PathBuf,
-    def: BuildToolDef,
-}
+use crate::cli::InputOpts;
+use crate::fmt::Formatter;
+use btmeister::defs::{self, BuildToolDefs};
+use btmeister::verbose::{self, Verboser};
+use btmeister::Result;
+use btmeister::{BuildTools, Meister, MeisterError};
+use clap::Parser;
 
-impl BuildTool {
-    pub fn new(path: PathBuf, def: BuildToolDef) -> BuildTool {
-        BuildTool { path, def }
+fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verboser>) -> Result<()> {
+    if let Some(header) = f.header_defs() {
+        println!("{}", header);
     }
-}
-
-fn open_impl(file: String) -> Result<Box<dyn BufRead>, Box<dyn Error>> {
-    match &*file {
-        "-" => Ok(Box::new(BufReader::new(stdin()))),
-        _ => Ok(Box::new(BufReader::new(File::open(file)?))),
+    let mut errs = vec![];
+    for (index, def) in defs.iter().enumerate() {
+        match f.format_def(&def, index == 0) {
+            Ok(s) => println!("{}", s),
+            Err(e) => errs.push(e),
+        }
     }
-}
-
-fn parse_project_list(list_file: String) -> Result<Vec<PathBuf>, Box<dyn Error>> {
-    let f = open_impl(list_file)?;
-    let mut lines = Vec::new();
-    for line in f.lines() {
-        lines.push(PathBuf::from(line.unwrap()));
+    if let Some(footer) = f.footer_defs() {
+        println!("{}", footer);
     }
-    Ok(lines)
-}
-
-fn parse_targets(
-    project_list: Option<String>,
-    dirs: Vec<PathBuf>,
-) -> Result<Vec<PathBuf>, Box<dyn Error>> {
-    if let Some(x) = project_list {
-        parse_project_list(x)
+    if errs.len() == 0 {
+        Ok(())
     } else {
-        Ok(dirs)
+        Err(MeisterError::Array(errs))
     }
 }
 
-fn extract_file_name(target: &Path) -> Option<&str> {
-    if let Some(name) = target.file_name() {
-        name.to_str()
+fn print_results(r: Vec<BuildTools>, f: &Box<dyn Formatter>) -> Result<()> {
+    let mut errs = vec![];
+    if let Some(header) = f.header_files() {
+        println!("{}", header);
+    }
+    for (i, bt) in r.iter().enumerate() {
+        match f.format_files(bt, i == 0) {
+            Ok(s) => print!("{}", s),
+            Err(e) => errs.push(e),
+        }
+    }
+    if let Some(footer) = f.footer_files() {
+        println!("{}", footer);
+    }
+    if errs.is_empty() {
+        Ok(())
     } else {
-        None
+        Err(MeisterError::Array(errs))
     }
 }
 
-fn find_build_tools_impl(target: &Path, defs: &BuildToolDefs) -> Option<BuildToolDef> {
-    if let Some(file_name) = extract_file_name(target) {
-        for def in defs {
-            for build_file in &def.build_files {
-                if file_name == build_file {
-                    return Some(def.clone());
+fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
+    let meister = match Meister::new(defs, opts.ignore_types.clone()) {
+        Ok(m) => m,
+        Err(e) => return Err(e),
+    };
+    let mut errs = vec![];
+    let mut result = vec![];
+    match opts.projects() {
+        Err(e) => return Err(e),
+        Ok(projects) => {
+            for project in projects {
+                match meister.find(project) {
+                    Ok(r) => result.push(r),
+                    Err(e) => errs.push(e),
                 }
             }
         }
     }
-    None
-}
-
-fn find_build_tools(
-    target: &Path,
-    defs: &BuildToolDefs,
-    no_ignore: bool,
-) -> Result<Vec<BuildTool>, Box<dyn Error>> {
-    let mut build_tools = Vec::new();
-    for result in WalkBuilder::new(target)
-        .ignore(!no_ignore)
-        .git_ignore(!no_ignore)
-        .build()
-    {
-        match result {
-            Ok(entry) => {
-                if let Some(def) = find_build_tools_impl(entry.path(), defs) {
-                    build_tools.push(BuildTool::new(entry.path().to_path_buf(), def));
-                }
-            }
-            Err(err) => eprintln!("ERROR: {}", err),
-        }
-    }
-    Ok(build_tools)
-}
-
-fn perform_each(
-    target: &Path,
-    defs: &BuildToolDefs,
-    no_ignore: bool,
-    formatter: &Box<dyn formatter::Formatter>,
-    dest: &mut Box<dyn Write>,
-) -> Result<i32, Box<dyn Error>> {
-    if !target.exists() {
-        Err(Box::new(cli::MeisterError::ProjectNotFound(
-            target.display().to_string(),
-        )))
+    if errs.is_empty() {
+        Ok(result)
     } else {
-        match find_build_tools(target, defs, no_ignore) {
-            Ok(results) => Ok(formatter.print(dest, target, results)),
-            Err(e) => Err(e),
+        Err(MeisterError::Array(errs))
+    }
+}
+
+mod gencomp {
+    use crate::cli::Options;
+    use btmeister::verbose::Verboser;
+    use btmeister::Result;
+    use clap::{Command, CommandFactory};
+    use clap_complete::Shell;
+    use std::{fs::File, path::PathBuf};
+
+    fn generate(
+        s: Shell,
+        app: &mut Command,
+        outdir: &PathBuf,
+        file: &str,
+        v: &mut Box<dyn Verboser>,
+    ) {
+        let destfile = outdir.join(file);
+        v.log(format!("generate completions for {}: {}", s, destfile.display()).as_str());
+        std::fs::create_dir_all(destfile.parent().unwrap()).unwrap();
+        let mut dest = File::create(destfile).unwrap();
+        clap_complete::generate(s, app, "btmeister", &mut dest);
+    }
+
+    pub(crate) fn generate_completions(outdir: PathBuf, v: &mut Box<dyn Verboser>) -> Result<()> {
+        let mut app = Options::command();
+        app.set_bin_name("btmeister");
+
+        generate(Shell::Bash, &mut app, &outdir, "bash/btmeister", v);
+        generate(Shell::Elvish, &mut app, &outdir, "elvish/btmeister", v);
+        generate(Shell::Fish, &mut app, &outdir, "fish/btmeister", v);
+        generate(
+            Shell::PowerShell,
+            &mut app,
+            &outdir,
+            "powershell/btmeister",
+            v,
+        );
+        generate(Shell::Zsh, &mut app, &outdir, "zsh/_btmeister", v);
+        Ok(())
+    }
+}
+
+fn perform(opts: cli::Options) -> Result<()> {
+    let mut verboser = verbose::new(opts.verbose);
+    let (input_opts, output_opts, defopts, compopts) =
+        (opts.inputs, opts.outputs, opts.defopts, opts.compopts);
+    let defs = match defs::construct(defopts.definition, defopts.append_defs, &mut verboser) {
+        Err(e) => return Err(e),
+        Ok(defs) => defs,
+    };
+    if compopts.completion {
+        gencomp::generate_completions(compopts.dest, &mut verboser)
+    } else {
+        let formatter = fmt::build_formatter(output_opts.format);
+        if output_opts.list_defs {
+            list_defs(defs, formatter, &mut verboser)
+        } else {
+            match find_bt(defs, input_opts) {
+                Ok(r) => print_results(r, &formatter),
+                Err(e) => Err(e),
+            }
         }
     }
 }
 
-fn perform(opts: cli::Options, dest: &mut Box<dyn Write>) -> Result<i32, Box<dyn Error>> {
-    let defs = construct(opts.definition, opts.append_defs)?;
-    let formatter = <dyn formatter::Formatter>::build(opts.format);
-    if opts.list_defs {
-        formatter.print_defs(dest, &defs);
-    } else {
-        let targets = parse_targets(opts.project_list, opts.dirs)?;
-        for target in targets {
-            if let Err(e) = perform_each(&target, &defs, opts.no_ignore, &formatter, dest) {
-                println!("{}", e);
+fn print_error(e: MeisterError) {
+    use MeisterError::*;
+    match e {
+        Array(errs) => {
+            for e in errs {
+                print_error(e);
             }
         }
+        Fatal(m) => eprintln!("Fatal: {}", m),
+        Io(e) => eprintln!("IO Error: {}", e),
+        Json(e) => eprintln!("Parse Error: {}", e),
+        NotImplemented => eprintln!("Not implemented yet."),
+        NoProjectSpecified() => eprintln!("No project specified."),
+        ProjectNotFound(p) => eprintln!("Project not found: {}", p),
+        Warning(m) => eprintln!("Warning: {}", m),
     }
-    dest.flush().unwrap();
-    Ok(0)
+}
+
+fn rust_main(args: Vec<String>) -> Result<()> {
+    let opts = cli::Options::parse_from(args);
+    perform(opts)
 }
 
 fn main() {
-    let opts = cli::Options::parse();
-    if let Some(err) = opts.validate() {
-        println!("{}", err)
-    }
-
-    let mut dest: Box<dyn Write> = Box::new(BufWriter::new(stdout()));
-    std::process::exit(match perform(opts, &mut dest) {
-        Err(err) => {
-            println!("{}", err);
-            1
+    match rust_main(std::env::args().collect()) {
+        Ok(_) => {}
+        Err(e) => {
+            print_error(e);
+            std::process::exit(1);
         }
-        Ok(code) => code,
-    })
+    }
 }
 
 #[cfg(test)]
 mod tests {
-    use super::cli::*;
     use super::*;
 
     #[test]
-    fn test_basic() {
-        let opts = Options::parse_from("testdata/fibonacci testdata/hello".split(' '));
-        let defs = btmeister::construct(opts.definition, opts.append_defs).unwrap();
-
-        let r1 = find_build_tools(&PathBuf::from("testdata/fibonacci"), &defs, false).unwrap();
-        assert_eq!(1, r1.len());
-        let item1 = r1.get(0).unwrap();
-
-        assert_eq!(PathBuf::from("testdata/fibonacci/build.gradle"), item1.path);
-        assert_eq!("Gradle", item1.def.name);
-    }
-
-    #[test]
-    fn test_validate() {
-        let opts = Options::parse_from(["btmeister", "testdata/fibonacci"]);
-        let r = opts.validate();
-        assert!(r.is_none());
-    }
-
-    #[test]
-    fn test_validate_both_project_list_dirs() {
-        let opts = Options::parse_from(
-            "btmeister -@ testdata/project_list.txt testdata/fibonacci".split(' '),
+    fn test_success() {
+        let r = rust_main(
+            vec!["btmeister", "testdata/fibonacci"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
         );
-        let r = opts.validate();
-        assert!(r.is_some());
-        println!("{}", r.unwrap());
+        assert!(r.is_ok());
     }
 
     #[test]
-    fn test_validate_no_project_given() {
-        let opts = Options::parse_from(["btmeister"]);
-        let r = opts.validate();
-        assert!(r.is_some());
+    fn test_success_list_defs() {
+        let r = rust_main(
+            vec!["btmeister", "testdata/fibonacci", "--list-defs"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
+        assert!(r.is_ok());
     }
 
     #[test]
-    fn test_validate_ok() {
-        let opts = Options::parse_from(["btmeister", "testdata/fibonacci"]);
-        let r = opts.validate();
-        assert!(r.is_none());
-    }
-
-    #[test]
-    fn test_parse_targets() {
-        let r = parse_targets(Some("testdata/project_list.txt".to_string()), vec![]);
-        match r {
-            Ok(list) => {
-                assert_eq!(
-                    &PathBuf::from("testdata/fibonacci".to_string()),
-                    list.get(0).unwrap()
-                );
-                assert_eq!(
-                    &PathBuf::from("testdata/hello".to_string()),
-                    list.get(1).unwrap()
-                );
-            }
-            Err(_) => panic!("never come here!"),
-        }
-    }
-
-    #[test]
-    fn test_parse_targets2() {
-        let dirs: Vec<PathBuf> = vec!["testdata/hello", "testdata/fibonacci"]
-            .iter()
-            .map(|f| PathBuf::from(f.to_string()))
-            .collect();
-        let r = parse_targets(None, dirs);
-        match r {
-            Ok(list) => {
-                assert_eq!(
-                    &PathBuf::from("testdata/hello".to_string()),
-                    list.get(0).unwrap()
-                );
-                assert_eq!(
-                    &PathBuf::from("testdata/fibonacci".to_string()),
-                    list.get(1).unwrap()
-                );
-            }
-            Err(_) => panic!("never come here!"),
-        }
-    }
-
-    #[test]
-    fn test_parse_project_list_failed() {
-        let r = parse_project_list("does/not/exist/file.txt".to_string());
+    fn test_project_not_found() {
+        let r = rust_main(
+            vec!["btmeister", "unknown/project"]
+                .iter()
+                .map(|s| s.to_string())
+                .collect(),
+        );
         assert!(r.is_err());
+    }
+
+    #[test]
+    fn test_gencomp() {
+        use std::path::PathBuf;
+        let r = rust_main(
+            vec![
+                "btmeister",
+                "--generate-completion-files",
+                "--completion-out-dir",
+                "testgencomp",
+            ]
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
+        );
+        assert!(r.is_ok());
+        assert!(PathBuf::from("testgencomp/bash/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/elvish/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/fish/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/powershell/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/zsh/_btmeister").exists());
+
+        std::fs::remove_dir_all("testgencomp").unwrap();
     }
 }

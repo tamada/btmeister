@@ -1,0 +1,42 @@
+
+use builtin;
+use str;
+
+set edit:completion:arg-completer[btmeister] = {|@words|
+    fn spaces {|n|
+        builtin:repeat $n ' ' | str:join ''
+    }
+    fn cand {|text desc|
+        edit:complex-candidate $text &display=$text' '(spaces (- 14 (wcswidth $text)))$desc
+    }
+    var command = 'btmeister'
+    for word $words[1..-1] {
+        if (str:has-prefix $word '-') {
+            break
+        }
+        set command = $command';'$word
+    }
+    var completions = [
+        &'btmeister'= {
+            cand -D 'Specify the definition of the build tools.'
+            cand --definition 'Specify the definition of the build tools.'
+            cand --append-defs 'Specify the additional definitions of the build tools.'
+            cand -i 'specify the ignore type.'
+            cand --ignore-type 'specify the ignore type.'
+            cand -f 'Specify the output format'
+            cand --format 'Specify the output format'
+            cand -d 'Output directory of completion files'
+            cand --dest 'Output directory of completion files'
+            cand -L 'Print the build tools'' definition list'
+            cand --list-defs 'Print the build tools'' definition list'
+            cand -v 'Show verbose output.'
+            cand --verbose 'Show verbose output.'
+            cand --generate-completion-files 'Generate completion files'
+            cand -h 'Print help'
+            cand --help 'Print help'
+            cand -V 'Print version'
+            cand --version 'Print version'
+        }
+    ]
+    $completions[$command]
+}

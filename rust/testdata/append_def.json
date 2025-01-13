@@ -1,0 +1,16 @@
+[
+    {
+      "name": "go",
+      "build-files": [
+        "go.mod"
+      ],
+      "url": "https://go.dev/"
+    },
+    {
+        "name": "webpack",
+        "url": "https://webpack.js.org/",
+        "build-files": [
+            "webpack.config.js"
+        ]
+    }
+]  

@@ -1,0 +1,78 @@
+_btmeister() {
+    local i cur prev opts cmd
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    prev="${COMP_WORDS[COMP_CWORD-1]}"
+    cmd=""
+    opts=""
+
+    for i in ${COMP_WORDS[@]}
+    do
+        case "${cmd},${i}" in
+            ",$1")
+                cmd="btmeister"
+                ;;
+            *)
+                ;;
+        esac
+    done
+
+    case "${cmd}" in
+        btmeister)
+            opts="-D -i -L -f -v -d -h -V --definition --append-defs --ignore-type --list-defs --format --verbose --generate-completion-files --dest --help --version [PROJECTs]..."
+            if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
+                COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+                return 0
+            fi
+            case "${prev}" in
+                --definition)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -D)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --append-defs)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --ignore-type)
+                    COMPREPLY=($(compgen -W "default hidden ignore git-ignore git-global git-exclude" -- "${cur}"))
+                    return 0
+                    ;;
+                -i)
+                    COMPREPLY=($(compgen -W "default hidden ignore git-ignore git-global git-exclude" -- "${cur}"))
+                    return 0
+                    ;;
+                --format)
+                    COMPREPLY=($(compgen -W "csv default json xml yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                -f)
+                    COMPREPLY=($(compgen -W "csv default json xml yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                --dest)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -d)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                *)
+                    COMPREPLY=()
+                    ;;
+            esac
+            COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
+            return 0
+            ;;
+    esac
+}
+
+if [[ "${BASH_VERSINFO[0]}" -eq 4 && "${BASH_VERSINFO[1]}" -ge 4 || "${BASH_VERSINFO[0]}" -gt 4 ]]; then
+    complete -F _btmeister -o nosort -o bashdefault -o default btmeister
+else
+    complete -F _btmeister -o bashdefault -o default btmeister
+fi

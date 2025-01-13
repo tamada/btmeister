@@ -1,0 +1,50 @@
+#compdef btmeister
+
+autoload -U is-at-least
+
+_btmeister() {
+    typeset -A opt_args
+    typeset -a _arguments_options
+    local ret=1
+
+    if is-at-least 5.2; then
+        _arguments_options=(-s -S -C)
+    else
+        _arguments_options=(-s -C)
+    fi
+
+    local context curcontext="$curcontext" state line
+    _arguments "${_arguments_options[@]}" : \
+'-D+[Specify the definition of the build tools.]:DEFS_JSON:_files' \
+'--definition=[Specify the definition of the build tools.]:DEFS_JSON:_files' \
+'--append-defs=[Specify the additional definitions of the build tools.]:DEFS_JSON:_files' \
+'*-i+[specify the ignore type.]:IGNORE_TYPE:(default hidden ignore git-ignore git-global git-exclude)' \
+'*--ignore-type=[specify the ignore type.]:IGNORE_TYPE:(default hidden ignore git-ignore git-global git-exclude)' \
+'-f+[Specify the output format]:FORMAT:(csv default json xml yaml)' \
+'--format=[Specify the output format]:FORMAT:(csv default json xml yaml)' \
+'-d+[Output directory of completion files]:DIR:_files' \
+'--dest=[Output directory of completion files]:DIR:_files' \
+'-L[Print the build tools'\'' definition list]' \
+'--list-defs[Print the build tools'\'' definition list]' \
+'-v[Show verbose output.]' \
+'--verbose[Show verbose output.]' \
+'--generate-completion-files[Generate completion files]' \
+'-h[Print help]' \
+'--help[Print help]' \
+'-V[Print version]' \
+'--version[Print version]' \
+'*::dirs -- The target project paths. If "-" was given, reads from stdin, and "@" was put on the first character, read from the file.:_default' \
+&& ret=0
+}
+
+(( $+functions[_btmeister_commands] )) ||
+_btmeister_commands() {
+    local commands; commands=()
+    _describe -t commands 'btmeister commands' commands "$@"
+}
+
+if [ "$funcstack[1]" = "_btmeister" ]; then
+    _btmeister "$@"
+else
+    compdef _btmeister btmeister
+fi
