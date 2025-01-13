@@ -144,29 +144,30 @@ fn convert_and_push_item(item: &str, result: &mut Vec<PathBuf>, errs: &mut Vec<M
     }
 }
 
+fn push_items_or_errs(
+    r: Result<Vec<String>>,
+    results: &mut Vec<PathBuf>,
+    errs: &mut Vec<MeisterError>,
+) {
+    match r {
+        Err(e) => errs.push(e),
+        Ok(items) => {
+            for item in items {
+                convert_and_push_item(&item, results, errs)
+            }
+        }
+    }
+}
+
 impl InputOpts {
     pub(crate) fn projects(&self) -> Result<Vec<PathBuf>> {
         let mut errs = vec![];
         let mut result = vec![];
-        for item in self.dirs.clone() {
+        for item in self.dirs.iter() {
             if item == "-" {
-                match read_from_stdin() {
-                    Err(e) => errs.push(e),
-                    Ok(results) => {
-                        for item in results {
-                            convert_and_push_item(&item, &mut result, &mut errs)
-                        }
-                    }
-                }
+                push_items_or_errs(read_from_stdin(), &mut result, &mut errs);
             } else if item.starts_with("@") {
-                match read_from_file(&item[1..]) {
-                    Err(e) => errs.push(e),
-                    Ok(results) => {
-                        for item in results {
-                            convert_and_push_item(&item, &mut result, &mut errs)
-                        }
-                    }
-                }
+                push_items_or_errs(read_from_file(&item[1..]), &mut result, &mut errs);
             } else {
                 convert_and_push_item(item.as_str(), &mut result, &mut errs);
             }

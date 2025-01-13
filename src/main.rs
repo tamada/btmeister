@@ -209,4 +209,28 @@ mod tests {
         );
         assert!(r.is_err());
     }
+
+    #[test]
+    fn test_gencomp() {
+        use std::path::PathBuf;
+        let r = rust_main(
+            vec![
+                "btmeister",
+                "--generate-completion-files",
+                "--completion-out-dir",
+                "testgencomp",
+            ]
+            .iter()
+            .map(|s| s.to_string())
+            .collect(),
+        );
+        assert!(r.is_ok());
+        assert!(PathBuf::from("testgencomp/bash/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/elvish/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/fish/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/powershell/btmeister").exists());
+        assert!(PathBuf::from("testgencomp/zsh/_btmeister").exists());
+
+        std::fs::remove_dir_all("testgencomp").unwrap();
+    }
 }
