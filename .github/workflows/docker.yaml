@@ -20,7 +20,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           tag=$(gh release view --json tagName --jq .tagName)
-          echo "::set-output name=tag::${tag##v}"
+          echo "tag=${tag##v}" >> $GITHUB_OUTPUT
 
 # docker image
       - name: Docker Buildx

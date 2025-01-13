@@ -18,8 +18,7 @@ jobs:
       - name: Git Tag name
         id: vars
         run: |
-          echo "GITHUB_HEAD_REF: $GITHUB_HEAD_REF (${GITHUB_HEAD_REF##*/v})"
-          echo "::set-output name=tag::${GITHUB_HEAD_REF##*/v}"
+          echo "tag=${GITHUB_HEAD_REF##*/v}" >> $GITHUB_OUTPUT
 
       - name: Create release
         id: create_release
@@ -141,7 +140,7 @@ jobs:
         run: |
           rustup target list
           DIR=$(echo "btmeister-${{ needs.site.outputs.tag }}")
-          echo "::set-output name=dir::$DIR"
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
 
       - name: Cross build with all features
         uses: actions-rs/cargo@v1
