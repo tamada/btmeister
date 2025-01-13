@@ -33,7 +33,7 @@ script = [
 description = "Convert the definition pkl file into json"
 script = [
 #    "pkl eval -f json -o assets/buildtools.json assets/buildtools.pkl"
-    "docker run -it --rm -v $PWD:/app jesscarlos/pkl-cli:latest -f json -o assets/buildtools.json assets/buildtools.pkl"
+    "docker run -it --rm -v $PWD:/app jesscarlos/pkl-cli:latest eval -f json -o assets/buildtools.json assets/buildtools.pkl"
 ]
 
 [tasks.start]
