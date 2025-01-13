@@ -17,11 +17,6 @@ jobs:
       - name: Checkout project
         uses: actions/checkout@v2
 
-      - name: Install pkl
-        uses: pkl-community/setup-pkl@v0
-        with:
-          pkl-version: 0.27.1
-
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable

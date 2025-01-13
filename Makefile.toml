@@ -6,7 +6,7 @@ args = ["fmt", "--", "--emit=files"]
 [tasks.build]
 command = "cargo"
 args = ["build"]
-dependencies = ["format", "convert"]
+dependencies = ["format"]
 
 [tasks.test]
 command = "cargo"
