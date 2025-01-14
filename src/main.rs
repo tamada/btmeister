@@ -158,7 +158,7 @@ fn errors_to_string(e: MeisterError) -> String {
     match e {
         Array(errs) => errs
             .into_iter()
-            .map(|e| errors_to_string(e))
+            .map(errors_to_string)
             .collect::<Vec<String>>()
             .join("\n"),
         Fatal(m) => format!("Fatal: {}", m),
