@@ -123,17 +123,6 @@ jobs:
           ref: main
           fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
 
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      - name: Initialize Git
-        shell: bash
-        run: |
-          git submodule update --init
-          git worktree add site/public gh-pages
-
       - name: Setup variable
         id: vars
         shell: bash
@@ -142,12 +131,37 @@ jobs:
           DIR=$(echo "btmeister-${{ needs.site.outputs.tag }}")
           echo "dir=$DIR" >> $GITHUB_OUTPUT
 
-      - name: Cross build with all features
-        uses: actions-rs/cargo@v1
+          - name: Cache cargo registry
+          uses: actions/cache@v1
+          with:
+            path: ~/.cargo/registry
+            key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup
+        run: rustup update stable
+
+      - name: Setup Rust (1/2) (toolchain)
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        if: matrix.os == 'ubuntu-latest'
         with:
-          use-cross: true 
-          command: build
-          args: --release --target ${{ matrix.target }} --all-features --verbose
+          target: ${{ matrix.target }}
+
+      - name: Cross build (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Cross build (Linux and Windows)
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+
+      # - name: Cross build with all features
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     use-cross: true 
+      #     command: build
+      #     args: --release --target ${{ matrix.target }} --all-features --verbose
           
 # publish release
       - name: Create release file
