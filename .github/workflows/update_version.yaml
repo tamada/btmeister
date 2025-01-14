@@ -40,9 +40,9 @@ jobs:
           mv a Dockerfile
           regex1='s/v[0-9]*\.[0-9]*\.[0-9]*/v${{ steps.vars.outputs.tag }}/g'
           regex2='s/btmeister:[0-9]*\.[0-9]*\.[0-9]*]?\]/btmeister:${{ steps.vars.outputs.tag }}/g'
-          sed -e $regex1 -e $regex2 README.md > a ; mv a README.md
-          sed -e $regex1 -e $regex2 site/content/_index.md > a ; mv a site/content/_index.md
-          sed -e $regex2 site/content/usage.md > a ; mv a site/content/usage.md
+          sed $regex1 README.md | sed $regex2 > a ; mv a README.md
+          sed $regex1 site/content/_index.md | sed $regex2 > a ; mv a site/content/_index.md
+          sed $regex2 site/content/usage.md > a ; mv a site/content/usage.md
           # no need to commit error when pushing the same version twice or more because no need to commit.
           # therefore, ignore the error.
           git commit -a -m "update version to ${{ steps.vars.outputs.tag }}, ready to publish v${{ steps.vars.outputs.tag }}" || true
