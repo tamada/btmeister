@@ -5,7 +5,6 @@ RUN apk --no-cache add musl-dev
 WORKDIR /app
 
 COPY Cargo.toml .
-COPY Cargo.lock .
 RUN    mkdir src && echo "fn main() {}" > src/main.rs \
     && cargo build --release
 
