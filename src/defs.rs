@@ -55,7 +55,7 @@ pub struct BuildToolDefs {
 impl BuildToolDefs {
     /// new creates a new BuildToolDefs object from the given definitions.
     pub fn new(defs: Vec<BuildToolDef>) -> BuildToolDefs {
-        BuildToolDefs { defs: defs }
+        BuildToolDefs { defs }
     }
 
     /// parse parses the defitions of the build tools from the given file and build an object of BuildToolDefs.
@@ -93,6 +93,11 @@ impl BuildToolDefs {
     /// len returns the number of the build tool definitions.
     pub fn len(&self) -> usize {
         self.defs.len()
+    }
+
+    /// is_empty returns true if the build tool definitions are empty.
+    pub fn is_empty(&self) -> bool {
+        self.defs.is_empty()
     }
 
     /// iter returns an iterator of the build tool definitions.
@@ -189,6 +194,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(2, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -198,6 +204,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -211,6 +218,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -224,6 +232,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -236,8 +245,10 @@ mod test {
             "https://example.com".to_string(),
         )]);
         assert_eq!(0, defs1.len());
+        assert_eq!(true, defs1.is_empty());
         assert_eq!(1, defs2.len());
         defs1.extend(defs2);
         assert_eq!(1, defs1.len());
+        assert_eq!(false, defs1.is_empty());
     }
 }

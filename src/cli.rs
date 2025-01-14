@@ -113,13 +113,11 @@ pub enum Format {
 
 fn read_from_reader(r: Box<dyn BufRead>) -> Result<Vec<String>> {
     let mut result = vec![];
-    for line in r.lines() {
-        if let Ok(l) = line {
-            if l.starts_with("#") || l.trim().is_empty() {
-                continue;
-            }
-            result.push(l);
+    for line in r.lines().flatten() {
+        if line.starts_with("#") || line.trim().is_empty() {
+            continue;
         }
+        result.push(line);
     }
     Ok(result)
 }
@@ -166,15 +164,15 @@ impl InputOpts {
         for item in self.dirs.iter() {
             if item == "-" {
                 push_items_or_errs(read_from_stdin(), &mut result, &mut errs);
-            } else if item.starts_with("@") {
-                push_items_or_errs(read_from_file(&item[1..]), &mut result, &mut errs);
+            } else if let Some(stripped) = item.strip_prefix('@') {
+                push_items_or_errs(read_from_file(stripped), &mut result, &mut errs);
             } else {
                 convert_and_push_item(item.as_str(), &mut result, &mut errs);
             }
         }
-        if errs.len() != 0 {
+        if !errs.is_empty() {
             Err(MeisterError::Array(errs))
-        } else if result.len() == 0 {
+        } else if result.is_empty() {
             Err(MeisterError::NoProjectSpecified())
         } else {
             Ok(result)
@@ -249,6 +247,20 @@ mod tests {
             if let MeisterError::Io(p) = &e[0] {
                 assert_eq!(std::io::ErrorKind::NotFound, p.kind());
             }
+        }
+    }
+
+    #[test]
+    fn test_no_projects() {
+        let opts = InputOpts {
+            ignore_types: vec![],
+            dirs: vec![],
+        };
+        let projects = opts.projects();
+        assert!(projects.is_err());
+        match projects {
+            Err(MeisterError::NoProjectSpecified()) => assert!(true),
+            _ => assert!(false),
         }
     }
 }

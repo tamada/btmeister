@@ -15,7 +15,7 @@ fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verbose
     }
     let mut errs = vec![];
     for (index, def) in defs.iter().enumerate() {
-        match f.format_def(&def, index == 0) {
+        match f.format_def(def, index == 0) {
             Ok(s) => println!("{}", s),
             Err(e) => errs.push(e),
         }
@@ -23,14 +23,14 @@ fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verbose
     if let Some(footer) = f.footer_defs() {
         println!("{}", footer);
     }
-    if errs.len() == 0 {
+    if errs.is_empty() {
         Ok(())
     } else {
         Err(MeisterError::Array(errs))
     }
 }
 
-fn print_results(r: Vec<BuildTools>, f: &Box<dyn Formatter>) -> Result<()> {
+fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
     let mut errs = vec![];
     if let Some(header) = f.header_files() {
         println!("{}", header);
@@ -83,12 +83,12 @@ mod gencomp {
     use clap::{Command, CommandFactory};
     use clap_complete::Shell;
     use std::fs::File;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
 
     fn generate(
         s: Shell,
         app: &mut Command,
-        outdir: &PathBuf,
+        outdir: &Path,
         file: &str,
         v: &mut Box<dyn Verboser>,
     ) -> Result<()> {
@@ -146,29 +146,33 @@ fn perform(opts: cli::Options) -> Result<()> {
             list_defs(defs, formatter, &mut verboser)
         } else {
             match find_bt(defs, input_opts) {
-                Ok(r) => print_results(r, &formatter),
+                Ok(r) => print_results(r, formatter),
                 Err(e) => Err(e),
             }
         }
     }
 }
 
-fn print_error(e: MeisterError) {
+fn errors_to_string(e: MeisterError) -> String {
     use MeisterError::*;
     match e {
-        Array(errs) => {
-            for e in errs {
-                print_error(e);
-            }
-        }
-        Fatal(m) => eprintln!("Fatal: {}", m),
-        Io(e) => eprintln!("IO Error: {}", e),
-        Json(e) => eprintln!("Parse Error: {}", e),
-        NotImplemented => eprintln!("Not implemented yet."),
-        NoProjectSpecified() => eprintln!("No project specified."),
-        ProjectNotFound(p) => eprintln!("Project not found: {}", p),
-        Warning(m) => eprintln!("Warning: {}", m),
+        Array(errs) => errs
+            .into_iter()
+            .map(errors_to_string)
+            .collect::<Vec<String>>()
+            .join("\n"),
+        Fatal(m) => format!("Fatal: {}", m),
+        Io(e) => format!("IO Error: {}", e),
+        Json(e) => format!("Parse Error: {}", e),
+        NotImplemented => "Not implemented yet.".to_string(),
+        NoProjectSpecified() => "No project specified.".to_string(),
+        ProjectNotFound(p) => format!("Project not found: {}", p),
+        Warning(m) => format!("Warning: {}", m),
     }
+}
+
+fn print_error(e: MeisterError) {
+    println!("{}", errors_to_string(e));
 }
 
 fn rust_main(args: Vec<String>) -> Result<()> {
@@ -191,6 +195,40 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_error_message() {
+        use MeisterError::*;
+        assert_eq!("Fatal: test", errors_to_string(Fatal("test".to_string())));
+        assert_eq!(
+            "IO Error: test",
+            errors_to_string(Io(std::io::Error::new(std::io::ErrorKind::Other, "test",)))
+        );
+        assert_eq!(
+            "Parse Error: missing field `test`",
+            errors_to_string(Json(serde::de::Error::missing_field("test")))
+        );
+        assert_eq!("Not implemented yet.", errors_to_string(NotImplemented));
+        assert_eq!(
+            "No project specified.",
+            errors_to_string(NoProjectSpecified())
+        );
+        assert_eq!(
+            "Project not found: test",
+            errors_to_string(ProjectNotFound("test".to_string()))
+        );
+        assert_eq!(
+            "Warning: test",
+            errors_to_string(Warning("test".to_string()))
+        );
+        assert_eq!(
+            "Fatal: test\nFatal: test2",
+            errors_to_string(Array(vec![
+                Fatal("test".to_string()),
+                Fatal("test2".to_string())
+            ]))
+        );
+    }
+
+    #[test]
     fn test_success() {
         let r = rust_main(
             vec!["btmeister", "testdata/fibonacci", "--format", "json"]
@@ -204,8 +242,15 @@ mod tests {
     #[test]
     fn test_success_list_defs() {
         let r = rust_main(
-            vec!["btmeister", "testdata/fibonacci", "--list-defs", "--format", "json" ]
-            .iter().map(|s| s.to_string())
+            vec![
+                "btmeister",
+                "testdata/fibonacci",
+                "--list-defs",
+                "--format",
+                "json",
+            ]
+            .iter()
+            .map(|s| s.to_string())
             .collect(),
         );
         assert!(r.is_ok());
