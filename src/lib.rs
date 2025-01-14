@@ -8,21 +8,21 @@
  * ```
  * let defs_result = BuildToolDefs::parse_from_assets();
  * ```
- * or
+ * or 
  * ```
  * let defs_result = BuildToolDefs::parse(PathBuf::from("buildtools.json"));
  * ```
- *
+ * 
  * Next, build an object of [Meister] with the definitions and
  * directory traversing options (`its`: ignore types).
  * If the its is empty vector, the default value [IgnoreType::Default] will be used.
- *
+ * 
  * ```
  * let meister = Meister::new(defs_result.unwrap(), vec![]);
  * ```
- *
+ * 
  * Finally, detect the build tools in the specified directory and print the result.
- *
+ * 
  * ```
  * match meister.find(PathBuf::from("path/to/project")) {
  *     Ok(r) => {
@@ -71,17 +71,17 @@ pub enum MeisterError {
 pub enum IgnoreType {
     /// [IgnoreType::Hidden], [IgnoreType::Ignore], [IgnoreType::GitIgnore], [IgnoreType::GitGlobal], and [IgnoreType::GitExclude].
     /// All of the ignore types are enabled.
-    Default,
+    Default,    
     /// ignore hidden file.
-    Hidden,
+    Hidden,     
     /// ignore respecting `.ignore` file.
-    Ignore,
+    Ignore,     
     /// ignore respecting `.gitignore` file.
-    GitIgnore,
+    GitIgnore,  
     /// ignore respecting global git ignore file.
-    GitGlobal,
+    GitGlobal,  
     /// ignore respecting `.git/info/exclude` file.
-    GitExclude,
+    GitExclude, 
 }
 
 /// a result of the project.
@@ -116,7 +116,7 @@ pub struct BuildTool {
 }
 
 trait Matcher {
-    fn matches(&self, p: &PathBuf) -> bool;
+    fn matches(&self, p: &Path) -> bool;
 }
 
 impl BuildTools {
@@ -170,16 +170,16 @@ impl Meister {
         for entry in walker {
             match entry {
                 Ok(entry) => {
-                    if let Some(bt) = find_build_tool(&self, entry.path()) {
+                    if let Some(bt) = find_build_tool(self, entry.path()) {
                         result.push(bt);
                     }
                 }
                 Err(e) => errs.push(MeisterError::Warning(format!("walking: {}", e))),
             }
         }
-        if errs.len() == 0 {
+        if errs.is_empty() {
             Ok(BuildTools {
-                base: base,
+                base,
                 tools: result,
             })
         } else {
@@ -201,7 +201,7 @@ fn find_build_tool(meister: &Meister, path: &Path) -> Option<BuildTool> {
     None
 }
 
-fn build_walker(base: PathBuf, its: &Vec<IgnoreType>) -> ignore::Walk {
+fn build_walker(base: PathBuf, its: &[IgnoreType]) -> ignore::Walk {
     ignore::WalkBuilder::new(base)
         .standard_filters(its.contains(&IgnoreType::Default))
         .hidden(its.contains(&IgnoreType::Hidden))
@@ -233,7 +233,7 @@ fn build_matcher(def: BuildToolDef) -> Result<MultipleMatcher> {
         }
     }
     if errs.is_empty() {
-        Ok(MultipleMatcher { matchers: matchers })
+        Ok(MultipleMatcher { matchers })
     } else {
         Err(MeisterError::Array(errs))
     }
@@ -267,7 +267,7 @@ struct PathGlobMatcher {
 }
 
 impl Matcher for MultipleMatcher {
-    fn matches(&self, p: &PathBuf) -> bool {
+    fn matches(&self, p: &Path) -> bool {
         for matcher in self.matchers.iter() {
             if matcher.matches(p) {
                 return true;
@@ -278,7 +278,7 @@ impl Matcher for MultipleMatcher {
 }
 
 impl Matcher for FileNameMatcher {
-    fn matches(&self, p: &PathBuf) -> bool {
+    fn matches(&self, p: &Path) -> bool {
         if let Some(filename) = p.file_name() {
             if let Some(name) = filename.to_str() {
                 return name == self.name;
@@ -289,7 +289,7 @@ impl Matcher for FileNameMatcher {
 }
 
 impl Matcher for PathGlobMatcher {
-    fn matches(&self, p: &PathBuf) -> bool {
+    fn matches(&self, p: &Path) -> bool {
         self.pattern.matches(p)
     }
 }

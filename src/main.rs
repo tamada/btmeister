@@ -15,7 +15,7 @@ fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verbose
     }
     let mut errs = vec![];
     for (index, def) in defs.iter().enumerate() {
-        match f.format_def(&def, index == 0) {
+        match f.format_def(def, index == 0) {
             Ok(s) => println!("{}", s),
             Err(e) => errs.push(e),
         }
@@ -23,14 +23,14 @@ fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verbose
     if let Some(footer) = f.footer_defs() {
         println!("{}", footer);
     }
-    if errs.len() == 0 {
+    if errs.is_empty() {
         Ok(())
     } else {
         Err(MeisterError::Array(errs))
     }
 }
 
-fn print_results(r: Vec<BuildTools>, f: &Box<dyn Formatter>) -> Result<()> {
+fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
     let mut errs = vec![];
     if let Some(header) = f.header_files() {
         println!("{}", header);
@@ -83,12 +83,12 @@ mod gencomp {
     use clap::{Command, CommandFactory};
     use clap_complete::Shell;
     use std::fs::File;
-    use std::path::PathBuf;
+    use std::path::{Path, PathBuf};
 
     fn generate(
         s: Shell,
         app: &mut Command,
-        outdir: &PathBuf,
+        outdir: &Path,
         file: &str,
         v: &mut Box<dyn Verboser>,
     ) -> Result<()> {
@@ -146,7 +146,7 @@ fn perform(opts: cli::Options) -> Result<()> {
             list_defs(defs, formatter, &mut verboser)
         } else {
             match find_bt(defs, input_opts) {
-                Ok(r) => print_results(r, &formatter),
+                Ok(r) => print_results(r, formatter),
                 Err(e) => Err(e),
             }
         }
