@@ -249,4 +249,18 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_no_projects() {
+        let opts = InputOpts {
+            ignore_types: vec![],
+            dirs: vec![],
+        };
+        let projects = opts.projects();
+        assert!(projects.is_err());
+        match projects {
+            Err(MeisterError::NoProjectSpecified()) => assert!(true),
+            _ => assert!(false),
+        }
+    }
 }

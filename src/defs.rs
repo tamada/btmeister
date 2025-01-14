@@ -194,6 +194,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(2, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -203,6 +204,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -216,6 +218,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -229,6 +232,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());
+            assert_eq!(false, result.is_empty());
         }
     }
 
@@ -241,8 +245,10 @@ mod test {
             "https://example.com".to_string(),
         )]);
         assert_eq!(0, defs1.len());
+        assert_eq!(true, defs1.is_empty());
         assert_eq!(1, defs2.len());
         defs1.extend(defs2);
         assert_eq!(1, defs1.len());
+        assert_eq!(false, defs1.is_empty());
     }
 }
