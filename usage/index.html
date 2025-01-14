@@ -109,8 +109,6 @@ Options:
 /Users/tamada/github.com/tamada/gibo-wrapper
     Cargo.toml: Cargo
     Dockerfile: Docker
-    legacy/go.mod: Go
-    legacy/Makefile: Make
     build.rs: Cargo
 $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 <span style="color:#f92672">[</span>
@@ -124,14 +122,6 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
       <span style="color:#f92672">{</span>
         <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;Dockerfile&#34;</span>,
         <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Docker&#34;</span>
-      <span style="color:#f92672">}</span>,
-      <span style="color:#f92672">{</span>
-        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;legacy/go.mod&#34;</span>,
-        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Go&#34;</span>
-      <span style="color:#f92672">}</span>,
-      <span style="color:#f92672">{</span>
-        <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;legacy/Makefile&#34;</span>,
-        <span style="color:#e6db74">&#34;tool-name&#34;</span>: <span style="color:#e6db74">&#34;Make&#34;</span>
       <span style="color:#f92672">}</span>,
       <span style="color:#f92672">{</span>
         <span style="color:#e6db74">&#34;path&#34;</span>: <span style="color:#e6db74">&#34;build.rs&#34;</span>,
