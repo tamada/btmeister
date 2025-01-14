@@ -52,8 +52,6 @@ $ btmeister ~/github.com/tamada/gibo-wrapper
 /Users/tamada/github.com/tamada/gibo-wrapper
     Cargo.toml: Cargo
     Dockerfile: Docker
-    legacy/go.mod: Go
-    legacy/Makefile: Make
     build.rs: Cargo
 $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 [
@@ -67,14 +65,6 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
       {
         "path": "Dockerfile",
         "tool-name": "Docker"
-      },
-      {
-        "path": "legacy/go.mod",
-        "tool-name": "Go"
-      },
-      {
-        "path": "legacy/Makefile",
-        "tool-name": "Make"
       },
       {
         "path": "build.rs",

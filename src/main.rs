@@ -153,22 +153,26 @@ fn perform(opts: cli::Options) -> Result<()> {
     }
 }
 
-fn print_error(e: MeisterError) {
+fn errors_to_string(e: MeisterError) -> String {
     use MeisterError::*;
     match e {
-        Array(errs) => {
-            for e in errs {
-                print_error(e);
-            }
-        }
-        Fatal(m) => eprintln!("Fatal: {}", m),
-        Io(e) => eprintln!("IO Error: {}", e),
-        Json(e) => eprintln!("Parse Error: {}", e),
-        NotImplemented => eprintln!("Not implemented yet."),
-        NoProjectSpecified() => eprintln!("No project specified."),
-        ProjectNotFound(p) => eprintln!("Project not found: {}", p),
-        Warning(m) => eprintln!("Warning: {}", m),
+        Array(errs) => errs
+            .into_iter()
+            .map(|e| errors_to_string(e))
+            .collect::<Vec<String>>()
+            .join("\n"),
+        Fatal(m) => format!("Fatal: {}", m),
+        Io(e) => format!("IO Error: {}", e),
+        Json(e) => format!("Parse Error: {}", e),
+        NotImplemented => "Not implemented yet.".to_string(),
+        NoProjectSpecified() => "No project specified.".to_string(),
+        ProjectNotFound(p) => format!("Project not found: {}", p),
+        Warning(m) => format!("Warning: {}", m),
     }
+}
+
+fn print_error(e: MeisterError) {
+    println!("{}", errors_to_string(e));
 }
 
 fn rust_main(args: Vec<String>) -> Result<()> {
@@ -191,6 +195,40 @@ mod tests {
     use super::*;
 
     #[test]
+    fn test_error_message() {
+        use MeisterError::*;
+        assert_eq!("Fatal: test", errors_to_string(Fatal("test".to_string())));
+        assert_eq!(
+            "IO Error: test",
+            errors_to_string(Io(std::io::Error::new(std::io::ErrorKind::Other, "test",)))
+        );
+        assert_eq!(
+            "Parse Error: missing field `test`",
+            errors_to_string(Json(serde::de::Error::missing_field("test")))
+        );
+        assert_eq!("Not implemented yet.", errors_to_string(NotImplemented));
+        assert_eq!(
+            "No project specified.",
+            errors_to_string(NoProjectSpecified())
+        );
+        assert_eq!(
+            "Project not found: test",
+            errors_to_string(ProjectNotFound("test".to_string()))
+        );
+        assert_eq!(
+            "Warning: test",
+            errors_to_string(Warning("test".to_string()))
+        );
+        assert_eq!(
+            "Fatal: test\nFatal: test2",
+            errors_to_string(Array(vec![
+                Fatal("test".to_string()),
+                Fatal("test2".to_string())
+            ]))
+        );
+    }
+
+    #[test]
     fn test_success() {
         let r = rust_main(
             vec!["btmeister", "testdata/fibonacci", "--format", "json"]
@@ -204,8 +242,15 @@ mod tests {
     #[test]
     fn test_success_list_defs() {
         let r = rust_main(
-            vec!["btmeister", "testdata/fibonacci", "--list-defs", "--format", "json" ]
-            .iter().map(|s| s.to_string())
+            vec![
+                "btmeister",
+                "testdata/fibonacci",
+                "--list-defs",
+                "--format",
+                "json",
+            ]
+            .iter()
+            .map(|s| s.to_string())
             .collect(),
         );
         assert!(r.is_ok());
