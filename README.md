@@ -7,7 +7,7 @@
 [![Version](https://img.shields.io/badge/Version-v0.6.5-green)](https://github.com/tamada/btmeister/releases/tag/v0.6.5)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.0-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.5-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-tamada/tap/btmeister-blue?logo=homebrew)](https://github.com/tamada/homebrew-tap)
 
 Detecting the build tools in use.
@@ -76,6 +76,8 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 ```
 
 ## :whale: Docker
+
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.5-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 
 ```sh
 docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
