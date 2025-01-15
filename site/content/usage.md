@@ -20,11 +20,13 @@ Options:
                                    [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
   -L, --list-defs                  Print the build tools' definition list
   -f, --format <FORMAT>            Specify the output format [default: default]
-                                   [possible values: csv, default, json, xml, yaml]
+                                   [possible values: csv, default, json, markdown, xml, yaml]
   -v, --verbose                    Show verbose output.
   -h, --help                       Print help (see more with '--help')
   -V, --version                    Print version
 ```
+
+The default build tool definitions are available on the [GitHub repository](https://github.com/tamada/btmeister/blob/main/assets/buildtools.json) ([JSON schema](https://github.com/tamada/btmeister/blob/main/assets/buildtools.json.schema)).
 
 ### Sample Output
 
@@ -58,18 +60,63 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 
 ## :whale: Docker
 
-![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.0-blue?logo=docker)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.6-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 
 ```sh
 docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
 ```
 
-* Container OS
-  * Working directory: `/app`
-  * entry point: `/opt/btmeister/btmeister`
-  * user: `nonroot`
+- Container OS
+  - Working directory: `/app`
+  - entry point: `/opt/btmeister/btmeister`
+  - user: `nonroot`
 
-### Available versions
+## Supported build tools
 
-* latest, 0.6.0
-* [0.5.0](https://github.com/tamada/btmeister/pkgs/container/btmeister/26088262?tag=0.5.0)
+The btmeister supports the following build tools.
+
+- [Apache Ant](https://ant.apache.org/)
+- [Apache Ivy](https://ant.apache.org/ivy/)
+- [Apache Maven](https://maven.apache.org/)
+- [autoconf](https://www.gnu.org/software/autoconf/)
+- [automake](https://www.gnu.org/software/automake/)
+- [Bazel](https://bazel.build/)
+- [Blade](https://github.com/chen3feng/blade-build)
+- [Buck](https://buck.build/)
+- [Cake](https://cakebuild.net/)
+- [Cmake](https://cmake.org)
+- [Cargo](https://www.rust-lang.org)
+- [Cargo make](https://sagiegurari.github.io/cargo-make/)
+- [Circle CI](https://circleci.com)
+- [deno](https://deno.land/)
+- [Docker](https://www.docker.com)
+- [Docker Compose](https://docs.docker.com/compose/)
+- [Earthly](https://earthly.dev/)
+- [GitHub Actions](https://github.com/)
+- [Go](https://golang.org/)
+- [GitLab CI/CD](https://docs.gitlab.com/ee/ci/)
+- [Gradle](https://gradle.org/)
+- [Grunt](https://gruntjs.com/)
+- [Gulp](https://gulpjs.com/)
+- [Jenkins](https://www.jenkins.io)
+- [just](https://github.com/casey/just)
+- [latexmk](https://personal.psu.edu/jcc8/software/latexmk/)
+- [llmk](https://github.com/wtsnjp/llmk)
+- [Make](https://www.gnu.org/software/make/)
+- [Mage](https://magefile.org/)
+- [mise](https://mise.jdx.dev)
+- [ninja](https://ninja-build.org)
+- [npm](https://www.npmjs.com/)
+- [Pants](https://www.pantsbuild.org/)
+- [please.build](https://please.build/)
+- [PyBuilder](https://pybuilder.io/)
+- [Rake](https://github.com/ruby/rake)
+- [rollup.js](https://rollupjs.org)
+- [SCons](https://scons.org)
+- [sbt](https://www.scala-sbt.org/index.html)
+- [Task](https://taskfile.dev/)
+- [Travis](https://www.travis-ci.com)
+- [Terraform](https://www.terraform.io)
+- [distutils/setuptools/distribution](https://setuptools.pypa.io/en/latest/)
+- [vagrant](https://www.vagrantup.com)
+- [Webpack](https://webpack.js.org/)

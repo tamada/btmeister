@@ -19,11 +19,10 @@ script = [
     "cargo run -- --generate-completion-files --completion-out-dir target/completions"
 ]
 
-[tasks.convert]
+[tasks.pkl2json]
 description = "Convert the definition pkl file into json"
 script = [
     "pkl eval -f json -o assets/buildtools.json assets/buildtools.pkl"
-    # "docker run --rm -v $PWD:/app jesscarlos/pkl-cli:latest eval -f json -o assets/buildtools.json assets/buildtools.pkl"
 ]
 
 [tasks.start]
@@ -35,7 +34,13 @@ description = "Build the site document"
 script = ["hugo -s site"]
 
 [tasks.docker]
-description = "Build the docker image"
+description = "Build the docker image for the current arch"
+script = [
+    "docker build -t ghcr.io/tamada/btmeister:latest -t ghcr.io/tamada/btmeister:${CARGO_MAKE_WORKSPACE_PACKAGE_VERSION}."
+]
+
+[tasks.docker_buildx]
+description = "Build the docker image for multi-arch"
 script = [
     "docker buildx build --platform linux/arm64/v8,linux/amd64 --output=type=image,push=true -t ghcr.io/tamada/btmeister:latest -t ghcr.io/tamada/btmeister:${CARGO_MAKE_WORKSPACE_PACKAGE_VERSION} ."
 ]

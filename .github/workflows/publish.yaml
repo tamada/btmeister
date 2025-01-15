@@ -8,8 +8,7 @@ on:
 jobs:
   setup:
     runs-on: ubuntu-latest
-    # ブランチ名が release/v から始まる場合のみに実行する．
-    # プルリクエストがマージされた場合のみに実行する．
+    # runs only the branch name starts with 'release/v' and the pull request is merged.
     if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
     outputs:
       tag: ${{ steps.vars.outputs.tag }}
