@@ -100,11 +100,12 @@ Options:
                                    <span style="color:#f92672">[</span>possible values: default, hidden, ignore, git-ignore, git-global, git-exclude<span style="color:#f92672">]</span>
   -L, --list-defs                  Print the build tools<span style="color:#e6db74">&#39; definition list
 </span><span style="color:#e6db74">  -f, --format &lt;FORMAT&gt;            Specify the output format [default: default]
-</span><span style="color:#e6db74">                                   [possible values: csv, default, json, xml, yaml]
+</span><span style="color:#e6db74">                                   [possible values: csv, default, json, markdown, xml, yaml]
 </span><span style="color:#e6db74">  -v, --verbose                    Show verbose output.
 </span><span style="color:#e6db74">  -h, --help                       Print help (see more with &#39;</span>--help<span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#f92672">)</span>
   -V, --version                    Print version
-</code></pre></div><h3 id="sample-output">Sample Output</h3>
+</code></pre></div><p>The default build tool definitions are available on the <a href="https://github.com/tamada/btmeister/blob/main/assets/buildtools.json">GitHub repository</a> (<a href="https://github.com/tamada/btmeister/blob/main/assets/buildtools.json.schema">JSON schema</a>).</p>
+<h3 id="sample-output">Sample Output</h3>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">$ btmeister ~/github.com/tamada/gibo-wrapper
 /Users/tamada/github.com/tamada/gibo-wrapper
     Cargo.toml: Cargo
@@ -131,7 +132,7 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
   <span style="color:#f92672">}</span>
 <span style="color:#f92672">]</span>
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
-<p><img src="https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.0-blue?logo=docker" alt="Docker"></p>
+<p><a href="https://github.com/tamada/btmeister/pkgs/container/btmeister/"><img src="https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.6-blue?logo=docker" alt="Docker"></a></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
 </code></pre></div><ul>
 <li>Container OS
@@ -142,10 +143,54 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 </ul>
 </li>
 </ul>
-<h3 id="available-versions">Available versions</h3>
+<h2 id="supported-build-tools">Supported build tools</h2>
+<p>The btmeister supports the following build tools.</p>
 <ul>
-<li>latest, 0.6.0</li>
-<li><a href="https://github.com/tamada/btmeister/pkgs/container/btmeister/26088262?tag=0.5.0">0.5.0</a></li>
+<li><a href="https://ant.apache.org/">Apache Ant</a></li>
+<li><a href="https://ant.apache.org/ivy/">Apache Ivy</a></li>
+<li><a href="https://maven.apache.org/">Apache Maven</a></li>
+<li><a href="https://www.gnu.org/software/autoconf/">autoconf</a></li>
+<li><a href="https://www.gnu.org/software/automake/">automake</a></li>
+<li><a href="https://bazel.build/">Bazel</a></li>
+<li><a href="https://github.com/chen3feng/blade-build">Blade</a></li>
+<li><a href="https://buck.build/">Buck</a></li>
+<li><a href="https://cakebuild.net/">Cake</a></li>
+<li><a href="https://cmake.org">Cmake</a></li>
+<li><a href="https://www.rust-lang.org">Cargo</a></li>
+<li><a href="https://sagiegurari.github.io/cargo-make/">Cargo make</a></li>
+<li><a href="https://circleci.com">Circle CI</a></li>
+<li><a href="https://deno.land/">deno</a></li>
+<li><a href="https://www.docker.com">Docker</a></li>
+<li><a href="https://docs.docker.com/compose/">Docker Compose</a></li>
+<li><a href="https://earthly.dev/">Earthly</a></li>
+<li><a href="https://github.com/">GitHub Actions</a></li>
+<li><a href="https://golang.org/">Go</a></li>
+<li><a href="https://docs.gitlab.com/ee/ci/">GitLab CI/CD</a></li>
+<li><a href="https://gradle.org/">Gradle</a></li>
+<li><a href="https://gruntjs.com/">Grunt</a></li>
+<li><a href="https://gulpjs.com/">Gulp</a></li>
+<li><a href="https://www.jenkins.io">Jenkins</a></li>
+<li><a href="https://github.com/casey/just">just</a></li>
+<li><a href="https://personal.psu.edu/jcc8/software/latexmk/">latexmk</a></li>
+<li><a href="https://github.com/wtsnjp/llmk">llmk</a></li>
+<li><a href="https://www.gnu.org/software/make/">Make</a></li>
+<li><a href="https://magefile.org/">Mage</a></li>
+<li><a href="https://mise.jdx.dev">mise</a></li>
+<li><a href="https://ninja-build.org">ninja</a></li>
+<li><a href="https://www.npmjs.com/">npm</a></li>
+<li><a href="https://www.pantsbuild.org/">Pants</a></li>
+<li><a href="https://please.build/">please.build</a></li>
+<li><a href="https://pybuilder.io/">PyBuilder</a></li>
+<li><a href="https://github.com/ruby/rake">Rake</a></li>
+<li><a href="https://rollupjs.org">rollup.js</a></li>
+<li><a href="https://scons.org">SCons</a></li>
+<li><a href="https://www.scala-sbt.org/index.html">sbt</a></li>
+<li><a href="https://taskfile.dev/">Task</a></li>
+<li><a href="https://www.travis-ci.com">Travis</a></li>
+<li><a href="https://www.terraform.io">Terraform</a></li>
+<li><a href="https://setuptools.pypa.io/en/latest/">distutils/setuptools/distribution</a></li>
+<li><a href="https://www.vagrantup.com">vagrant</a></li>
+<li><a href="https://webpack.js.org/">Webpack</a></li>
 </ul>
 
 
