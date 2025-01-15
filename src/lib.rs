@@ -5,37 +5,36 @@
  * At first, read the build tool definitions from the specified file or
  * the default definitions, and build an instance of [BuildToolDefs].
  *
- * ```
- * let defs_result = BuildToolDefs::parse_from_assets();
- * ```
- * or
- * ```
- * let defs_result = BuildToolDefs::parse(PathBuf::from("buildtools.json"));
- * ```
- *
  * Next, build an object of [Meister] with the definitions and
  * directory traversing options (`its`: ignore types).
  * If the its is empty vector, the default value [IgnoreType::Default] will be used.
  *
- * ```
- * let meister = Meister::new(defs_result.unwrap(), vec![]);
- * ```
- *
  * Finally, detect the build tools in the specified directory and print the result.
  *
  * ```
- * match meister.find(PathBuf::from("path/to/project")) {
+ * // The first step
+ * let defs_result = btmeister::defs::BuildToolDefs::parse_from_asset();
+ * // or specifying the definition file.
+ * // let defs_result = btmeister::defs::BuildToolDefs::parse(std::path::PathBuf::from("buildtools.json"));
+ *
+ * // The second step
+ * let meister = btmeister::Meister::new(defs_result.unwrap(), vec![]);
+ *
+ * // The third step
+ * let meister = btmeister::Meister::new_as_default().unwrap();
+ * match meister.find(std::path::PathBuf::from("testdata/hello")) {
  *     Ok(r) => {
  *        println!("project: {}", r.base.display());
  *        for bt in r.tools {
  *            println!("  {}: {}", bt.def.name, bt.path.display());
  *         }
  *     },
- *     Err(e) => panic!("error: {}", e),
+ *     Err(e) => panic!("error: {:?}", e),
  * }
  *  ```
  */
 pub mod defs;
+mod extractors;
 pub mod verbose;
 
 use clap::ValueEnum;
@@ -53,15 +52,19 @@ pub enum MeisterError {
     /// Fatal error.
     Fatal(String),
     /// IO error.
-    Io(std::io::Error),
+    IO(std::io::Error),
     /// JSON error.
     Json(JsonError),
     /// NotImplemented error.
     NotImplemented,
+    /// specified directories or files is not a project.
+    NotProject(String),
     /// if no project was specified.
     NoProjectSpecified(),
     /// The given project does not exist.
     ProjectNotFound(String),
+    /// the given archive file was not supported.
+    UnsupportedArchiveFormat(String),
     /// warning message.
     Warning(String),
 }
@@ -84,6 +87,16 @@ pub enum IgnoreType {
     GitExclude,
 }
 
+pub fn is_supported_archive_format(arg: &PathBuf) -> bool {
+    let name = arg.to_str().unwrap().to_lowercase();
+    for (_, ext) in extractors::exts().iter() {
+        if name.ends_with(ext) {
+            return true;
+        }
+    }
+    return false;
+}
+
 /// a result of the project.
 pub type Result<T> = std::result::Result<T, MeisterError>;
 
@@ -98,7 +111,7 @@ pub struct Meister {
 
 /// BuildTools represents a result of the `Meister::find` method.
 /// This object contains the project directory and the detected files of build tools.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BuildTools {
     /// The base directory of the project.
     pub base: PathBuf,
@@ -107,7 +120,7 @@ pub struct BuildTools {
 }
 
 /// BuildTool represents a detected file for build tool.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct BuildTool {
     /// path of the detected file.
     pub path: PathBuf,
@@ -163,9 +176,37 @@ impl Meister {
 
     /// find detects the build tools in the specified directory.
     pub fn find(&self, base: PathBuf) -> Result<BuildTools> {
+        if base.is_file() {
+            if is_supported_archive_format(&base) {
+                self.find_archive(base)
+            } else {
+                Err(MeisterError::UnsupportedArchiveFormat(
+                    base.display().to_string(),
+                ))
+            }
+        } else {
+            self.find_directory(base)
+        }
+    }
+
+    fn find_archive(&self, base: PathBuf) -> Result<BuildTools> {
+        let mut tools = vec![];
+        match extractors::list_entries(base.clone()) {
+            Err(e) => Err(e),
+            Ok(entries) => {
+                for entry in entries {
+                    if let Some(bt) = find_build_tool(self, &PathBuf::from(entry)) {
+                        tools.push(bt);
+                    }
+                }
+                Ok(BuildTools { base, tools })
+            }
+        }
+    }
+
+    fn find_directory(&self, base: PathBuf) -> Result<BuildTools> {
         let mut result = vec![];
         let mut errs = vec![];
-
         let walker = build_walker(base.clone(), &self.its);
         for entry in walker {
             match entry {
@@ -318,7 +359,6 @@ mod tests {
     use std::path::PathBuf;
 
     #[test]
-
     fn test_build_walker() {
         if let Ok(meister) = Meister::new_as_default() {
             let r = meister.find(PathBuf::from("testdata/fibonacci"));
@@ -332,6 +372,22 @@ mod tests {
             }
         }
     }
+
+    #[test]
+    fn test_archive_file() {
+        if let Ok(meister) = Meister::new_as_default() {
+            let r = meister.find(PathBuf::from("testdata/hello.tar"));
+            assert!(r.is_ok());
+            if let Ok(r) = r {
+                assert_eq!(1, r.tools.len());
+                assert_eq!("Cargo", r.tools[0].def.name);
+                if let Ok(p) = r.path_of(0) {
+                    assert_eq!("hello/Cargo.toml".to_string(), p);
+                }
+            }
+        }
+    }
+
     #[test]
     fn test_matches1() {
         let def = BuildToolDef::new(

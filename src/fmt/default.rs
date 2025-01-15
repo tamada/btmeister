@@ -35,9 +35,11 @@ impl FormatterTrait for Formatter {
         let mut result = Vec::<u8>::new();
         let _ = writeln!(result, "{}", tools.base.display());
         for bt in &tools.tools {
-            if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
-                let _ = writeln!(result, "    {}: {}", p.display(), bt.def.name);
-            }
+            let _ = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                writeln!(result, "    {}: {}", p.display(), bt.def.name)
+            } else {
+                writeln!(result, "    {}: {}", bt.path.display(), bt.def.name)
+            };
         }
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }

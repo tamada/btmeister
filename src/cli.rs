@@ -58,7 +58,10 @@ pub(crate) struct InputOpts {
     #[arg(
         value_name = "PROJECTs",
         required = false,
-        help = "The target project paths. If \"-\" was given, reads from stdin, and \"@\" was put on the first character, read from the file."
+        help = "The target project paths. If \"-\" was given, reads from stdin.
+Also, the first character was \"@\", read from the file eliminating \"@\".
+This parameters accept directories and archive files.
+Supported archive files: tar, tar.bz2, tar.gz, tar.xz, tar.zstd, and zip."
     )]
     pub dirs: Vec<String>,
 }
@@ -129,17 +132,25 @@ fn read_from_stdin() -> Result<Vec<String>> {
 
 fn read_from_file(filename: &str) -> Result<Vec<String>> {
     match std::fs::File::open(filename) {
-        Err(e) => Err(MeisterError::Io(e)),
+        Err(e) => Err(MeisterError::IO(e)),
         Ok(file) => read_from_reader(Box::new(std::io::BufReader::new(file))),
     }
 }
 
 fn convert_and_push_item(item: &str, result: &mut Vec<PathBuf>, errs: &mut Vec<MeisterError>) {
     let path = PathBuf::from(item);
-    if !path.exists() || !path.is_dir() {
+    if !path.exists() {
         errs.push(MeisterError::ProjectNotFound(item.to_string()));
-    } else {
+    } else if path.is_file() {
+        if btmeister::is_supported_archive_format(&path) {
+            result.push(path);
+        } else {
+            errs.push(MeisterError::ProjectNotFound(item.to_string()));
+        }
+    } else if path.is_dir() {
         result.push(path);
+    } else {
+        errs.push(MeisterError::ProjectNotFound(item.to_string()));
     }
 }
 
@@ -245,7 +256,7 @@ mod tests {
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(1, e.len());
-            if let MeisterError::Io(p) = &e[0] {
+            if let MeisterError::IO(p) = &e[0] {
                 assert_eq!(std::io::ErrorKind::NotFound, p.kind());
             }
         }
