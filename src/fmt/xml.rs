@@ -48,14 +48,16 @@ impl FormatterTrait for Formatter {
             tools.base.display()
         );
         for bt in &tools.tools {
-            if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
-                let _ = writeln!(
-                    result,
-                    r#"            <build-file tool-name="{}">{}</build-file>"#,
-                    bt.def.name,
-                    p.display()
-                );
-            }
+            let path_name = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                p.display()
+            } else {
+                bt.path.display()
+            };
+            let _ = writeln!(
+                result,
+                r#"            <build-file tool-name="{}">{}</build-file>"#,
+                bt.def.name, path_name
+            );
         }
         let _ = writeln!(result, "        </build-files>\n    </project>");
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))

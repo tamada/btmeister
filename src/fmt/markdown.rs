@@ -29,10 +29,13 @@ impl FormatterTrait for Formatter {
     fn format_files(&self, tools: &BuildTools, _: bool) -> Result<String> {
         let mut result = Vec::<u8>::new();
         let b = tools.base.display();
+        let _ = writeln!(result, "## {}\n", b);
         for bt in &tools.tools {
-            if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
-                let _ = writeln!(result, "- {}\n  - {}/{}", bt.def.name, b, p.display());
-            }
+            let _ = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                writeln!(result, "- {}\n  - {}", bt.def.name, p.display())
+            } else {
+                writeln!(result, "- {}\n  - {}", bt.def.name, bt.path.display())
+            };
         }
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }
@@ -71,10 +74,12 @@ mod tests {
         assert!(result.is_ok());
         if let Ok(r) = result {
             assert_eq!(
-                r#"- Fake
-  - fake/base/dir/Fakefile
+                r#"## fake/base/dir
+
+- Fake
+  - Fakefile
 - Make
-  - fake/base/dir/Makefile
+  - Makefile
 "#
                 .to_string(),
                 r

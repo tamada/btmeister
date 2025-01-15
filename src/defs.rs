@@ -34,7 +34,7 @@ use crate::{verbose, MeisterError, Result};
 struct Asset;
 
 /// BuildToolDef represents a build tool definition.
-#[derive(Serialize, Deserialize, Clone)]
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct BuildToolDef {
     pub name: String,
     #[serde(rename = "build-files")]
@@ -68,7 +68,7 @@ impl BuildToolDefs {
                     Err(e) => Err(MeisterError::Json(e)),
                 }
             }
-            Err(e) => Err(MeisterError::Io(e)),
+            Err(e) => Err(MeisterError::IO(e)),
         }
     }
 

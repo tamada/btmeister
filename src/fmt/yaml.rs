@@ -44,15 +44,17 @@ impl FormatterTrait for Formatter {
             tools.base.display()
         );
         for bt in &tools.tools {
-            if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
-                let _ = writeln!(
-                    result,
-                    r#"  - tool-name: {}
+            let path_name = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                p.display()
+            } else {
+                bt.path.display()
+            };
+            let _ = writeln!(
+                result,
+                r#"  - tool-name: {}
     file-path: {}"#,
-                    bt.def.name,
-                    p.display(),
-                );
-            }
+                bt.def.name, path_name
+            );
         }
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }

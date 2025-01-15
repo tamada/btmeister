@@ -31,6 +31,7 @@ fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verbose
 }
 
 fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
+    use std::io::Write;
     let mut errs = vec![];
     if let Some(header) = f.header_files() {
         println!("{}", header);
@@ -44,6 +45,7 @@ fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
     if let Some(footer) = f.footer_files() {
         println!("{}", footer);
     }
+    let _ = std::io::stdout().flush();
     if errs.is_empty() {
         Ok(())
     } else {
@@ -95,14 +97,14 @@ mod gencomp {
         let destfile = outdir.join(file);
         v.log(format!("generate completions for {}: {}", s, destfile.display()).as_str());
         if let Err(e) = std::fs::create_dir_all(destfile.parent().unwrap()) {
-            return Err(btmeister::MeisterError::Io(e));
+            return Err(btmeister::MeisterError::IO(e));
         }
         match File::create(destfile) {
             Ok(mut dest) => {
                 clap_complete::generate(s, app, "btmeister", &mut dest);
                 Ok(())
             }
-            Err(e) => Err(btmeister::MeisterError::Io(e)),
+            Err(e) => Err(btmeister::MeisterError::IO(e)),
         }
     }
 
@@ -161,13 +163,15 @@ fn errors_to_string(e: MeisterError) -> String {
             .map(errors_to_string)
             .collect::<Vec<String>>()
             .join("\n"),
-        Fatal(m) => format!("Fatal: {}", m),
-        Io(e) => format!("IO Error: {}", e),
-        Json(e) => format!("Parse Error: {}", e),
-        NotImplemented => "Not implemented yet.".to_string(),
-        NoProjectSpecified() => "No project specified.".to_string(),
-        ProjectNotFound(p) => format!("Project not found: {}", p),
-        Warning(m) => format!("Warning: {}", m),
+        Fatal(m) => format!("fatal: {}", m),
+        IO(e) => format!("io error: {}", e),
+        Json(e) => format!("parse error: {}", e),
+        NotImplemented => "not implemented yet.".to_string(),
+        NotProject(file) => format!("{}: not project", file),
+        NoProjectSpecified() => "no project specified.".to_string(),
+        ProjectNotFound(p) => format!("{}: project not found", p),
+        UnsupportedArchiveFormat(f) => format!("{}: unsupported archive format", f),
+        Warning(m) => format!("warning: {}", m),
     }
 }
 
@@ -197,30 +201,34 @@ mod tests {
     #[test]
     fn test_error_message() {
         use MeisterError::*;
-        assert_eq!("Fatal: test", errors_to_string(Fatal("test".to_string())));
+        assert_eq!("fatal: test", errors_to_string(Fatal("test".to_string())));
         assert_eq!(
-            "IO Error: test",
-            errors_to_string(Io(std::io::Error::new(std::io::ErrorKind::Other, "test",)))
+            "io error: test",
+            errors_to_string(IO(std::io::Error::new(std::io::ErrorKind::Other, "test",)))
         );
         assert_eq!(
-            "Parse Error: missing field `test`",
+            "parse error: missing field `test`",
             errors_to_string(Json(serde::de::Error::missing_field("test")))
         );
-        assert_eq!("Not implemented yet.", errors_to_string(NotImplemented));
+        assert_eq!("not implemented yet.", errors_to_string(NotImplemented));
         assert_eq!(
-            "No project specified.",
+            "no project specified.",
             errors_to_string(NoProjectSpecified())
         );
         assert_eq!(
-            "Project not found: test",
+            "test: project not found",
             errors_to_string(ProjectNotFound("test".to_string()))
         );
         assert_eq!(
-            "Warning: test",
+            "test: unsupported archive format",
+            errors_to_string(UnsupportedArchiveFormat("test".to_string())),
+        );
+        assert_eq!(
+            "warning: test",
             errors_to_string(Warning("test".to_string()))
         );
         assert_eq!(
-            "Fatal: test\nFatal: test2",
+            "fatal: test\nfatal: test2",
             errors_to_string(Array(vec![
                 Fatal("test".to_string()),
                 Fatal("test2".to_string())
