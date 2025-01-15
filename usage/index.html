@@ -90,8 +90,10 @@
 Usage: btmeister <span style="color:#f92672">[</span>OPTIONS<span style="color:#f92672">]</span> <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...
 
 Arguments:
-  <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...  The target project paths. If <span style="color:#e6db74">&#34;-&#34;</span> was given, reads from stdin,
-                 and <span style="color:#e6db74">&#34;@&#34;</span> was put on the first character, read from the file.
+  <span style="color:#f92672">[</span>PROJECTs<span style="color:#f92672">]</span>...  The target project paths. If <span style="color:#e6db74">&#34;-&#34;</span> was given, reads from stdin.
+                 Also, the first character was <span style="color:#e6db74">&#34;@&#34;</span>, read from the file eliminating <span style="color:#e6db74">&#34;@&#34;</span>.
+                 This parameters accept directories and archive files.
+                 Supported archive files: tar, tar.bz2, tar.gz, tar.xz, tar.zstd, and zip.
 
 Options:
   -D, --definition &lt;DEFS_JSON&gt;     Specify the definition of the build tools.
@@ -99,7 +101,7 @@ Options:
   -i, --ignore-type &lt;IGNORE_TYPE&gt;  specify the ignore type. <span style="color:#f92672">[</span>default: default<span style="color:#f92672">]</span> 
                                    <span style="color:#f92672">[</span>possible values: default, hidden, ignore, git-ignore, git-global, git-exclude<span style="color:#f92672">]</span>
   -L, --list-defs                  Print the build tools<span style="color:#e6db74">&#39; definition list
-</span><span style="color:#e6db74">  -f, --format &lt;FORMAT&gt;            Specify the output format [default: default]
+</span><span style="color:#e6db74">  -f, --format &lt;FORMAT&gt;            Specify the output format [default: default] 
 </span><span style="color:#e6db74">                                   [possible values: csv, default, json, markdown, xml, yaml]
 </span><span style="color:#e6db74">  -v, --verbose                    Show verbose output.
 </span><span style="color:#e6db74">  -h, --help                       Print help (see more with &#39;</span>--help<span style="color:#960050;background-color:#1e0010">&#39;</span><span style="color:#f92672">)</span>
@@ -132,7 +134,7 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
   <span style="color:#f92672">}</span>
 <span style="color:#f92672">]</span>
 </code></pre></div><h2 id="-docker">🐳 Docker</h2>
-<p><a href="https://github.com/tamada/btmeister/pkgs/container/btmeister/"><img src="https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.6.6-blue?logo=docker" alt="Docker"></a></p>
+<p><a href="https://github.com/tamada/btmeister/pkgs/container/btmeister/"><img src="https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.1-blue?logo=docker" alt="Docker"></a></p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4"><code class="language-sh" data-lang="sh">docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
 </code></pre></div><ul>
 <li>Container OS
