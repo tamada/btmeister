@@ -62,7 +62,7 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.0-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.1-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 
 ```sh
 docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .

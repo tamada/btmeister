@@ -17,7 +17,7 @@ RUN    touch src/main.rs \
 FROM gcr.io/distroless/static-debian12:nonroot
 USER nonroot
 
-ARG VERSION=0.7.0
+ARG VERSION=0.7.1
 
 LABEL org.opencontainers.image.authors="Haruaki Tamada <tamada@users.noreply.github.com>" \
     org.opencontainers.image.url="https://github.com/tamada/btmeister" \
