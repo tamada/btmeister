@@ -39,7 +39,7 @@ Options:
                                    [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
   -L, --list-defs                  Print the build tools' definition list
   -f, --format <FORMAT>            Specify the output format [default: default]
-                                   [possible values: csv, default, json, xml, yaml]
+                                   [possible values: csv, default, json, markdown, xml, yaml]
   -v, --verbose                    Show verbose output.
   -h, --help                       Print help (see more with '--help')
   -V, --version                    Print version

@@ -107,6 +107,7 @@ pub enum Format {
     Csv,
     Default,
     Json,
+    Markdown,
     Xml,
     Yaml,
 }

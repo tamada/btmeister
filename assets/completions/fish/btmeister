@@ -1,10 +1,20 @@
 complete -c btmeister -s D -l definition -d 'Specify the definition of the build tools.' -r -F
 complete -c btmeister -l append-defs -d 'Specify the additional definitions of the build tools.' -r -F
-complete -c btmeister -s i -l ignore-type -d 'specify the ignore type.' -r -f -a "{default\t'',hidden\t'',ignore\t'',git-ignore\t'',git-global\t'',git-exclude\t''}"
-complete -c btmeister -s f -l format -d 'Specify the output format' -r -f -a "{csv\t'',default\t'',json\t'',xml\t'',yaml\t''}"
-complete -c btmeister -s d -l dest -d 'Output directory of completion files' -r -F
+complete -c btmeister -s i -l ignore-type -d 'specify the ignore type.' -r -f -a "default\t'[IgnoreType::Hidden], [IgnoreType::Ignore], [IgnoreType::GitIgnore], [IgnoreType::GitGlobal], and [IgnoreType::GitExclude]. All of the ignore types are enabled'
+hidden\t'ignore hidden file'
+ignore\t'ignore respecting `.ignore` file'
+git-ignore\t'ignore respecting `.gitignore` file'
+git-global\t'ignore respecting global git ignore file'
+git-exclude\t'ignore respecting `.git/info/exclude` file'"
+complete -c btmeister -s f -l format -d 'Specify the output format' -r -f -a "csv\t''
+default\t''
+json\t''
+markdown\t''
+xml\t''
+yaml\t''"
+complete -c btmeister -l completion-out-dir -d 'Output directory of completion files' -r -F
 complete -c btmeister -s L -l list-defs -d 'Print the build tools\' definition list'
 complete -c btmeister -s v -l verbose -d 'Show verbose output.'
 complete -c btmeister -l generate-completion-files -d 'Generate completion files'
-complete -c btmeister -s h -l help -d 'Print help'
+complete -c btmeister -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c btmeister -s V -l version -d 'Print version'

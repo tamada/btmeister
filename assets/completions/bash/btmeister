@@ -19,7 +19,7 @@ _btmeister() {
 
     case "${cmd}" in
         btmeister)
-            opts="-D -i -L -f -v -d -h -V --definition --append-defs --ignore-type --list-defs --format --verbose --generate-completion-files --dest --help --version [PROJECTs]..."
+            opts="-D -i -L -f -v -h -V --definition --append-defs --ignore-type --list-defs --format --verbose --generate-completion-files --completion-out-dir --help --version [PROJECTs]..."
             if [[ ${cur} == -* || ${COMP_CWORD} -eq 1 ]] ; then
                 COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
                 return 0
@@ -46,23 +46,23 @@ _btmeister() {
                     return 0
                     ;;
                 --format)
-                    COMPREPLY=($(compgen -W "csv default json xml yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "csv default json markdown xml yaml" -- "${cur}"))
                     return 0
                     ;;
                 -f)
-                    COMPREPLY=($(compgen -W "csv default json xml yaml" -- "${cur}"))
+                    COMPREPLY=($(compgen -W "csv default json markdown xml yaml" -- "${cur}"))
                     return 0
                     ;;
-                --dest)
-                    COMPREPLY=($(compgen -f "${cur}"))
-                    return 0
-                    ;;
-                -d)
+                --completion-out-dir)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
                 *)
-                    COMPREPLY=()
+                    if [[ "${cur}" == "@*"]]; then
+                        COMPREPLY=($(compgen -f "${cur:1}" -P "@")) # complete file
+                    else
+                        COMPREPLY=($(compgen -d "${cur}")) # complete directory
+                    fi
                     ;;
             esac
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )
