@@ -79,6 +79,7 @@ mod tests {
         assert_eq!("csv", build_formatter(Format::Csv).name());
         assert_eq!("default", build_formatter(Format::Default).name());
         assert_eq!("json", build_formatter(Format::Json).name());
+        assert_eq!("markdown", build_formatter(Format::Markdown).name());
         assert_eq!("xml", build_formatter(Format::Xml).name());
         assert_eq!("yaml", build_formatter(Format::Yaml).name());
     }
