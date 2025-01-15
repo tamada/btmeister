@@ -6,10 +6,10 @@ title: ":house: btmeister"
 [![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=main)](https://coveralls.io/github/tamada/btmeister?branch=main)
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
 
-[![Version](https://img.shields.io/badge/Version-v0.7.0-green)](https://github.com/tamada/btmeister/releases/tag/v0.7.0)
+[![Version](https://img.shields.io/badge/Version-v0.7.1-green)](https://github.com/tamada/btmeister/releases/tag/v0.7.1)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.0-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.1-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-tamada/tap/btmeister-blue?logo=homebrew)](https://github.com/tamada/homebrew-tap)
 
 ## :speaking_head: Description
