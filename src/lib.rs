@@ -87,14 +87,14 @@ pub enum IgnoreType {
     GitExclude,
 }
 
-pub fn is_supported_archive_format(arg: &PathBuf) -> bool {
+pub fn is_supported_archive_format(arg: &Path) -> bool {
     let name = arg.to_str().unwrap().to_lowercase();
     for (_, ext) in extractors::exts().iter() {
         if name.ends_with(ext) {
             return true;
         }
     }
-    return false;
+    false
 }
 
 /// a result of the project.

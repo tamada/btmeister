@@ -117,7 +117,7 @@ pub enum Format {
 
 fn read_from_reader(r: Box<dyn BufRead>) -> Result<Vec<String>> {
     let mut result = vec![];
-    for line in r.lines().flatten() {
+    for line in r.lines().map_while(|line| line.map_err(MeisterError::IO).ok()) {
         if line.starts_with("#") || line.trim().is_empty() {
             continue;
         }

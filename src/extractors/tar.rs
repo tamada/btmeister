@@ -32,7 +32,7 @@ impl Extractor for TarExtractor {
 
 impl Extractor for TarGzExtractor {
     fn list_entries(&self, archive_file: PathBuf) -> Result<Vec<String>> {
-        match open_tar_file(&archive_file, |f| flate2::read::GzDecoder::new(f)) {
+        match open_tar_file(&archive_file, flate2::read::GzDecoder::new) {
             Ok(archive) => list_tar(archive),
             Err(e) => Err(e),
         }
@@ -46,7 +46,7 @@ impl Extractor for TarGzExtractor {
 
 impl Extractor for TarBz2Extractor {
     fn list_entries(&self, archive_file: PathBuf) -> Result<Vec<String>> {
-        match open_tar_file(&archive_file, |f| bzip2::read::BzDecoder::new(f)) {
+        match open_tar_file(&archive_file, bzip2::read::BzDecoder::new) {
             Ok(archive) => list_tar(archive),
             Err(e) => Err(e),
         }
@@ -60,7 +60,7 @@ impl Extractor for TarBz2Extractor {
 
 impl Extractor for TarXzExtractor {
     fn list_entries(&self, archive_file: PathBuf) -> Result<Vec<String>> {
-        match open_tar_file(&archive_file, |f| XzDecoder::new(f)) {
+        match open_tar_file(&archive_file, XzDecoder::new) {
             Err(e) => Err(e),
             Ok(archive) => list_tar(archive),
         }
@@ -103,7 +103,7 @@ fn list_tar<R: Read>(mut archive: tar::Archive<R>) -> Result<Vec<String>> {
     for entry in archive.entries().unwrap() {
         let entry = entry.unwrap();
         let path = entry.header().path().unwrap();
-        result.push(format!("{}", path.to_str().unwrap()));
+        result.push(path.to_str().unwrap().to_string());
     }
     Ok(result)
 }
