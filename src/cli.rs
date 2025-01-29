@@ -19,10 +19,12 @@ pub(crate) struct Options {
     #[arg(short, long, help = "Show verbose output.")]
     pub(crate) verbose: bool,
 
+    #[cfg(debug_assertions)]
     #[clap(flatten)]
     pub(crate) compopts: CompletionOpts,
 }
 
+#[cfg(debug_assertions)]
 #[derive(Parser, Debug)]
 pub(crate) struct CompletionOpts {
     #[arg(

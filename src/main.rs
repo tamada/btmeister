@@ -78,6 +78,7 @@ fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
     }
 }
 
+#[cfg(debug_assertions)]
 mod gencomp {
     use crate::cli::Options;
     use btmeister::verbose::Verboser;
@@ -134,23 +135,26 @@ mod gencomp {
 
 fn perform(opts: cli::Options) -> Result<()> {
     let mut verboser = verbose::new(opts.verbose);
-    let (input_opts, output_opts, defopts, compopts) =
-        (opts.inputs, opts.outputs, opts.defopts, opts.compopts);
+    let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
+    #[cfg(debug_assertions)]
+    let compopts = opts.compopts;
     let defs = match defs::construct(defopts.definition, defopts.append_defs, &mut verboser) {
         Err(e) => return Err(e),
         Ok(defs) => defs,
     };
-    if compopts.completion {
-        gencomp::generate_completions(compopts.dest, &mut verboser)
+    if cfg!(debug_assertions) {
+        #[cfg(debug_assertions)]
+        if compopts.completion {
+            return gencomp::generate_completions(compopts.dest, &mut verboser);
+        }
+    }
+    let formatter = fmt::build_formatter(output_opts.format);
+    if output_opts.list_defs {
+        list_defs(defs, formatter, &mut verboser)
     } else {
-        let formatter = fmt::build_formatter(output_opts.format);
-        if output_opts.list_defs {
-            list_defs(defs, formatter, &mut verboser)
-        } else {
-            match find_bt(defs, input_opts) {
-                Ok(r) => print_results(r, formatter),
-                Err(e) => Err(e),
-            }
+        match find_bt(defs, input_opts) {
+            Ok(r) => print_results(r, formatter),
+            Err(e) => Err(e),
         }
     }
 }

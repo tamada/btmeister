@@ -58,9 +58,9 @@ fn find_format_impl(file_name: Option<&OsStr>) -> Result<Format> {
                     return Ok(ext.0.clone());
                 }
             }
-            return Err(MeisterError::UnsupportedArchiveFormat(
+            Err(MeisterError::UnsupportedArchiveFormat(
                 file_name.to_str().unwrap().to_string(),
-            ));
+            ))
         }
         None => Err(MeisterError::NoProjectSpecified()),
     }

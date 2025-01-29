@@ -87,14 +87,15 @@ pub enum IgnoreType {
     GitExclude,
 }
 
-pub fn is_supported_archive_format(arg: &PathBuf) -> bool {
+pub fn is_supported_archive_format<P: AsRef<Path>>(arg: P) -> bool {
+    let arg = arg.as_ref();
     let name = arg.to_str().unwrap().to_lowercase();
     for (_, ext) in extractors::exts().iter() {
         if name.ends_with(ext) {
             return true;
         }
     }
-    return false;
+    false
 }
 
 /// a result of the project.
@@ -148,8 +149,7 @@ impl BuildTools {
 }
 
 impl Meister {
-    /// new_as_default creates a Meister object with the default build tool definitions.
-    pub fn new_as_default() -> Result<Self> {
+    pub fn default() -> Result<Self> {
         match BuildToolDefs::parse_from_asset() {
             Ok(r) => Meister::new(r, vec![IgnoreType::Default]),
             Err(e) => Err(e),
@@ -360,7 +360,7 @@ mod tests {
 
     #[test]
     fn test_build_walker() {
-        if let Ok(meister) = Meister::new_as_default() {
+        if let Ok(meister) = Meister::default() {
             let r = meister.find(PathBuf::from("testdata/fibonacci"));
             assert!(r.is_ok());
             if let Ok(r) = r {
@@ -375,7 +375,7 @@ mod tests {
 
     #[test]
     fn test_archive_file() {
-        if let Ok(meister) = Meister::new_as_default() {
+        if let Ok(meister) = Meister::default() {
             let r = meister.find(PathBuf::from("testdata/hello.tar"));
             assert!(r.is_ok());
             if let Ok(r) = r {

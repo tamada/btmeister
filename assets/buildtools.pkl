@@ -266,7 +266,12 @@ buildtools = new Listing<BuildToolDef> {
       "Taskfile.yaml"
       "Taskfile.dist.yml"
       "Taskfile.dist.yaml"
-      "Taskfile"
+      // "Taskfile"
+      "taskfile.yml"
+      "taskfile.yaml"
+      "taskfile.dist.yml"
+      "taskfile.dist.yaml"
+      // "taskfile"
     }
     url = "https://taskfile.dev/"
   }
