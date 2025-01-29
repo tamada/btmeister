@@ -2,7 +2,7 @@ use clap::{Parser, ValueEnum};
 use std::io::{self, BufRead};
 use std::path::PathBuf;
 
-use btmeister::{IgnoreType, MeisterError, Result};
+use btmeister::{IgnoreType, LogLevel, MeisterError, Result};
 
 #[derive(Parser, Debug)]
 #[clap(author, version, about, arg_required_else_help = true)]
@@ -16,8 +16,8 @@ pub(crate) struct Options {
     #[clap(flatten)]
     pub(crate) outputs: OutputOpts,
 
-    #[arg(short, long, help = "Show verbose output.")]
-    pub(crate) verbose: bool,
+    #[arg(short, long, value_name = "LEVEL", default_value = "warn", help = "Specify the log level.", ignore_case = true)]
+    pub(crate) level: LogLevel,
 
     #[cfg(debug_assertions)]
     #[clap(flatten)]
@@ -56,6 +56,9 @@ pub(crate) struct InputOpts {
         help = "specify the ignore type."
     )]
     pub(crate) ignore_types: Vec<IgnoreType>,
+
+    #[arg(short, long, value_name = "EXCLUDEs", help = "Exclude the target files or directories.")]
+    pub(crate) excludes: Vec<String>,
 
     #[arg(
         value_name = "PROJECTs",
@@ -268,6 +271,7 @@ mod tests {
     fn test_no_projects() {
         let opts = InputOpts {
             ignore_types: vec![],
+            excludes: vec![],
             dirs: vec![],
         };
         let projects = opts.projects();

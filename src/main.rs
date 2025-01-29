@@ -4,12 +4,11 @@ mod fmt;
 use crate::cli::InputOpts;
 use crate::fmt::Formatter;
 use btmeister::defs::{self, BuildToolDefs};
-use btmeister::verbose::{self, Verboser};
-use btmeister::Result;
+use btmeister::{LogLevel, Result};
 use btmeister::{BuildTools, Meister, MeisterError};
 use clap::Parser;
 
-fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>, _: &mut Box<dyn Verboser>) -> Result<()> {
+fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>) -> Result<()> {
     if let Some(header) = f.header_defs() {
         println!("{}", header);
     }
@@ -81,7 +80,6 @@ fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
 #[cfg(debug_assertions)]
 mod gencomp {
     use crate::cli::Options;
-    use btmeister::verbose::Verboser;
     use btmeister::Result;
     use clap::{Command, CommandFactory};
     use clap_complete::Shell;
@@ -93,10 +91,9 @@ mod gencomp {
         app: &mut Command,
         outdir: &Path,
         file: &str,
-        v: &mut Box<dyn Verboser>,
     ) -> Result<()> {
         let destfile = outdir.join(file);
-        v.log(format!("generate completions for {}: {}", s, destfile.display()).as_str());
+        log::info!("generate completions for {}: {}", s, destfile.display());
         if let Err(e) = std::fs::create_dir_all(destfile.parent().unwrap()) {
             return Err(btmeister::MeisterError::IO(e));
         }
@@ -109,7 +106,7 @@ mod gencomp {
         }
     }
 
-    pub(crate) fn generate_completions(outdir: PathBuf, v: &mut Box<dyn Verboser>) -> Result<()> {
+    pub(crate) fn generate_completions(outdir: PathBuf) -> Result<()> {
         let mut app = Options::command();
         app.set_bin_name("btmeister");
         let mut errs = vec![];
@@ -121,7 +118,7 @@ mod gencomp {
             (Shell::Zsh, "zsh/_btmeister"),
         ];
         for (shell, file) in shells {
-            if let Err(e) = generate(shell, &mut app, &outdir, file, v) {
+            if let Err(e) = generate(shell, &mut app, &outdir, file) {
                 errs.push(e);
             }
         }
@@ -134,23 +131,22 @@ mod gencomp {
 }
 
 fn perform(opts: cli::Options) -> Result<()> {
-    let mut verboser = verbose::new(opts.verbose);
     let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
     #[cfg(debug_assertions)]
     let compopts = opts.compopts;
-    let defs = match defs::construct(defopts.definition, defopts.append_defs, &mut verboser) {
+    let defs = match defs::construct(defopts.definition, defopts.append_defs) {
         Err(e) => return Err(e),
         Ok(defs) => defs,
     };
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if compopts.completion {
-            return gencomp::generate_completions(compopts.dest, &mut verboser);
+            return gencomp::generate_completions(compopts.dest);
         }
     }
     let formatter = fmt::build_formatter(output_opts.format);
     if output_opts.list_defs {
-        list_defs(defs, formatter, &mut verboser)
+        list_defs(defs, formatter)
     } else {
         match find_bt(defs, input_opts) {
             Ok(r) => print_results(r, formatter),
@@ -183,8 +179,21 @@ fn print_error(e: MeisterError) {
     println!("{}", errors_to_string(e));
 }
 
+fn init_logs(level: &LogLevel) {
+    match level {
+        btmeister::LogLevel::ERROR => std::env::set_var("RUST_LOG", "error"),
+        btmeister::LogLevel::WARN =>  std::env::set_var("RUST_LOG", "warn"),
+        btmeister::LogLevel::INFO =>  std::env::set_var("RUST_LOG", "info"),
+        btmeister::LogLevel::DEBUG => std::env::set_var("RUST_LOG", "debug"),
+        btmeister::LogLevel::TRACE => std::env::set_var("RUST_LOG", "trace"),
+    };
+    env_logger::init();
+    log::info!("set log level to {}", level)
+}
+
 fn rust_main(args: Vec<String>) -> Result<()> {
     let opts = cli::Options::parse_from(args);
+    init_logs(&opts.level);
     perform(opts)
 }
 

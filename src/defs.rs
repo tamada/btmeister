@@ -27,7 +27,7 @@ use std::path::PathBuf;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
-use crate::{verbose, MeisterError, Result};
+use crate::{MeisterError, Result};
 
 #[derive(RustEmbed)]
 #[folder = "assets"]
@@ -142,13 +142,12 @@ impl BuildToolDef {
 pub fn construct(
     defs: Option<PathBuf>,
     append: Option<PathBuf>,
-    v: &mut Box<dyn verbose::Verboser>,
 ) -> Result<BuildToolDefs> {
     let def = if let Some(path) = defs {
-        v.log(format!("load definition from {:?}", path).as_str());
+        log::info!("load definition from {:?}", path.to_string_lossy());
         BuildToolDefs::parse(path)
     } else {
-        v.log("load definition from assets");
+        log::info!("load definition from assets");
         BuildToolDefs::parse_from_asset()
     };
     match def {
@@ -157,9 +156,7 @@ pub fn construct(
             let result = if let Some(append_path) = append {
                 match BuildToolDefs::parse(append_path.clone()) {
                     Ok(mut additional_defs) => {
-                        v.log(
-                            format!("load additional definition from {:?}", append_path).as_str(),
-                        );
+                        log::info!("load additional definition from {:?}", append_path.to_string_lossy());
                         def.append(&mut additional_defs);
                         Ok(def)
                     }
@@ -200,7 +197,7 @@ mod test {
 
     #[test]
     fn test_construct1() {
-        let r = construct(None, None, &mut verbose::none());
+        let r = construct(None, None);
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
@@ -213,7 +210,6 @@ mod test {
         let r = construct(
             Some(PathBuf::from("assets/buildtools.json")),
             None,
-            &mut verbose::none(),
         );
         assert!(r.is_ok());
         if let Ok(result) = r {
@@ -227,7 +223,6 @@ mod test {
         let r = construct(
             None,
             Some(PathBuf::from("testdata/append_def.json")),
-            &mut verbose::none(),
         );
         assert!(r.is_ok());
         if let Ok(result) = r {

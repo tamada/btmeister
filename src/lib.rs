@@ -35,11 +35,11 @@
  */
 pub mod defs;
 mod extractors;
-pub mod verbose;
 
 use clap::ValueEnum;
 use path_matchers::{glob, PathMatcher};
 use serde_json::Error as JsonError;
+use std::fmt::{Display, Formatter};
 use std::path::{Path, PathBuf};
 
 use defs::{BuildToolDef, BuildToolDefs};
@@ -67,6 +67,27 @@ pub enum MeisterError {
     UnsupportedArchiveFormat(String),
     /// warning message.
     Warning(String),
+}
+
+#[derive(Debug, ValueEnum, PartialEq, Eq, Clone)]
+pub enum LogLevel {
+    ERROR,
+    WARN,
+    INFO,
+    DEBUG,
+    TRACE,
+}
+
+impl Display for LogLevel {
+    fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            LogLevel::ERROR => "error",
+            LogLevel::WARN => "warn",
+            LogLevel::INFO => "info",
+            LogLevel::DEBUG => "debug",
+            LogLevel::TRACE => "trace",
+        })
+    }
 }
 
 /// IgnoreType represents the type of traversing options for [Meister].
@@ -148,14 +169,17 @@ impl BuildTools {
     }
 }
 
-impl Meister {
-    pub fn default() -> Result<Self> {
+impl Default for Meister {
+    /// default creates a Meister object with the default build tool definitions.
+    fn default() -> Self {
         match BuildToolDefs::parse_from_asset() {
-            Ok(r) => Meister::new(r, vec![IgnoreType::Default]),
-            Err(e) => Err(e),
+            Ok(r) => Meister::new(r, vec![IgnoreType::Default]).unwrap(),
+            Err(_) => panic!("failed to parse the default build tool definitions"),
         }
     }
+}
 
+impl Meister {
     /// new creates a Meister object with the specified build tool definitions and ignore types.
     /// If its was the empty, the default value ([IgnoreType::Default]) will be used.
     pub fn new(defs: BuildToolDefs, its: Vec<IgnoreType>) -> Result<Self> {
@@ -360,30 +384,28 @@ mod tests {
 
     #[test]
     fn test_build_walker() {
-        if let Ok(meister) = Meister::default() {
-            let r = meister.find(PathBuf::from("testdata/fibonacci"));
-            assert!(r.is_ok());
-            if let Ok(r) = r {
-                assert_eq!(1, r.tools.len());
-                assert_eq!("Gradle", r.tools[0].def.name);
-                if let Ok(p) = r.path_of(0) {
-                    assert_eq!("build.gradle".to_string(), p);
-                }
+        let meister = Meister::default();
+        let r = meister.find(PathBuf::from("testdata/fibonacci"));
+        assert!(r.is_ok());
+        if let Ok(r) = r {
+            assert_eq!(1, r.tools.len());
+            assert_eq!("Gradle", r.tools[0].def.name);
+            if let Ok(p) = r.path_of(0) {
+                assert_eq!("build.gradle".to_string(), p);
             }
         }
     }
 
     #[test]
     fn test_archive_file() {
-        if let Ok(meister) = Meister::default() {
-            let r = meister.find(PathBuf::from("testdata/hello.tar"));
-            assert!(r.is_ok());
-            if let Ok(r) = r {
-                assert_eq!(1, r.tools.len());
-                assert_eq!("Cargo", r.tools[0].def.name);
-                if let Ok(p) = r.path_of(0) {
-                    assert_eq!("hello/Cargo.toml".to_string(), p);
-                }
+        let meister = Meister::default();
+        let r = meister.find(PathBuf::from("testdata/hello.tar"));
+        assert!(r.is_ok());
+        if let Ok(r) = r {
+            assert_eq!(1, r.tools.len());
+            assert_eq!("Cargo", r.tools[0].def.name);
+            if let Ok(p) = r.path_of(0) {
+                assert_eq!("hello/Cargo.toml".to_string(), p);
             }
         }
     }
