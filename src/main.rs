@@ -53,11 +53,7 @@ fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
 }
 
 fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
-    let meister =
-        match Meister::new_with_excludes(defs, opts.ignore_types.clone(), opts.excludes.clone()) {
-            Ok(m) => m,
-            Err(e) => return Err(e),
-        };
+    let meister = Meister::new(defs, opts.ignore_types.clone())?;
     let mut errs = vec![];
     let mut result = vec![];
     match opts.projects() {
@@ -130,10 +126,7 @@ fn perform(opts: cli::Options) -> Result<()> {
     let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
     #[cfg(debug_assertions)]
     let compopts = opts.compopts;
-    let defs = match defs::construct(defopts.definition, defopts.append_defs) {
-        Err(e) => return Err(e),
-        Ok(defs) => defs,
-    };
+    let defs = defs::construct(defopts.definition, defopts.append_defs)?;
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if compopts.completion {
