@@ -18,31 +18,36 @@ _btmeister() {
 '-D+[Specify the definition of the build tools.]:DEFS_JSON:_files' \
 '--definition=[Specify the definition of the build tools.]:DEFS_JSON:_files' \
 '--append-defs=[Specify the additional definitions of the build tools.]:DEFS_JSON:_files' \
-'*-i+[specify the ignore type.]:IGNORE_TYPE:((default\:"\[IgnoreType\:\:Hidden\], \[IgnoreType\:\:Ignore\], \[IgnoreType\:\:GitIgnore\], \[IgnoreType\:\:GitGlobal\], and \[IgnoreType\:\:GitExclude\]. All of the ignore types are enabled"
+'*-i+[Specify the ignore type.]:IGNORE_TYPE:((default\:"\[IgnoreType\:\:Ignore\], \[IgnoreType\:\:GitIgnore\], \[IgnoreType\:\:GitGlobal\], and \[IgnoreType\:\:GitExclude\]. All of the ignore types are enabled"
 hidden\:"ignore hidden file"
 ignore\:"ignore respecting \`.ignore\` file"
 git-ignore\:"ignore respecting \`.gitignore\` file"
 git-global\:"ignore respecting global git ignore file"
 git-exclude\:"ignore respecting \`.git/info/exclude\` file"))' \
-'*--ignore-type=[specify the ignore type.]:IGNORE_TYPE:((default\:"\[IgnoreType\:\:Hidden\], \[IgnoreType\:\:Ignore\], \[IgnoreType\:\:GitIgnore\], \[IgnoreType\:\:GitGlobal\], and \[IgnoreType\:\:GitExclude\]. All of the ignore types are enabled"
+'*--ignore-type=[Specify the ignore type.]:IGNORE_TYPE:((default\:"\[IgnoreType\:\:Ignore\], \[IgnoreType\:\:GitIgnore\], \[IgnoreType\:\:GitGlobal\], and \[IgnoreType\:\:GitExclude\]. All of the ignore types are enabled"
 hidden\:"ignore hidden file"
 ignore\:"ignore respecting \`.ignore\` file"
 git-ignore\:"ignore respecting \`.gitignore\` file"
 git-global\:"ignore respecting global git ignore file"
 git-exclude\:"ignore respecting \`.git/info/exclude\` file"))' \
+'*-e+[Specify the filters of excluding files or directories.]:EXCLUDEs:_default' \
+'*--excludes=[Specify the filters of excluding files or directories.]:EXCLUDEs:_default' \
 '-f+[Specify the output format]:FORMAT:(csv default json markdown xml yaml)' \
 '--format=[Specify the output format]:FORMAT:(csv default json markdown xml yaml)' \
+'-l+[Specify the log level.]:LEVEL:(error warn info debug trace)' \
+'--level=[Specify the log level.]:LEVEL:(error warn info debug trace)' \
 '--completion-out-dir=[Output directory of completion files]:DIR:_files' \
 '-L[Print the build tools'\'' definition list]' \
 '--list-defs[Print the build tools'\'' definition list]' \
-'-v[Show verbose output.]' \
-'--verbose[Show verbose output.]' \
 '--generate-completion-files[Generate completion files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \
 '--version[Print version]' \
-'*::dirs -- The target project paths. If "-" was given, reads from stdin, and "@" was put on the first character, read from the file.:_default' \
+'*::dirs -- The target project paths. If "-" was given, reads from stdin.
+Also, the first character was "@", read from the file eliminating "@".
+This parameters accept directories and archive files.
+Supported archive files\: tar, tar.bz2, tar.gz, tar.xz, tar.zstd, and zip.:_default' \
 && ret=0
 }
 

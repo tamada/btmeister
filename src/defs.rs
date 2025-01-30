@@ -27,7 +27,7 @@ use std::path::PathBuf;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
-use crate::{verbose, MeisterError, Result};
+use crate::{MeisterError, Result};
 
 #[derive(RustEmbed)]
 #[folder = "assets"]
@@ -139,26 +139,23 @@ impl BuildToolDef {
 ///   - gives `defs` is `None` and `append` is `Some`.
 /// - Load from the given file and append the definitions from the other file.
 ///   - gives both `defs` and `append` is `Some`.
-pub fn construct(
-    defs: Option<PathBuf>,
-    append: Option<PathBuf>,
-    v: &mut Box<dyn verbose::Verboser>,
-) -> Result<BuildToolDefs> {
+pub fn construct(defs: Option<PathBuf>, append: Option<PathBuf>) -> Result<BuildToolDefs> {
     let def = if let Some(path) = defs {
-        v.log(format!("load definition from {:?}", path).as_str());
+        log::info!("load definition from {:?}", path.to_string_lossy());
         BuildToolDefs::parse(path)
     } else {
-        v.log("load definition from assets");
+        log::info!("load definition from assets");
         BuildToolDefs::parse_from_asset()
     };
     match def {
         Err(e) => Err(e),
         Ok(mut def) => {
-            let result = if let Some(append_path) = append {
+            if let Some(append_path) = append {
                 match BuildToolDefs::parse(append_path.clone()) {
                     Ok(mut additional_defs) => {
-                        v.log(
-                            format!("load additional definition from {:?}", append_path).as_str(),
+                        log::info!(
+                            "load additional definition from {:?}",
+                            append_path.to_string_lossy()
                         );
                         def.append(&mut additional_defs);
                         Ok(def)
@@ -167,8 +164,7 @@ pub fn construct(
                 }
             } else {
                 Ok(def)
-            };
-            result
+            }
         }
     }
 }
@@ -200,7 +196,7 @@ mod test {
 
     #[test]
     fn test_construct1() {
-        let r = construct(None, None, &mut verbose::none());
+        let r = construct(None, None);
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
@@ -210,11 +206,7 @@ mod test {
 
     #[test]
     fn test_construct2() {
-        let r = construct(
-            Some(PathBuf::from("assets/buildtools.json")),
-            None,
-            &mut verbose::none(),
-        );
+        let r = construct(Some(PathBuf::from("assets/buildtools.json")), None);
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
@@ -224,11 +216,7 @@ mod test {
 
     #[test]
     fn test_construct3() {
-        let r = construct(
-            None,
-            Some(PathBuf::from("testdata/append_def.json")),
-            &mut verbose::none(),
-        );
+        let r = construct(None, Some(PathBuf::from("testdata/append_def.json")));
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());

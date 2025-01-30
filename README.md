@@ -4,10 +4,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=main)](https://coveralls.io/github/tamada/btmeister?branch=main)
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
 
-[![Version](https://img.shields.io/badge/Version-v0.7.1-green)](https://github.com/tamada/btmeister/releases/tag/v0.7.1)
+[![Version](https://img.shields.io/badge/Version-v0.7.3-green)](https://github.com/tamada/btmeister/releases/tag/v0.7.3)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.1-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.3-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-tamada/tap/btmeister-blue?logo=homebrew)](https://github.com/tamada/homebrew-tap)
 
 Detecting the build tools in use.
@@ -37,12 +37,11 @@ Arguments:
 Options:
   -D, --definition <DEFS_JSON>     Specify the definition of the build tools.
       --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
-  -i, --ignore-type <IGNORE_TYPE>  specify the ignore type. [default: default] 
-                                   [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -i, --ignore-type <IGNORE_TYPE>  Specify the ignore type. [default: default] [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -e, --excludes <EXCLUDEs>        Specify the filters of excluding files or directories.
   -L, --list-defs                  Print the build tools' definition list
-  -f, --format <FORMAT>            Specify the output format [default: default] 
-                                   [possible values: csv, default, json, markdown, xml, yaml]
-  -v, --verbose                    Show verbose output.
+  -f, --format <FORMAT>            Specify the output format [default: default] [possible values: csv, default, json, markdown, xml, yaml]
+  -l, --level <LEVEL>              Specify the log level. [default: warn] [possible values: error, warn, info, debug, trace]
   -h, --help                       Print help (see more with '--help')
   -V, --version                    Print version
 ```
@@ -51,14 +50,14 @@ Options:
 
 ```sh
 $ btmeister ~/github.com/tamada/gibo-wrapper
-/Users/tamada/github.com/tamada/gibo-wrapper
+/home/tamada/github.com/tamada/gibo-wrapper
     Cargo.toml: Cargo
     Dockerfile: Docker
     build.rs: Cargo
 $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 [
   {
-    "base": "/Users/tamada/products/gibo-wrapper",
+    "base": "/home/tamada/github.com/tamada/gibo-wrapper",
     "build-tools": [
       {
         "path": "Cargo.toml",
@@ -79,7 +78,7 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.1-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.3-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 
 ```sh
 docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .
