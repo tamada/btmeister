@@ -602,4 +602,23 @@ mod tests {
         assert!(matcher.matches(&PathBuf::from("./testdata")));
         assert!(matcher.matches(&PathBuf::from("testdata")));
     }
+
+    #[test]
+    fn test_loglevel_to_string() {
+        assert_eq!(LogLevel::ERROR.to_string(), "error");
+        assert_eq!(LogLevel::WARN.to_string(), "warn");
+        assert_eq!(LogLevel::DEBUG.to_string(), "debug");
+        assert_eq!(LogLevel::INFO.to_string(), "info");
+        assert_eq!(LogLevel::TRACE.to_string(), "trace");
+    }
+
+    #[test]
+    fn test_ignoretype_to_string() {
+        assert_eq!(IgnoreType::Default.to_string(), "default");
+        assert_eq!(IgnoreType::Hidden.to_string(), "hidden");
+        assert_eq!(IgnoreType::Ignore.to_string(), "ignore");
+        assert_eq!(IgnoreType::GitIgnore.to_string(), "gitignore");
+        assert_eq!(IgnoreType::GitGlobal.to_string(), "gitglobal");
+        assert_eq!(IgnoreType::GitExclude.to_string(), "gitexclude");
+    }
 }
