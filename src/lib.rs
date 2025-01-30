@@ -91,9 +91,9 @@ impl Display for LogLevel {
 }
 
 /// IgnoreType represents the type of traversing options for [Meister].
-#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
+#[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug, Hash)]
 pub enum IgnoreType {
-    /// [IgnoreType::Hidden], [IgnoreType::Ignore], [IgnoreType::GitIgnore], [IgnoreType::GitGlobal], and [IgnoreType::GitExclude].
+    /// [IgnoreType::Ignore], [IgnoreType::GitIgnore], [IgnoreType::GitGlobal], and [IgnoreType::GitExclude].
     /// All of the ignore types are enabled.
     Default,
     /// ignore hidden file.
@@ -106,6 +106,19 @@ pub enum IgnoreType {
     GitGlobal,
     /// ignore respecting `.git/info/exclude` file.
     GitExclude,
+}
+
+impl Display for IgnoreType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            IgnoreType::Default => "default",
+            IgnoreType::Hidden => "hidden",
+            IgnoreType::Ignore => "ignore",
+            IgnoreType::GitIgnore => "gitignore",
+            IgnoreType::GitGlobal => "gitglobal",
+            IgnoreType::GitExclude => "gitexclude",
+        })
+    }
 }
 
 pub fn is_supported_archive_format<P: AsRef<Path>>(arg: P) -> bool {
@@ -121,15 +134,6 @@ pub fn is_supported_archive_format<P: AsRef<Path>>(arg: P) -> bool {
 
 /// a result of the project.
 pub type Result<T> = std::result::Result<T, MeisterError>;
-
-/// Meister is a object for detecting the build tools in the specified directory.
-/// This object contains the definitions of the build tools.
-/// In use of user own build tool definitions, use `Meister::new` method for building the object.
-pub struct Meister {
-    defs: Vec<BuildToolDef>,
-    matchers: Vec<MultipleMatcher>,
-    its: Vec<IgnoreType>,
-}
 
 /// BuildTools represents a result of the `Meister::find` method.
 /// This object contains the project directory and the detected files of build tools.
@@ -167,6 +171,15 @@ impl BuildTools {
             Err(MeisterError::Fatal(format!("index {} out of range", index)))
         }
     }
+}
+
+/// Meister is a object for detecting the build tools in the specified directory.
+/// This object contains the definitions of the build tools.
+/// In use of user own build tool definitions, use `Meister::new` method for building the object.
+pub struct Meister {
+    defs: Vec<BuildToolDef>,
+    matchers: Vec<MultipleMatcher>,
+    its: Vec<IgnoreType>,
 }
 
 impl Default for Meister {
@@ -235,7 +248,12 @@ impl Meister {
         for entry in walker {
             match entry {
                 Ok(entry) => {
-                    if let Some(bt) = find_build_tool(self, entry.path()) {
+                    let target_path = entry.path();
+                    let target = match target_path.strip_prefix(&base) {
+                        Ok(p) => p,
+                        Err(_) => target_path,
+                    };
+                    if let Some(bt) = find_build_tool(self, target) {
                         result.push(bt);
                     }
                 }
@@ -254,6 +272,7 @@ impl Meister {
 }
 
 fn find_build_tool(meister: &Meister, path: &Path) -> Option<BuildTool> {
+    log::trace!("find_build_tool: {}", path.display());
     for (def, matcher) in meister.defs.iter().zip(meister.matchers.iter()) {
         let pb = path.to_path_buf();
         if matcher.matches(&pb) {
@@ -267,14 +286,33 @@ fn find_build_tool(meister: &Meister, path: &Path) -> Option<BuildTool> {
 }
 
 fn build_walker(base: PathBuf, its: &[IgnoreType]) -> ignore::Walk {
+    let its = normalize_ignore_types(its);
+    log::info!("ignore types: {}", its.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", "));
     ignore::WalkBuilder::new(base)
-        .standard_filters(its.contains(&IgnoreType::Default))
         .hidden(its.contains(&IgnoreType::Hidden))
         .git_ignore(its.contains(&IgnoreType::GitIgnore))
         .git_global(its.contains(&IgnoreType::GitGlobal))
         .git_exclude(its.contains(&IgnoreType::GitExclude))
         .ignore(its.contains(&IgnoreType::Ignore))
         .build()
+}
+
+fn normalize_ignore_types(its: &[IgnoreType]) -> Vec<IgnoreType> {
+    let mut set = std::collections::HashSet::new();
+    for &it in its {
+        match it {
+            IgnoreType::Default => {
+                set.insert(IgnoreType::Ignore);
+                set.insert(IgnoreType::GitIgnore);
+                set.insert(IgnoreType::GitGlobal);
+                set.insert(IgnoreType::GitExclude);
+            }
+            _ => {
+                set.insert(it);
+            }
+        }
+    }
+    set.into_iter().collect::<Vec<IgnoreType>>()
 }
 
 fn build_matcher_impl(filename: String) -> Result<Box<dyn Matcher>> {
@@ -355,19 +393,20 @@ impl Matcher for FileNameMatcher {
 
 impl Matcher for PathGlobMatcher {
     fn matches(&self, p: &Path) -> bool {
+        log::debug!("PathGlobMatcher: {} {}", p.display(), self.pattern.matches(p));
         self.pattern.matches(p)
     }
 }
 
 impl FileNameMatcher {
-    pub fn new(name: String) -> FileNameMatcher {
-        FileNameMatcher { name }
+    pub fn new<P: AsRef<str>>(name: P) -> Self {
+        FileNameMatcher { name: name.as_ref().to_string() }
     }
 }
 
 impl PathGlobMatcher {
-    pub fn new(pattern: String) -> Result<PathGlobMatcher> {
-        match glob(pattern.as_str()) {
+    pub fn new<P: AsRef<str>>(pattern: P) -> Result<Self> {
+        match glob(pattern.as_ref()) {
             Ok(g) => Ok(PathGlobMatcher {
                 pattern: Box::new(g),
             }),
@@ -454,5 +493,23 @@ mod tests {
             assert_eq!(true, d.matches(&PathBuf::from("Somefile")));
             assert_eq!(true, d.matches(&PathBuf::from("some/dir/Somefile")));
         }
+    }
+
+    #[test]
+    fn test_path_glob_matcher() {
+        let matcher = PathGlobMatcher::new(".github/workflows/*.yml")
+                .expect("failed to create PathGlobMatcher");
+            assert!(matcher.matches(&PathBuf::from(".github/workflows/test.yml")));
+            assert!(! matcher.matches(&PathBuf::from("/home/tamada/btmeister/.github/workflows/test.yml")));
+    }
+
+    #[test]
+    fn test_path() {
+        let path = PathBuf::from(".github/workflows/*.yml");
+        let items = path.iter().collect::<Vec<_>>();
+        assert_eq!(3, items.len());
+        assert_eq!(".github", items[0]);
+        assert_eq!("workflows", items[1]);
+        assert_eq!("*.yml", items[2]);
     }
 }
