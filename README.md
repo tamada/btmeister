@@ -37,12 +37,11 @@ Arguments:
 Options:
   -D, --definition <DEFS_JSON>     Specify the definition of the build tools.
       --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
-  -i, --ignore-type <IGNORE_TYPE>  specify the ignore type. [default: default] 
-                                   [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -i, --ignore-type <IGNORE_TYPE>  Specify the ignore type. [default: default] [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -e, --excludes <EXCLUDEs>        Specify the filters of excluding files or directories.
   -L, --list-defs                  Print the build tools' definition list
-  -f, --format <FORMAT>            Specify the output format [default: default] 
-                                   [possible values: csv, default, json, markdown, xml, yaml]
-  -v, --verbose                    Show verbose output.
+  -f, --format <FORMAT>            Specify the output format [default: default] [possible values: csv, default, json, markdown, xml, yaml]
+  -l, --level <LEVEL>              Specify the log level. [default: warn] [possible values: error, warn, info, debug, trace]
   -h, --help                       Print help (see more with '--help')
   -V, --version                    Print version
 ```
@@ -51,14 +50,14 @@ Options:
 
 ```sh
 $ btmeister ~/github.com/tamada/gibo-wrapper
-/Users/tamada/github.com/tamada/gibo-wrapper
+/home/tamada/github.com/tamada/gibo-wrapper
     Cargo.toml: Cargo
     Dockerfile: Docker
     build.rs: Cargo
 $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 [
   {
-    "base": "/Users/tamada/products/gibo-wrapper",
+    "base": "/home/tamada/github.com/tamada/gibo-wrapper",
     "build-tools": [
       {
         "path": "Cargo.toml",

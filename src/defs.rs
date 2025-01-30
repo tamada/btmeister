@@ -139,10 +139,7 @@ impl BuildToolDef {
 ///   - gives `defs` is `None` and `append` is `Some`.
 /// - Load from the given file and append the definitions from the other file.
 ///   - gives both `defs` and `append` is `Some`.
-pub fn construct(
-    defs: Option<PathBuf>,
-    append: Option<PathBuf>,
-) -> Result<BuildToolDefs> {
+pub fn construct(defs: Option<PathBuf>, append: Option<PathBuf>) -> Result<BuildToolDefs> {
     let def = if let Some(path) = defs {
         log::info!("load definition from {:?}", path.to_string_lossy());
         BuildToolDefs::parse(path)
@@ -153,10 +150,13 @@ pub fn construct(
     match def {
         Err(e) => Err(e),
         Ok(mut def) => {
-            let result = if let Some(append_path) = append {
+            if let Some(append_path) = append {
                 match BuildToolDefs::parse(append_path.clone()) {
                     Ok(mut additional_defs) => {
-                        log::info!("load additional definition from {:?}", append_path.to_string_lossy());
+                        log::info!(
+                            "load additional definition from {:?}",
+                            append_path.to_string_lossy()
+                        );
                         def.append(&mut additional_defs);
                         Ok(def)
                     }
@@ -164,8 +164,7 @@ pub fn construct(
                 }
             } else {
                 Ok(def)
-            };
-            result
+            }
         }
     }
 }
@@ -207,10 +206,7 @@ mod test {
 
     #[test]
     fn test_construct2() {
-        let r = construct(
-            Some(PathBuf::from("assets/buildtools.json")),
-            None,
-        );
+        let r = construct(Some(PathBuf::from("assets/buildtools.json")), None);
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
@@ -220,10 +216,7 @@ mod test {
 
     #[test]
     fn test_construct3() {
-        let r = construct(
-            None,
-            Some(PathBuf::from("testdata/append_def.json")),
-        );
+        let r = construct(None, Some(PathBuf::from("testdata/append_def.json")));
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());

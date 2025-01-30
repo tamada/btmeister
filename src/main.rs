@@ -4,8 +4,8 @@ mod fmt;
 use crate::cli::InputOpts;
 use crate::fmt::Formatter;
 use btmeister::defs::{self, BuildToolDefs};
-use btmeister::{LogLevel, Result};
 use btmeister::{BuildTools, Meister, MeisterError};
+use btmeister::{LogLevel, Result};
 use clap::Parser;
 
 fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>) -> Result<()> {
@@ -53,10 +53,11 @@ fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
 }
 
 fn find_bt(defs: BuildToolDefs, opts: InputOpts) -> Result<Vec<BuildTools>> {
-    let meister = match Meister::new(defs, opts.ignore_types.clone()) {
-        Ok(m) => m,
-        Err(e) => return Err(e),
-    };
+    let meister =
+        match Meister::new_with_excludes(defs, opts.ignore_types.clone(), opts.excludes.clone()) {
+            Ok(m) => m,
+            Err(e) => return Err(e),
+        };
     let mut errs = vec![];
     let mut result = vec![];
     match opts.projects() {
@@ -86,12 +87,7 @@ mod gencomp {
     use std::fs::File;
     use std::path::{Path, PathBuf};
 
-    fn generate(
-        s: Shell,
-        app: &mut Command,
-        outdir: &Path,
-        file: &str,
-    ) -> Result<()> {
+    fn generate(s: Shell, app: &mut Command, outdir: &Path, file: &str) -> Result<()> {
         let destfile = outdir.join(file);
         log::info!("generate completions for {}: {}", s, destfile.display());
         if let Err(e) = std::fs::create_dir_all(destfile.parent().unwrap()) {
@@ -182,13 +178,15 @@ fn print_error(e: MeisterError) {
 fn init_logs(level: &LogLevel) {
     match level {
         btmeister::LogLevel::ERROR => std::env::set_var("RUST_LOG", "error"),
-        btmeister::LogLevel::WARN =>  std::env::set_var("RUST_LOG", "warn"),
-        btmeister::LogLevel::INFO =>  std::env::set_var("RUST_LOG", "info"),
+        btmeister::LogLevel::WARN => std::env::set_var("RUST_LOG", "warn"),
+        btmeister::LogLevel::INFO => std::env::set_var("RUST_LOG", "info"),
         btmeister::LogLevel::DEBUG => std::env::set_var("RUST_LOG", "debug"),
         btmeister::LogLevel::TRACE => std::env::set_var("RUST_LOG", "trace"),
     };
-    env_logger::init();
-    log::info!("set log level to {}", level)
+    match env_logger::try_init() {
+        Ok(_) => log::info!("set log level to {}", level),
+        Err(_) => log::info!("set log level to {} (no tty)", level),
+    }
 }
 
 fn rust_main(args: Vec<String>) -> Result<()> {

@@ -80,13 +80,17 @@ pub enum LogLevel {
 
 impl Display for LogLevel {
     fn fmt(&self, f: &mut Formatter) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            LogLevel::ERROR => "error",
-            LogLevel::WARN => "warn",
-            LogLevel::INFO => "info",
-            LogLevel::DEBUG => "debug",
-            LogLevel::TRACE => "trace",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                LogLevel::ERROR => "error",
+                LogLevel::WARN => "warn",
+                LogLevel::INFO => "info",
+                LogLevel::DEBUG => "debug",
+                LogLevel::TRACE => "trace",
+            }
+        )
     }
 }
 
@@ -110,14 +114,18 @@ pub enum IgnoreType {
 
 impl Display for IgnoreType {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", match self {
-            IgnoreType::Default => "default",
-            IgnoreType::Hidden => "hidden",
-            IgnoreType::Ignore => "ignore",
-            IgnoreType::GitIgnore => "gitignore",
-            IgnoreType::GitGlobal => "gitglobal",
-            IgnoreType::GitExclude => "gitexclude",
-        })
+        write!(
+            f,
+            "{}",
+            match self {
+                IgnoreType::Default => "default",
+                IgnoreType::Hidden => "hidden",
+                IgnoreType::Ignore => "ignore",
+                IgnoreType::GitIgnore => "gitignore",
+                IgnoreType::GitGlobal => "gitglobal",
+                IgnoreType::GitExclude => "gitexclude",
+            }
+        )
     }
 }
 
@@ -178,6 +186,7 @@ impl BuildTools {
 /// In use of user own build tool definitions, use `Meister::new` method for building the object.
 pub struct Meister {
     defs: Vec<BuildToolDef>,
+    excludes: MultipleMatcher,
     matchers: Vec<MultipleMatcher>,
     its: Vec<IgnoreType>,
 }
@@ -194,8 +203,18 @@ impl Default for Meister {
 
 impl Meister {
     /// new creates a Meister object with the specified build tool definitions and ignore types.
-    /// If its was the empty, the default value ([IgnoreType::Default]) will be used.
+    /// If `its` was the empty, the default value ([IgnoreType::Default]) will be used.
     pub fn new(defs: BuildToolDefs, its: Vec<IgnoreType>) -> Result<Self> {
+        Meister::new_with_excludes(defs, its, vec![])
+    }
+
+    /// creates a instance of Meister object with the specified build tool definitions, ignore types, and exclude patterns.
+    /// If `its` was the empty, the default value ([IgnoreType::Default]) will be used.
+    pub fn new_with_excludes(
+        defs: BuildToolDefs,
+        its: Vec<IgnoreType>,
+        excludes: Vec<String>,
+    ) -> Result<Self> {
         let its2 = if its.is_empty() {
             vec![IgnoreType::Default]
         } else {
@@ -204,6 +223,7 @@ impl Meister {
         match build_matchers(defs.defs.clone()) {
             Ok(m) => Ok(Self {
                 defs: defs.defs.clone(),
+                excludes: build_exclude_matchers(excludes),
                 matchers: m,
                 its: its2,
             }),
@@ -253,8 +273,16 @@ impl Meister {
                         Ok(p) => p,
                         Err(_) => target_path,
                     };
-                    if let Some(bt) = find_build_tool(self, target) {
-                        result.push(bt);
+                    log::debug!(
+                        "excludes: {:?} {} ({})",
+                        target,
+                        self.excludes.matches(target),
+                        self.excludes.matchers.len()
+                    );
+                    if !self.excludes.matches(target) {
+                        if let Some(bt) = find_build_tool(self, target) {
+                            result.push(bt);
+                        }
                     }
                 }
                 Err(e) => errs.push(MeisterError::Warning(format!("walking: {}", e))),
@@ -287,7 +315,13 @@ fn find_build_tool(meister: &Meister, path: &Path) -> Option<BuildTool> {
 
 fn build_walker(base: PathBuf, its: &[IgnoreType]) -> ignore::Walk {
     let its = normalize_ignore_types(its);
-    log::info!("ignore types: {}", its.iter().map(|x| x.to_string()).collect::<Vec<String>>().join(", "));
+    log::info!(
+        "ignore types: {}",
+        its.iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<String>>()
+            .join(", ")
+    );
     ignore::WalkBuilder::new(base)
         .hidden(its.contains(&IgnoreType::Hidden))
         .git_ignore(its.contains(&IgnoreType::GitIgnore))
@@ -342,6 +376,15 @@ fn build_matcher(def: BuildToolDef) -> Result<MultipleMatcher> {
     }
 }
 
+fn build_exclude_matchers(excludes: Vec<String>) -> MultipleMatcher {
+    let matchers = excludes
+        .iter()
+        .map(|e| PartialMatcher { pattern: e.clone() })
+        .map(|m| Box::new(m) as Box<dyn Matcher>)
+        .collect::<Vec<Box<dyn Matcher>>>();
+    MultipleMatcher { matchers }
+}
+
 fn build_matchers(defs: Vec<BuildToolDef>) -> Result<Vec<MultipleMatcher>> {
     let mut result = vec![];
     let mut errs = vec![];
@@ -369,14 +412,13 @@ struct PathGlobMatcher {
     pattern: Box<dyn PathMatcher>,
 }
 
+struct PartialMatcher {
+    pattern: String,
+}
+
 impl Matcher for MultipleMatcher {
     fn matches(&self, p: &Path) -> bool {
-        for matcher in self.matchers.iter() {
-            if matcher.matches(p) {
-                return true;
-            }
-        }
-        false
+        self.matchers.iter().any(|m| m.matches(p))
     }
 }
 
@@ -393,14 +435,36 @@ impl Matcher for FileNameMatcher {
 
 impl Matcher for PathGlobMatcher {
     fn matches(&self, p: &Path) -> bool {
-        log::debug!("PathGlobMatcher: {} {}", p.display(), self.pattern.matches(p));
+        log::debug!(
+            "PathGlobMatcher: {} {}",
+            p.display(),
+            self.pattern.matches(p)
+        );
         self.pattern.matches(p)
+    }
+}
+
+impl Matcher for PartialMatcher {
+    fn matches(&self, p: &Path) -> bool {
+        if let Some(path) = p.to_str() {
+            log::debug!(
+                "PartialMatcher: {} {}: {}",
+                path,
+                self.pattern,
+                path.contains(&self.pattern)
+            );
+            path.contains(&self.pattern)
+        } else {
+            false
+        }
     }
 }
 
 impl FileNameMatcher {
     pub fn new<P: AsRef<str>>(name: P) -> Self {
-        FileNameMatcher { name: name.as_ref().to_string() }
+        FileNameMatcher {
+            name: name.as_ref().to_string(),
+        }
     }
 }
 
@@ -498,9 +562,11 @@ mod tests {
     #[test]
     fn test_path_glob_matcher() {
         let matcher = PathGlobMatcher::new(".github/workflows/*.yml")
-                .expect("failed to create PathGlobMatcher");
-            assert!(matcher.matches(&PathBuf::from(".github/workflows/test.yml")));
-            assert!(! matcher.matches(&PathBuf::from("/home/tamada/btmeister/.github/workflows/test.yml")));
+            .expect("failed to create PathGlobMatcher");
+        assert!(matcher.matches(&PathBuf::from(".github/workflows/test.yml")));
+        assert!(!matcher.matches(&PathBuf::from(
+            "/home/tamada/btmeister/.github/workflows/test.yml"
+        )));
     }
 
     #[test]
@@ -511,5 +577,29 @@ mod tests {
         assert_eq!(".github", items[0]);
         assert_eq!("workflows", items[1]);
         assert_eq!("*.yml", items[2]);
+    }
+
+    #[test]
+    fn test_partial_matcher() {
+        let matcher = PartialMatcher {
+            pattern: "testdata".to_string(),
+        };
+        assert!(matcher.matches(&PathBuf::from("testdata/hello.txt")));
+        assert!(matcher.matches(&PathBuf::from("target/testdata/hello.txt")));
+        assert!(matcher.matches(&PathBuf::from("./testdata")));
+        assert!(matcher.matches(&PathBuf::from("testdata")));
+    }
+
+    #[test]
+    fn test_multiple_partial_matcher() {
+        let matcher = MultipleMatcher {
+            matchers: vec![Box::new(PartialMatcher {
+                pattern: "testdata".to_string(),
+            })],
+        };
+        assert!(matcher.matches(&PathBuf::from("testdata/hello.txt")));
+        assert!(matcher.matches(&PathBuf::from("target/testdata/hello.txt")));
+        assert!(matcher.matches(&PathBuf::from("./testdata")));
+        assert!(matcher.matches(&PathBuf::from("testdata")));
     }
 }

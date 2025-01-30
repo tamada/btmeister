@@ -16,7 +16,14 @@ pub(crate) struct Options {
     #[clap(flatten)]
     pub(crate) outputs: OutputOpts,
 
-    #[arg(short, long, value_name = "LEVEL", default_value = "warn", help = "Specify the log level.", ignore_case = true)]
+    #[arg(
+        short,
+        long,
+        value_name = "LEVEL",
+        default_value = "warn",
+        help = "Specify the log level.",
+        ignore_case = true
+    )]
     pub(crate) level: LogLevel,
 
     #[cfg(debug_assertions)]
@@ -53,11 +60,16 @@ pub(crate) struct InputOpts {
         ignore_case = true,
         value_enum,
         value_name = "IGNORE_TYPE",
-        help = "specify the ignore type."
+        help = "Specify the ignore type."
     )]
     pub(crate) ignore_types: Vec<IgnoreType>,
 
-    #[arg(short, long, value_name = "EXCLUDEs", help = "Exclude the target files or directories.")]
+    #[arg(
+        short,
+        long,
+        value_name = "EXCLUDEs",
+        help = "Specify the filters of excluding files or directories."
+    )]
     pub(crate) excludes: Vec<String>,
 
     #[arg(
@@ -121,13 +133,12 @@ pub enum Format {
 }
 
 fn read_from_reader(r: Box<dyn BufRead>) -> Result<Vec<String>> {
-    let mut result = vec![];
-    for line in r.lines().flatten() {
-        if line.starts_with("#") || line.trim().is_empty() {
-            continue;
-        }
-        result.push(line);
-    }
+    let result = r
+        .lines()
+        .map_while(|r| r.ok())
+        .map(|l| l.trim().to_string())
+        .filter(|l| !l.starts_with("#") && !l.is_empty())
+        .collect::<Vec<String>>();
     Ok(result)
 }
 
