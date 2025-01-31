@@ -621,4 +621,26 @@ mod tests {
         assert_eq!(IgnoreType::GitGlobal.to_string(), "gitglobal");
         assert_eq!(IgnoreType::GitExclude.to_string(), "gitexclude");
     }
+
+    #[test]
+    fn test_normalize_ignore_types() {
+        let its = normalize_ignore_types(&[IgnoreType::Default]);
+        assert_eq!(its.len(), 4);
+        assert!(its.contains(&IgnoreType::Ignore));
+        assert!(its.contains(&IgnoreType::GitGlobal));
+        assert!(its.contains(&IgnoreType::GitIgnore));
+        assert!(its.contains(&IgnoreType::GitExclude));
+
+        let its = normalize_ignore_types(&[
+            IgnoreType::Default,
+            IgnoreType::Hidden,
+            IgnoreType::GitIgnore,
+        ]);
+        assert_eq!(its.len(), 5);
+        assert!(its.contains(&IgnoreType::Hidden));
+        assert!(its.contains(&IgnoreType::Ignore));
+        assert!(its.contains(&IgnoreType::GitGlobal));
+        assert!(its.contains(&IgnoreType::GitIgnore));
+        assert!(its.contains(&IgnoreType::GitExclude));
+    }
 }
