@@ -1,6 +1,7 @@
 # this is just comment!
-testdata/hello
-testdata/fibonacci
+# the followings are the project names and relative path from this file.
+hello
+fibonacci
 # the blank line is ignored
 
 

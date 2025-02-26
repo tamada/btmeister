@@ -1,0 +1,55 @@
+version: "3"
+
+env:
+  VERSION:
+    sh: grep '^version = ' Cargo.toml | sed 's/version = "\(.*\)"/\1/g'
+
+tasks:
+  build:
+    desc: "Build the project"
+    cmds:
+      - task: format
+      - task: clippy
+      - cargo build
+  format:
+    cmd: cargo fmt -- --emit=files
+  clippy:
+    cmd: cargo clippy -- -D warnings
+  test:
+    cmd: cargo llvm-cov --lcov --output-path target/coverage.lcov
+  completion:
+    desc: "Generate shell completion scripts"
+    cmds:
+      - mkdir -p target/completions
+      - cargo run -- --generate-completion-files --completion-out-dir target/completions
+  pkl2json:
+    desc: "Convert a pkl file to json"
+    cmd: pkl eval -f json -o assets/buildtools.json assets/buildtools.pkl
+  start:
+    desc: "Start the hugo server"
+    cmd: hugo -s site server
+  coverage_report:
+    desc: "Generate the coverage report"
+    cmds:
+      - rm -rf site/static/coverage
+      - cargo llvm-cov --html
+      - cp -r target/llvm-cov/html site/static/coverage
+  cargo_doc:
+    desc: "Generate the document"
+    cmds:
+      - cargo doc
+      - cp -r target/doc/btmeister site/static/api
+  site:
+    desc: "Build the site"
+    cmds:
+      - task: coverage_report
+      - task: cargo_doc
+      - hugo -s site
+  docker:
+    desc: "Build the docker image for the current arch"
+    cmd:
+      docker build -t ghcr.io/tamada/btmeister:latest -t ghcr.io/tamada/btmeister:{{.VERSION}} .
+  docker_buildx:
+    desc: "Build the docker image for multi-arch"
+    cmd:
+      docker buildx build --platform linux/arm64/v8,linux/amd64 --output=type=image,push=true -t ghcr.io/tamada/btmeister:latest -t ghcr.io/tamada/btmeister:{{.VERSION}} .

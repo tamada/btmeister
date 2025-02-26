@@ -115,7 +115,7 @@ mod tests {
     #[test]
     fn test_list_tar_file() {
         let extractor = TarExtractor {};
-        let file = PathBuf::from("testdata/hello.tar");
+        let file = PathBuf::from("../testdata/hello.tar");
         match extractor.list_entries(file) {
             Ok(r) => {
                 println!("{:?}", r);
@@ -130,7 +130,7 @@ mod tests {
     #[test]
     fn test_list_tarbz2_file() {
         let extractor = TarBz2Extractor {};
-        let file = PathBuf::from("testdata/hello.tar.bz2");
+        let file = PathBuf::from("../testdata/hello.tar.bz2");
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
@@ -144,7 +144,7 @@ mod tests {
     #[test]
     fn test_list_targz_file() {
         let extractor = TarGzExtractor {};
-        let file = PathBuf::from("testdata/hello.tar.gz");
+        let file = PathBuf::from("../testdata/hello.tar.gz");
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
@@ -158,7 +158,7 @@ mod tests {
     #[test]
     fn test_list_tarxz_file() {
         let extractor = TarXzExtractor {};
-        let file = PathBuf::from("testdata/hello.tar.xz");
+        let file = PathBuf::from("../testdata/hello.tar.xz");
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
@@ -172,7 +172,7 @@ mod tests {
     #[test]
     fn test_list_tarzstd_file() {
         let extractor = TarZstdExtractor {};
-        let file = PathBuf::from("testdata/hello.tar.zst");
+        let file = PathBuf::from("../testdata/hello.tar.zst");
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);

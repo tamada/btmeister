@@ -21,8 +21,8 @@
  * let meister = btmeister::Meister::new(defs_result.unwrap(), vec![]);
  *
  * // The third step
- * let meister = btmeister::Meister::new_as_default().unwrap();
- * match meister.find(std::path::PathBuf::from("testdata/hello")) {
+ * let meister = btmeister::Meister::default();
+ * match meister.find(std::path::PathBuf::from("../testdata/hello")) {
  *     Ok(r) => {
  *        println!("project: {}", r.base.display());
  *        for bt in r.tools {
@@ -488,7 +488,7 @@ mod tests {
     #[test]
     fn test_build_walker() {
         let meister = Meister::default();
-        let r = meister.find(PathBuf::from("testdata/fibonacci"));
+        let r = meister.find(PathBuf::from("../testdata/fibonacci"));
         assert!(r.is_ok());
         if let Ok(r) = r {
             assert_eq!(1, r.tools.len());
@@ -502,7 +502,7 @@ mod tests {
     #[test]
     fn test_archive_file() {
         let meister = Meister::default();
-        let r = meister.find(PathBuf::from("testdata/hello.tar"));
+        let r = meister.find(PathBuf::from("../testdata/hello.tar"));
         assert!(r.is_ok());
         if let Ok(r) = r {
             assert_eq!(1, r.tools.len());

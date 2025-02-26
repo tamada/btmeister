@@ -243,7 +243,7 @@ mod tests {
     #[test]
     fn test_success() {
         let r = rust_main(
-            vec!["btmeister", "testdata/fibonacci", "--format", "json"]
+            vec!["btmeister", "../testdata/fibonacci", "--format", "json"]
                 .iter()
                 .map(|s| s.to_string())
                 .collect(),
@@ -256,7 +256,7 @@ mod tests {
         let r = rust_main(
             vec![
                 "btmeister",
-                "testdata/fibonacci",
+                "../testdata/fibonacci",
                 "--list-defs",
                 "--format",
                 "json",

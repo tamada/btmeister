@@ -30,7 +30,7 @@ use serde::{Deserialize, Serialize};
 use crate::{MeisterError, Result};
 
 #[derive(RustEmbed)]
-#[folder = "assets"]
+#[folder = "../assets"]
 struct Asset;
 
 /// BuildToolDef represents a build tool definition.
@@ -186,7 +186,7 @@ mod test {
 
     #[test]
     fn test_parse_other() {
-        let r = BuildToolDefs::parse(PathBuf::from("testdata/append_def.json"));
+        let r = BuildToolDefs::parse(PathBuf::from("../testdata/append_def.json"));
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(2, result.len());
@@ -206,7 +206,7 @@ mod test {
 
     #[test]
     fn test_construct2() {
-        let r = construct(Some(PathBuf::from("assets/buildtools.json")), None);
+        let r = construct(Some(PathBuf::from("../assets/buildtools.json")), None);
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
@@ -216,7 +216,7 @@ mod test {
 
     #[test]
     fn test_construct3() {
-        let r = construct(None, Some(PathBuf::from("testdata/append_def.json")));
+        let r = construct(None, Some(PathBuf::from("../testdata/append_def.json")));
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());
