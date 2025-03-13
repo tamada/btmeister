@@ -13,12 +13,12 @@
  *
  * ```
  * // The first step
- * let defs_result = btmeister::defs::BuildToolDefs::parse_from_asset();
+ * let defs = btmeister::defs::BuildToolDefs::default();
  * // or specifying the definition file.
  * // let defs_result = btmeister::defs::BuildToolDefs::parse(std::path::PathBuf::from("buildtools.json"));
  *
  * // The second step
- * let meister = btmeister::Meister::new(defs_result.unwrap(), vec![]);
+ * let meister = btmeister::Meister::new(defs, vec![]);
  *
  * // The third step
  * let meister = btmeister::Meister::default();
