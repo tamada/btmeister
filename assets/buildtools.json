@@ -184,6 +184,14 @@
     "url": "https://www.jenkins.io"
   },
   {
+    "name": "jib",
+    "build-files": [
+      "jib.yaml",
+      "jib.yml"
+    ],
+    "url": "https://github.com/GoogleContainerTools/jib"
+  },
+  {
     "name": "just",
     "build-files": [
       "Justfile"
@@ -298,7 +306,10 @@
       "Taskfile.yaml",
       "Taskfile.dist.yml",
       "Taskfile.dist.yaml",
-      "Taskfile"
+      "taskfile.yml",
+      "taskfile.yaml",
+      "taskfile.dist.yml",
+      "taskfile.dist.yaml"
     ],
     "url": "https://taskfile.dev/"
   },

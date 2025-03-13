@@ -163,6 +163,11 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://www.jenkins.io"
   }
   new {
+    name = "jib"
+    `build-files` = new { "jib.yaml" "jib.yml" }
+    url = "https://github.com/GoogleContainerTools/jib"
+  }
+  new {
     name = "just"
     `build-files` = new { "Justfile" }
     url = "https://github.com/casey/just"
