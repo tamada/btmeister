@@ -54,6 +54,10 @@ $ btmeister ~/github.com/tamada/gibo-wrapper
     Cargo.toml: Cargo
     Dockerfile: Docker
     build.rs: Cargo
+    .github/workflows/publish.yaml: GitHub Actions
+    .github/workflows/docker.yaml: GitHub Actions
+    .github/workflows/versionup.yaml: GitHub Actions
+    .github/workflows/build.yaml: GitHub Actions
 $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 [
   {
@@ -70,6 +74,22 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
       {
         "path": "build.rs",
         "tool-name": "Cargo"
+      },
+      {
+        "path": ".github/workflows/publish.yaml",
+        "tool-name": "GitHub Actions"
+      },
+      {
+        "path": ".github/workflows/docker.yaml",
+        "tool-name": "GitHub Actions"
+      },
+      {
+        "path": ".github/workflows/versionup.yaml",
+        "tool-name": "GitHub Actions"
+      },
+      {
+        "path": ".github/workflows/build.yaml",
+        "tool-name": "GitHub Actions"
       }
     ]
   }

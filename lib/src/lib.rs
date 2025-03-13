@@ -13,16 +13,16 @@
  *
  * ```
  * // The first step
- * let defs_result = btmeister::defs::BuildToolDefs::parse_from_asset();
+ * let defs = btmeister::defs::BuildToolDefs::default();
  * // or specifying the definition file.
  * // let defs_result = btmeister::defs::BuildToolDefs::parse(std::path::PathBuf::from("buildtools.json"));
  *
  * // The second step
- * let meister = btmeister::Meister::new(defs_result.unwrap(), vec![]);
+ * let meister = btmeister::Meister::new(defs, vec![]);
  *
  * // The third step
- * let meister = btmeister::Meister::new_as_default().unwrap();
- * match meister.find(std::path::PathBuf::from("testdata/hello")) {
+ * let meister = btmeister::Meister::default();
+ * match meister.find(std::path::PathBuf::from("../testdata/hello")) {
  *     Ok(r) => {
  *        println!("project: {}", r.base.display());
  *        for bt in r.tools {
@@ -62,7 +62,7 @@ pub enum MeisterError {
     /// if no project was specified.
     NoProjectSpecified(),
     /// The given project does not exist.
-    ProjectNotFound(String),
+    ProjectNotFound(PathBuf),
     /// the given archive file was not supported.
     UnsupportedArchiveFormat(String),
     /// warning message.
@@ -194,10 +194,8 @@ pub struct Meister {
 impl Default for Meister {
     /// default creates a Meister object with the default build tool definitions.
     fn default() -> Self {
-        match BuildToolDefs::parse_from_asset() {
-            Ok(r) => Meister::new(r, vec![IgnoreType::Default]).unwrap(),
-            Err(_) => panic!("failed to parse the default build tool definitions"),
-        }
+        let r = BuildToolDefs::default();
+        Meister::new(r, vec![IgnoreType::Default]).unwrap()
     }
 }
 
@@ -488,7 +486,7 @@ mod tests {
     #[test]
     fn test_build_walker() {
         let meister = Meister::default();
-        let r = meister.find(PathBuf::from("testdata/fibonacci"));
+        let r = meister.find(PathBuf::from("../testdata/fibonacci"));
         assert!(r.is_ok());
         if let Ok(r) = r {
             assert_eq!(1, r.tools.len());
@@ -502,7 +500,7 @@ mod tests {
     #[test]
     fn test_archive_file() {
         let meister = Meister::default();
-        let r = meister.find(PathBuf::from("testdata/hello.tar"));
+        let r = meister.find(PathBuf::from("../testdata/hello.tar"));
         assert!(r.is_ok());
         if let Ok(r) = r {
             assert_eq!(1, r.tools.len());
@@ -523,8 +521,8 @@ mod tests {
         let matcher = build_matcher(def);
         assert!(matcher.is_ok());
         if let Ok(d) = matcher {
-            assert_eq!(true, d.matches(&PathBuf::from("testdata/file1.rs")));
-            assert_eq!(true, d.matches(&PathBuf::from("file2.rs")));
+            assert!(d.matches(&PathBuf::from("testdata/file1.rs")));
+            assert!(d.matches(&PathBuf::from("file2.rs")));
         }
     }
 
@@ -538,9 +536,9 @@ mod tests {
         let matcher = build_matcher(def);
         assert!(matcher.is_ok());
         if let Ok(d) = matcher {
-            assert_eq!(false, d.matches(&PathBuf::from("hoge.yaml")));
-            assert_eq!(true, d.matches(&PathBuf::from("some/dir/file2.yaml")));
-            assert_eq!(false, d.matches(&PathBuf::from("not/some/dir/file3.yaml")));
+            assert!(!d.matches(&PathBuf::from("hoge.yaml")));
+            assert!(d.matches(&PathBuf::from("some/dir/file2.yaml")));
+            assert!(!d.matches(&PathBuf::from("not/some/dir/file3.yaml")));
         }
     }
 
@@ -554,8 +552,8 @@ mod tests {
         let matcher = build_matcher(def);
         assert!(matcher.is_ok());
         if let Ok(d) = matcher {
-            assert_eq!(true, d.matches(&PathBuf::from("Somefile")));
-            assert_eq!(true, d.matches(&PathBuf::from("some/dir/Somefile")));
+            assert!(d.matches(&PathBuf::from("Somefile")));
+            assert!(d.matches(&PathBuf::from("some/dir/Somefile")));
         }
     }
 

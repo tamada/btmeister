@@ -37,7 +37,7 @@ mod tests {
     #[test]
     fn test_list_archives() {
         let extractor = ZipExtractor {};
-        let file = PathBuf::from("testdata/fibonacci.zip");
+        let file = PathBuf::from("../testdata/fibonacci.zip");
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 16);
@@ -47,7 +47,7 @@ mod tests {
                     Some("fibonacci/build.gradle".to_string()).as_ref()
                 );
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 

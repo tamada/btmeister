@@ -1,6 +1,6 @@
-testdata/hello
-testdata/fibonacci
+hello
+fibonacci
 not_exist_project
 # This is comment
 # The following line is not directory.
-testdata/project_list.txt
+project_list.txt

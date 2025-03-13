@@ -132,41 +132,46 @@ pub enum Format {
     Yaml,
 }
 
-fn read_from_reader(r: Box<dyn BufRead>) -> Result<Vec<String>> {
+fn read_from_reader(r: Box<dyn BufRead>, parent: PathBuf) -> Result<Vec<String>> {
     let result = r
         .lines()
         .map_while(|r| r.ok())
         .map(|l| l.trim().to_string())
         .filter(|l| !l.starts_with("#") && !l.is_empty())
+        .map(|name| parent.join(name).to_str().unwrap().to_string())
         .collect::<Vec<String>>();
     Ok(result)
 }
 
 fn read_from_stdin() -> Result<Vec<String>> {
-    read_from_reader(Box::new(io::stdin().lock()))
+    read_from_reader(Box::new(io::stdin().lock()), PathBuf::from("."))
 }
 
 fn read_from_file(filename: &str) -> Result<Vec<String>> {
+    let parent = match PathBuf::from(filename).parent() {
+        Some(p) => p.to_path_buf(),
+        None => PathBuf::from("."),
+    };
     match std::fs::File::open(filename) {
         Err(e) => Err(MeisterError::IO(e)),
-        Ok(file) => read_from_reader(Box::new(std::io::BufReader::new(file))),
+        Ok(file) => read_from_reader(Box::new(std::io::BufReader::new(file)), parent),
     }
 }
 
 fn convert_and_push_item(item: &str, result: &mut Vec<PathBuf>, errs: &mut Vec<MeisterError>) {
     let path = PathBuf::from(item);
     if !path.exists() {
-        errs.push(MeisterError::ProjectNotFound(item.to_string()));
+        errs.push(MeisterError::ProjectNotFound(path));
     } else if path.is_file() {
         if btmeister::is_supported_archive_format(&path) {
             result.push(path);
         } else {
-            errs.push(MeisterError::ProjectNotFound(item.to_string()));
+            errs.push(MeisterError::ProjectNotFound(path));
         }
     } else if path.is_dir() {
         result.push(path);
     } else {
-        errs.push(MeisterError::ProjectNotFound(item.to_string()));
+        errs.push(MeisterError::ProjectNotFound(path));
     }
 }
 
@@ -214,60 +219,61 @@ mod tests {
 
     #[test]
     fn test_projects1() {
-        let opts = Options::parse_from(&["meister", "testdata/fibonacci", "testdata/hello"]);
+        let opts = Options::parse_from(["meister", "../testdata/fibonacci", "../testdata/hello"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_ok());
         if let Ok(p) = projects {
             assert_eq!(2, p.len());
-            assert_eq!(PathBuf::from("testdata/fibonacci"), p[0]);
-            assert_eq!(PathBuf::from("testdata/hello"), p[1]);
+            assert_eq!(PathBuf::from("../testdata/fibonacci"), p[0]);
+            assert_eq!(PathBuf::from("../testdata/hello"), p[1]);
         }
     }
 
     #[test]
     fn test_projects2() {
-        let opts = Options::parse_from(&["meister", "@testdata/project_list.txt"]);
+        let opts = Options::parse_from(["meister", "@../testdata/project_list.txt"]);
         let projects = opts.inputs.projects();
-        assert!(projects.is_ok());
         if let Ok(p) = projects {
             assert_eq!(2, p.len());
-            assert_eq!(PathBuf::from("testdata/hello"), p[0]);
-            assert_eq!(PathBuf::from("testdata/fibonacci"), p[1]);
+            assert_eq!(PathBuf::from("../testdata/hello"), p[0]);
+            assert_eq!(PathBuf::from("../testdata/fibonacci"), p[1]);
+        } else {
+            panic!("fatal: {:?}", projects);
         }
     }
 
     #[test]
     fn test_not_exist_project() {
-        let opts = Options::parse_from(&["meister", "not_exist_project"]);
+        let opts = Options::parse_from(["meister", "not_exist_project"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(1, e.len());
             if let MeisterError::ProjectNotFound(p) = &e[0] {
-                assert_eq!("not_exist_project", p);
+                assert_eq!(&PathBuf::from("not_exist_project"), p);
             }
         }
     }
 
     #[test]
     fn test_invalid_project_list() {
-        let opts = Options::parse_from(&["meister", "@testdata/invalid_project_list.txt"]);
+        let opts = Options::parse_from(["meister", "@../testdata/invalid_project_list.txt"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(2, e.len());
             if let MeisterError::ProjectNotFound(p) = &e[0] {
-                assert_eq!("not_exist_project", p);
+                assert_eq!(&PathBuf::from("../testdata/not_exist_project"), p);
             }
             if let MeisterError::ProjectNotFound(p) = &e[1] {
-                assert_eq!("testdata/project_list.txt", p);
+                assert_eq!(&PathBuf::from("../testdata/project_list.txt"), p);
             }
         }
     }
 
     #[test]
     fn test_unknownfile() {
-        let opts = Options::parse_from(&["meister", "@unknownfile"]);
+        let opts = Options::parse_from(["meister", "@unknownfile"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
@@ -288,8 +294,8 @@ mod tests {
         let projects = opts.projects();
         assert!(projects.is_err());
         match projects {
-            Err(MeisterError::NoProjectSpecified()) => assert!(true),
-            _ => assert!(false),
+            Err(MeisterError::NoProjectSpecified()) => {}
+            _ => panic!("fatal: {:?}", projects),
         }
     }
 }

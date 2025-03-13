@@ -98,6 +98,11 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://deno.land/"
   }
   new {
+    name = "DevContainer"
+    `build-files` = new { ".devcontainer/devcontainer.json" }
+    url = "https://code.visualstudio.com/docs/remote/containers"
+  }
+  new {
     name = "Docker"
     `build-files` = new { "Dockerfile" }
     url = "https://www.docker.com"
@@ -238,6 +243,13 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://pybuilder.io/"
   }
   new {
+    name = "Poetry"       // pyproject.toml is not just for poetry, I know. 
+    `build-files` = new { // However, I do not know the suitable tool name.
+      "pyproject.toml"    // https://peps.python.org/pep-0518/#specification
+    }
+    url = "https://python-poetry.org/"
+  }
+  new {
     name = "Rake"
     `build-files` = new {
       "Rakefile"
@@ -306,6 +318,11 @@ buildtools = new Listing<BuildToolDef> {
     name = "vagrant"
     `build-files` = new { "Vagrantfile" }
     url = "https://www.vagrantup.com"
+  }
+  new {
+    name = "Visual Studio Code"
+    `build-files` = new { ".vscode/tasks.json" }
+    url = "https://code.visualstudio.com/docs/editor/tasks"
   }
   new {
     name = "Webpack"
