@@ -12,7 +12,7 @@ COPY src    /app/src
 COPY assets /app/assets
 RUN    touch src/main.rs \
     && cargo build --release \
-    && strip target/release/btmeister -o btmeister
+    && strip target/release/btmeister-cli -o btmeister
 
 FROM gcr.io/distroless/static-debian12:nonroot
 USER nonroot

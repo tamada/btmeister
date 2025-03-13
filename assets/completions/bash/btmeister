@@ -25,7 +25,11 @@ _btmeister() {
                 return 0
             fi
             case "${prev}" in
-                -D | --definition)
+                --definition)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                -D)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
@@ -33,28 +37,40 @@ _btmeister() {
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                -i | --ignore-type)
+                --ignore-type)
                     COMPREPLY=($(compgen -W "default hidden ignore git-ignore git-global git-exclude" -- "${cur}"))
                     return 0
                     ;;
-                -e | --excludes)
+                -i)
+                    COMPREPLY=($(compgen -W "default hidden ignore git-ignore git-global git-exclude" -- "${cur}"))
+                    return 0
+                    ;;
+                --excludes)
                     COMPREPLY=($(compgen -f "${cur}"))
                     return 0
                     ;;
-                -f | --format)
+                -e)
+                    COMPREPLY=($(compgen -f "${cur}"))
+                    return 0
+                    ;;
+                --format)
                     COMPREPLY=($(compgen -W "csv default json markdown xml yaml" -- "${cur}"))
                     return 0
                     ;;
-                -l | --level)
+                -f)
+                    COMPREPLY=($(compgen -W "csv default json markdown xml yaml" -- "${cur}"))
+                    return 0
+                    ;;
+                --level)
+                    COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
+                    return 0
+                    ;;
+                -l)
                     COMPREPLY=($(compgen -W "error warn info debug trace" -- "${cur}"))
                     return 0
                     ;;
                 *)
-                    if [[ "${cur}" == "@*" ]]; then
-                        COMPREPLY=($(compgen -f "${cur:1}" -P "@")) # complete file
-                    else
-                        COMPREPLY=($(compgen -d "${cur}"))          # complete directory
-                    fi
+                    COMPREPLY=($(compgen -A directory -- "${cur}"))
                     ;;
             esac
             COMPREPLY=( $(compgen -W "${opts}" -- "${cur}") )

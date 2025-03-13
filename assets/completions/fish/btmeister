@@ -18,8 +18,6 @@ warn\t''
 info\t''
 debug\t''
 trace\t''"
-complete -c btmeister -l completion-out-dir -d 'Output directory of completion files' -r -F
 complete -c btmeister -s L -l list-defs -d 'Print the build tools\' definition list'
-complete -c btmeister -l generate-completion-files -d 'Generate completion files'
 complete -c btmeister -s h -l help -d 'Print help (see more with \'--help\')'
 complete -c btmeister -s V -l version -d 'Print version'

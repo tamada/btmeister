@@ -243,7 +243,7 @@ mod tests {
     #[test]
     fn test_success() {
         let r = rust_main(
-            vec!["btmeister", "../testdata/fibonacci", "--format", "json"]
+            ["btmeister", "../testdata/fibonacci", "--format", "json"]
                 .iter()
                 .map(|s| s.to_string())
                 .collect(),
@@ -254,7 +254,7 @@ mod tests {
     #[test]
     fn test_success_list_defs() {
         let r = rust_main(
-            vec![
+            [
                 "btmeister",
                 "../testdata/fibonacci",
                 "--list-defs",
@@ -271,7 +271,7 @@ mod tests {
     #[test]
     fn test_project_not_found() {
         let r = rust_main(
-            vec!["btmeister", "unknown/project"]
+            ["btmeister", "unknown/project"]
                 .iter()
                 .map(|s| s.to_string())
                 .collect(),
@@ -283,7 +283,7 @@ mod tests {
     fn test_gencomp() {
         use std::path::PathBuf;
         let r = rust_main(
-            vec![
+            [
                 "btmeister",
                 "--generate-completion-files",
                 "--completion-out-dir",

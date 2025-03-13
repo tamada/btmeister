@@ -190,7 +190,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(2, result.len());
-            assert_eq!(false, result.is_empty());
+            assert!(!result.is_empty());
         }
     }
 
@@ -200,7 +200,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
-            assert_eq!(false, result.is_empty());
+            assert!(!result.is_empty());
         }
     }
 
@@ -210,7 +210,7 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(45, result.len());
-            assert_eq!(false, result.is_empty());
+            assert!(!result.is_empty());
         }
     }
 
@@ -220,23 +220,26 @@ mod test {
         assert!(r.is_ok());
         if let Ok(result) = r {
             assert_eq!(47, result.len());
-            assert_eq!(false, result.is_empty());
+            assert!(!result.is_empty());
         }
     }
 
     #[test]
     fn test_new_and_extend() {
         let mut defs1 = BuildToolDefs::new(vec![]);
+        assert_eq!(0, defs1.len());
+        assert!(defs1.is_empty());
+
         let defs2 = BuildToolDefs::new(vec![BuildToolDef::new(
             "Fake".to_string(),
             vec!["Fakefile".to_string()],
             "https://example.com".to_string(),
         )]);
-        assert_eq!(0, defs1.len());
-        assert_eq!(true, defs1.is_empty());
         assert_eq!(1, defs2.len());
+
         defs1.extend(defs2);
+
         assert_eq!(1, defs1.len());
-        assert_eq!(false, defs1.is_empty());
+        assert!(!defs1.is_empty());
     }
 }

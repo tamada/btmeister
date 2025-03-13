@@ -120,10 +120,10 @@ mod tests {
             Ok(r) => {
                 println!("{:?}", r);
                 assert_eq!(r.len(), 2);
-                assert_eq!(r.get(0), Some("hello/Cargo.toml".to_string()).as_ref());
+                assert_eq!(r.first(), Some("hello/Cargo.toml".to_string()).as_ref());
                 assert_eq!(r.get(1), Some("hello/src/main.rs".to_string()).as_ref());
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 
@@ -134,10 +134,10 @@ mod tests {
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
-                assert_eq!(r.get(0), Some("hello/Cargo.toml".to_string()).as_ref());
+                assert_eq!(r.first(), Some("hello/Cargo.toml".to_string()).as_ref());
                 assert_eq!(r.get(1), Some("hello/src/main.rs".to_string()).as_ref());
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 
@@ -148,10 +148,10 @@ mod tests {
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
-                assert_eq!(r.get(0), Some("hello/Cargo.toml".to_string()).as_ref());
+                assert_eq!(r.first(), Some("hello/Cargo.toml".to_string()).as_ref());
                 assert_eq!(r.get(1), Some("hello/src/main.rs".to_string()).as_ref());
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 
@@ -162,10 +162,10 @@ mod tests {
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
-                assert_eq!(r.get(0), Some("hello/Cargo.toml".to_string()).as_ref());
+                assert_eq!(r.first(), Some("hello/Cargo.toml".to_string()).as_ref());
                 assert_eq!(r.get(1), Some("hello/src/main.rs".to_string()).as_ref());
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 
@@ -176,10 +176,10 @@ mod tests {
         match extractor.list_entries(file) {
             Ok(r) => {
                 assert_eq!(r.len(), 2);
-                assert_eq!(r.get(0), Some("hello/Cargo.toml".to_string()).as_ref());
+                assert_eq!(r.first(), Some("hello/Cargo.toml".to_string()).as_ref());
                 assert_eq!(r.get(1), Some("hello/src/main.rs".to_string()).as_ref());
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 

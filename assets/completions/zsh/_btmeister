@@ -36,10 +36,8 @@ git-exclude\:"ignore respecting \`.git/info/exclude\` file"))' \
 '--format=[Specify the output format]:FORMAT:(csv default json markdown xml yaml)' \
 '-l+[Specify the log level.]:LEVEL:(error warn info debug trace)' \
 '--level=[Specify the log level.]:LEVEL:(error warn info debug trace)' \
-'--completion-out-dir=[Output directory of completion files]:DIR:_files' \
 '-L[Print the build tools'\'' definition list]' \
 '--list-defs[Print the build tools'\'' definition list]' \
-'--generate-completion-files[Generate completion files]' \
 '-h[Print help (see more with '\''--help'\'')]' \
 '--help[Print help (see more with '\''--help'\'')]' \
 '-V[Print version]' \

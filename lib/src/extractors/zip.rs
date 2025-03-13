@@ -47,7 +47,7 @@ mod tests {
                     Some("fibonacci/build.gradle".to_string()).as_ref()
                 );
             }
-            Err(_) => assert!(false),
+            Err(_) => panic!("Error listing archive"),
         }
     }
 

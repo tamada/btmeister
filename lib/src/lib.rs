@@ -523,8 +523,8 @@ mod tests {
         let matcher = build_matcher(def);
         assert!(matcher.is_ok());
         if let Ok(d) = matcher {
-            assert_eq!(true, d.matches(&PathBuf::from("testdata/file1.rs")));
-            assert_eq!(true, d.matches(&PathBuf::from("file2.rs")));
+            assert!(d.matches(&PathBuf::from("testdata/file1.rs")));
+            assert!(d.matches(&PathBuf::from("file2.rs")));
         }
     }
 
@@ -538,9 +538,9 @@ mod tests {
         let matcher = build_matcher(def);
         assert!(matcher.is_ok());
         if let Ok(d) = matcher {
-            assert_eq!(false, d.matches(&PathBuf::from("hoge.yaml")));
-            assert_eq!(true, d.matches(&PathBuf::from("some/dir/file2.yaml")));
-            assert_eq!(false, d.matches(&PathBuf::from("not/some/dir/file3.yaml")));
+            assert!(!d.matches(&PathBuf::from("hoge.yaml")));
+            assert!(d.matches(&PathBuf::from("some/dir/file2.yaml")));
+            assert!(!d.matches(&PathBuf::from("not/some/dir/file3.yaml")));
         }
     }
 
@@ -554,8 +554,8 @@ mod tests {
         let matcher = build_matcher(def);
         assert!(matcher.is_ok());
         if let Ok(d) = matcher {
-            assert_eq!(true, d.matches(&PathBuf::from("Somefile")));
-            assert_eq!(true, d.matches(&PathBuf::from("some/dir/Somefile")));
+            assert!(d.matches(&PathBuf::from("Somefile")));
+            assert!(d.matches(&PathBuf::from("some/dir/Somefile")));
         }
     }
 

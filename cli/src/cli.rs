@@ -219,7 +219,7 @@ mod tests {
 
     #[test]
     fn test_projects1() {
-        let opts = Options::parse_from(&["meister", "../testdata/fibonacci", "../testdata/hello"]);
+        let opts = Options::parse_from(["meister", "../testdata/fibonacci", "../testdata/hello"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_ok());
         if let Ok(p) = projects {
@@ -231,7 +231,7 @@ mod tests {
 
     #[test]
     fn test_projects2() {
-        let opts = Options::parse_from(&["meister", "@../testdata/project_list.txt"]);
+        let opts = Options::parse_from(["meister", "@../testdata/project_list.txt"]);
         let projects = opts.inputs.projects();
         if let Ok(p) = projects {
             assert_eq!(2, p.len());
@@ -244,7 +244,7 @@ mod tests {
 
     #[test]
     fn test_not_exist_project() {
-        let opts = Options::parse_from(&["meister", "not_exist_project"]);
+        let opts = Options::parse_from(["meister", "not_exist_project"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
@@ -257,7 +257,7 @@ mod tests {
 
     #[test]
     fn test_invalid_project_list() {
-        let opts = Options::parse_from(&["meister", "@../testdata/invalid_project_list.txt"]);
+        let opts = Options::parse_from(["meister", "@../testdata/invalid_project_list.txt"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
@@ -273,7 +273,7 @@ mod tests {
 
     #[test]
     fn test_unknownfile() {
-        let opts = Options::parse_from(&["meister", "@unknownfile"]);
+        let opts = Options::parse_from(["meister", "@unknownfile"]);
         let projects = opts.inputs.projects();
         assert!(projects.is_err());
         if let Err(MeisterError::Array(e)) = projects {
@@ -294,8 +294,8 @@ mod tests {
         let projects = opts.projects();
         assert!(projects.is_err());
         match projects {
-            Err(MeisterError::NoProjectSpecified()) => assert!(true),
-            _ => assert!(false),
+            Err(MeisterError::NoProjectSpecified()) => {}
+            _ => panic!("fatal: {:?}", projects),
         }
     }
 }
