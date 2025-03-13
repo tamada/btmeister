@@ -158,7 +158,7 @@ fn errors_to_string(e: MeisterError) -> String {
         NotImplemented => "not implemented yet.".to_string(),
         NotProject(file) => format!("{}: not project", file),
         NoProjectSpecified() => "no project specified.".to_string(),
-        ProjectNotFound(p) => format!("{}: project not found", p),
+        ProjectNotFound(p) => format!("{}: project not found", p.display()),
         UnsupportedArchiveFormat(f) => format!("{}: unsupported archive format", f),
         Warning(m) => format!("warning: {}", m),
     }
@@ -200,6 +200,8 @@ fn main() {
 
 #[cfg(test)]
 mod tests {
+    use std::path::PathBuf;
+
     use super::*;
 
     #[test]
@@ -221,7 +223,7 @@ mod tests {
         );
         assert_eq!(
             "test: project not found",
-            errors_to_string(ProjectNotFound("test".to_string()))
+            errors_to_string(ProjectNotFound(PathBuf::from("test")))
         );
         assert_eq!(
             "test: unsupported archive format",

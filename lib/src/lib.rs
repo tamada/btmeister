@@ -62,7 +62,7 @@ pub enum MeisterError {
     /// if no project was specified.
     NoProjectSpecified(),
     /// The given project does not exist.
-    ProjectNotFound(String),
+    ProjectNotFound(PathBuf),
     /// the given archive file was not supported.
     UnsupportedArchiveFormat(String),
     /// warning message.

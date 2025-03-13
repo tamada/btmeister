@@ -161,17 +161,17 @@ fn read_from_file(filename: &str) -> Result<Vec<String>> {
 fn convert_and_push_item(item: &str, result: &mut Vec<PathBuf>, errs: &mut Vec<MeisterError>) {
     let path = PathBuf::from(item);
     if !path.exists() {
-        errs.push(MeisterError::ProjectNotFound(item.to_string()));
+        errs.push(MeisterError::ProjectNotFound(path));
     } else if path.is_file() {
         if btmeister::is_supported_archive_format(&path) {
             result.push(path);
         } else {
-            errs.push(MeisterError::ProjectNotFound(item.to_string()));
+            errs.push(MeisterError::ProjectNotFound(path));
         }
     } else if path.is_dir() {
         result.push(path);
     } else {
-        errs.push(MeisterError::ProjectNotFound(item.to_string()));
+        errs.push(MeisterError::ProjectNotFound(path));
     }
 }
 
@@ -250,7 +250,7 @@ mod tests {
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(1, e.len());
             if let MeisterError::ProjectNotFound(p) = &e[0] {
-                assert_eq!("not_exist_project", p);
+                assert_eq!(&PathBuf::from("not_exist_project"), p);
             }
         }
     }
@@ -263,10 +263,10 @@ mod tests {
         if let Err(MeisterError::Array(e)) = projects {
             assert_eq!(2, e.len());
             if let MeisterError::ProjectNotFound(p) = &e[0] {
-                assert_eq!("../testdata/not_exist_project", p);
+                assert_eq!(&PathBuf::from("../testdata/not_exist_project"), p);
             }
             if let MeisterError::ProjectNotFound(p) = &e[1] {
-                assert_eq!("../testdata/project_list.txt", p);
+                assert_eq!(&PathBuf::from("../testdata/project_list.txt"), p);
             }
         }
     }
