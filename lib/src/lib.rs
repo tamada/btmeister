@@ -194,10 +194,8 @@ pub struct Meister {
 impl Default for Meister {
     /// default creates a Meister object with the default build tool definitions.
     fn default() -> Self {
-        match BuildToolDefs::parse_from_asset() {
-            Ok(r) => Meister::new(r, vec![IgnoreType::Default]).unwrap(),
-            Err(_) => panic!("failed to parse the default build tool definitions"),
-        }
+        let r = BuildToolDefs::default();
+        Meister::new(r, vec![IgnoreType::Default]).unwrap()
     }
 }
 
