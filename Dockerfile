@@ -4,14 +4,8 @@ RUN apk --no-cache add musl-dev
 
 WORKDIR /app
 
-COPY Cargo.toml .
-RUN    mkdir src && echo "fn main() {}" > src/main.rs \
-    && cargo build --release
-
-COPY src    /app/src
-COPY assets /app/assets
-RUN    touch src/main.rs \
-    && cargo build --release \
+COPY . /app
+RUN    cargo build --release \
     && strip target/release/btmeister-cli -o btmeister
 
 FROM gcr.io/distroless/static-debian12:nonroot
