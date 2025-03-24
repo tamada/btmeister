@@ -4,7 +4,7 @@ members = ["cli", "lib"]
 resolver = "3"
 
 [workspace.package]
-version = "0.7.4"
+version = "0.8.0"
 edition = "2021"
 authors = [ "Haruaki TAMADA" ]
 license-file = "LICENSE"
