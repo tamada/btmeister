@@ -21,18 +21,35 @@
     "url": "https://maven.apache.org/"
   },
   {
+    "name": "Appveyor",
+    "build-files": [
+      "appveyor.yml"
+    ],
+    "url": "https://www.appveyor.com/"
+  },
+  {
     "name": "autoconf",
     "build-files": [
-      "configure.in"
+      "configure.in",
+      "configure.ac"
     ],
     "url": "https://www.gnu.org/software/autoconf/"
   },
   {
     "name": "automake",
     "build-files": [
+      "Makefile.in",
       "Makefile.am"
     ],
     "url": "https://www.gnu.org/software/automake/"
+  },
+  {
+    "name": "Babel",
+    "build-files": [
+      "babel.config.js",
+      ".babelrc.json"
+    ],
+    "url": "https://babeljs.io/"
   },
   {
     "name": "Bazel",
@@ -108,6 +125,20 @@
     "url": "https://deno.land/"
   },
   {
+    "name": "dep",
+    "build-files": [
+      "Gopkg.toml"
+    ],
+    "url": "https://github.com/golang/dep"
+  },
+  {
+    "name": "DevContainer",
+    "build-files": [
+      ".devcontainer/devcontainer.json"
+    ],
+    "url": "https://code.visualstudio.com/docs/remote/containers"
+  },
+  {
     "name": "Docker",
     "build-files": [
       "Dockerfile"
@@ -123,6 +154,13 @@
       "compose.yaml"
     ],
     "url": "https://docs.docker.com/compose/"
+  },
+  {
+    "name": "Doxygen",
+    "build-files": [
+      "Doxyfile"
+    ],
+    "url": "https://www.doxygen.nl"
   },
   {
     "name": "Earthly",
@@ -152,6 +190,13 @@
       ".gitlab-ci.yml"
     ],
     "url": "https://docs.gitlab.com/ee/ci/"
+  },
+  {
+    "name": "Glide",
+    "build-files": [
+      "glide.yaml"
+    ],
+    "url": "https://github.com/Masterminds/glide"
   },
   {
     "name": "Gradle",
@@ -249,6 +294,14 @@
     "url": "https://www.npmjs.com/"
   },
   {
+    "name": "NuGet",
+    "build-files": [
+      "nuget.config",
+      "NuGet.config"
+    ],
+    "url": "https://www.nuget.org"
+  },
+  {
     "name": "Pants",
     "build-files": [
       "BUILD"
@@ -270,6 +323,13 @@
     "url": "https://pybuilder.io/"
   },
   {
+    "name": "Poetry",
+    "build-files": [
+      "pyproject.toml"
+    ],
+    "url": "https://python-poetry.org/"
+  },
+  {
     "name": "Rake",
     "build-files": [
       "Rakefile"
@@ -283,6 +343,13 @@
       "rollup.config.mjs"
     ],
     "url": "https://rollupjs.org"
+  },
+  {
+    "name": "Ruby Gems",
+    "build-files": [
+      "Gemfile"
+    ],
+    "url": "https://rubygems.org"
   },
   {
     "name": "SCons",
@@ -341,6 +408,13 @@
       "Vagrantfile"
     ],
     "url": "https://www.vagrantup.com"
+  },
+  {
+    "name": "Visual Studio Code",
+    "build-files": [
+      ".vscode/tasks.json"
+    ],
+    "url": "https://code.visualstudio.com/docs/editor/tasks"
   },
   {
     "name": "Webpack",

@@ -30,12 +30,17 @@ impl FormatterTrait for Formatter {
         let mut result = Vec::<u8>::new();
         let b = tools.base.display();
         let _ = writeln!(result, "## {}\n", b);
-        for bt in &tools.tools {
-            let _ = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
-                writeln!(result, "- {}\n  - {}", bt.def.name, p.display())
-            } else {
-                writeln!(result, "- {}\n  - {}", bt.def.name, bt.path.display())
-            };
+
+        let map = super::convert_to_map(tools);
+        for (name, bts) in map {
+            let _ = writeln!(result, "- {}", name);
+            for bt in bts {
+                let _ = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                    writeln!(result, "  - {}", p.display())
+                } else {
+                    writeln!(result, "  - {}", bt.path.display())
+                };
+            }
         }
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }
