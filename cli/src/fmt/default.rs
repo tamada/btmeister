@@ -84,8 +84,10 @@ mod tests {
         if let Ok(r) = result {
             assert_eq!(
                 r#"fake/base/dir
-    Fakefile: Fake
-    Makefile: Make
+    Fake
+        Fakefile
+    Make
+        Makefile
 "#
                 .to_string(),
                 r
