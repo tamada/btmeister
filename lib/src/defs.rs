@@ -183,7 +183,7 @@ mod test {
     #[test]
     fn test_parse() {
         let defs = BuildToolDefs::default();
-        assert_eq!(46, defs.len())
+        assert_eq!(56, defs.len())
     }
 
     #[test]
@@ -201,7 +201,7 @@ mod test {
         let r = construct(None, None);
         assert!(r.is_ok());
         if let Ok(result) = r {
-            assert_eq!(46, result.len());
+            assert_eq!(56, result.len());
             assert!(!result.is_empty());
         }
     }
@@ -211,7 +211,7 @@ mod test {
         let r = construct(Some(PathBuf::from("../assets/buildtools.json")), None);
         assert!(r.is_ok());
         if let Ok(result) = r {
-            assert_eq!(46, result.len());
+            assert_eq!(56, result.len());
             assert!(!result.is_empty());
         }
     }
@@ -221,7 +221,7 @@ mod test {
         let r = construct(None, Some(PathBuf::from("../testdata/append_def.json")));
         assert!(r.is_ok());
         if let Ok(result) = r {
-            assert_eq!(48, result.len());
+            assert_eq!(58, result.len());
             assert!(!result.is_empty());
         }
     }

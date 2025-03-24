@@ -27,18 +27,31 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://maven.apache.org/"
   }
   new {
+    name = "Appveyor"
+    `build-files` = new { "appveyor.yml" }
+    url = "https://www.appveyor.com/"
+  }
+  new {
     name = "autoconf"
     `build-files` = new {
-      "configure.in"
+      "configure.in" "configure.ac"
     }
     url = "https://www.gnu.org/software/autoconf/"
   }
   new {
     name = "automake"
     `build-files` = new {
-      "Makefile.am"
+      "Makefile.in" "Makefile.am"
     }
     url = "https://www.gnu.org/software/automake/"
+  }
+  new {
+    name = "Babel"
+    `build-files` = new {
+      "babel.config.js"
+      ".babelrc.json"
+    }
+    url = "https://babeljs.io/"
   }
   new {
     name = "Bazel"
@@ -98,6 +111,11 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://deno.land/"
   }
   new {
+    name = "dep"
+    `build-files` = new { "Gopkg.toml" }
+    url = "https://github.com/golang/dep"
+  }
+  new {
     name = "DevContainer"
     `build-files` = new { ".devcontainer/devcontainer.json" }
     url = "https://code.visualstudio.com/docs/remote/containers"
@@ -116,6 +134,11 @@ buildtools = new Listing<BuildToolDef> {
       "compose.yaml"
     }
     url = "https://docs.docker.com/compose/"
+  }
+  new {
+    name = "Doxygen"
+    `build-files` = new { "Doxyfile" }
+    url = "https://www.doxygen.nl"
   }
   new {
     name = "Earthly"
@@ -143,6 +166,11 @@ buildtools = new Listing<BuildToolDef> {
     name = "GitLab CI/CD"
     `build-files` = new { ".gitlab-ci.yml" }
     url = "https://docs.gitlab.com/ee/ci/"
+  }
+  new {
+    name = "Glide"
+    `build-files` = new { "glide.yaml" }
+    url = "https://github.com/Masterminds/glide"
   }
   new {
     name = "Gradle"
@@ -224,6 +252,11 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://www.npmjs.com/"
   }
   new {
+    name = "NuGet"
+    `build-files` = new { "nuget.config" "NuGet.config" }
+    url = "https://www.nuget.org"
+  }
+  new {
     name = "Pants"
     `build-files` = new {
       "BUILD"
@@ -263,6 +296,13 @@ buildtools = new Listing<BuildToolDef> {
       "rollup.config.mjs"
     }
     url = "https://rollupjs.org"
+  }
+  new {
+    name = "Ruby Gems"
+    `build-files` = new {
+      "Gemfile"
+    }
+    url = "https://rubygems.org"
   }
   new {
     name = "SCons"

@@ -5,6 +5,8 @@ mod markdown;
 mod xml;
 mod yaml;
 
+use std::collections::HashMap;
+
 use crate::cli::Format;
 use crate::defs::BuildToolDef;
 use crate::fmt::csv::Formatter as CsvFormatter;
@@ -13,7 +15,7 @@ use crate::fmt::json::Formatter as JsonFormatter;
 use crate::fmt::markdown::Formatter as MarkdownFormatter;
 use crate::fmt::xml::Formatter as XmlFormatter;
 use crate::fmt::yaml::Formatter as YamlFormatter;
-use btmeister::{BuildTools, Result};
+use btmeister::{BuildTool, BuildTools, Result};
 
 pub trait Formatter {
     #[cfg(test)]
@@ -39,6 +41,21 @@ pub fn build_formatter(format: Format) -> Box<dyn Formatter> {
         Format::Yaml => Box::new(YamlFormatter {}),
     }
 }
+
+pub(crate) fn convert_to_map(tools: &BuildTools) -> std::collections::HashMap<String, Vec<&BuildTool>> {
+    let mut map: HashMap<String, Vec<&BuildTool>> = HashMap::new();
+    for bt in &tools.tools {
+        let key = bt.def.name.clone();
+        if let Some(v) = map.get_mut(&key) {
+            v.push(bt);
+        } else {
+            map.insert(key, vec![bt]);
+        }
+    }
+    map
+}
+
+
 
 #[cfg(test)]
 pub fn fake_build_def() -> BuildToolDef {
