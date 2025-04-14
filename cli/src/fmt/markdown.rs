@@ -32,7 +32,14 @@ impl FormatterTrait for Formatter {
         let _ = writeln!(result, "## {}\n", b);
 
         let map = super::convert_to_map(tools);
-        for (name, bts) in map {
+        let mut keys = map.keys().collect::<Vec<_>>();
+        keys.sort();
+        for name in keys {
+            let bts = if let Some(bts) = map.get(name) {
+                bts
+            } else {
+                continue;
+            };
             let _ = writeln!(result, "- {}", name);
             for bt in bts {
                 let _ = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {

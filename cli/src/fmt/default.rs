@@ -37,13 +37,17 @@ impl FormatterTrait for Formatter {
         let _ = writeln!(result, "{}", tools.base.display());
         for (name, bts) in map {
             let _ = writeln!(result, "    {}", name);
-            bts.iter().map(|bt| {
-                if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
-                    p.display().to_string()
-                } else {
-                    bt.path.display().to_string()
-                }
-            }).for_each(|s| { let _ = writeln!(result, "        {}", s); });
+            bts.iter()
+                .map(|bt| {
+                    if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
+                        p.display().to_string()
+                    } else {
+                        bt.path.display().to_string()
+                    }
+                })
+                .for_each(|s| {
+                    let _ = writeln!(result, "        {}", s);
+                });
         }
         String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
     }

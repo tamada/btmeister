@@ -5,7 +5,7 @@ mod markdown;
 mod xml;
 mod yaml;
 
-use std::collections::HashMap;
+use std::collections::BTreeMap;
 
 use crate::cli::Format;
 use crate::defs::BuildToolDef;
@@ -42,8 +42,10 @@ pub fn build_formatter(format: Format) -> Box<dyn Formatter> {
     }
 }
 
-pub(crate) fn convert_to_map(tools: &BuildTools) -> std::collections::HashMap<String, Vec<&BuildTool>> {
-    let mut map: HashMap<String, Vec<&BuildTool>> = HashMap::new();
+pub(crate) fn convert_to_map(
+    tools: &BuildTools,
+) -> std::collections::BTreeMap<String, Vec<&BuildTool>> {
+    let mut map: BTreeMap<String, Vec<&BuildTool>> = BTreeMap::new();
     for bt in &tools.tools {
         let key = bt.def.name.clone();
         if let Some(v) = map.get_mut(&key) {
@@ -54,8 +56,6 @@ pub(crate) fn convert_to_map(tools: &BuildTools) -> std::collections::HashMap<St
     }
     map
 }
-
-
 
 #[cfg(test)]
 pub fn fake_build_def() -> BuildToolDef {
