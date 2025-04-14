@@ -54,6 +54,13 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://babeljs.io/"
   }
   new {
+    name = "Bake"
+    `build-files` = new {
+      "bakefile.yaml"
+    }
+    url = "https://github.com/ali77gh/bake-rs"
+  }
+  new {
     name = "Bazel"
     `build-files` = new {
       "WORKSPACE"
@@ -73,12 +80,12 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://github.com/chen3feng/blade-build"
   }
   new {
-    name = "Buck"
+    name = "Buck2 (Buck)"
     `build-files` = new {
       ".buckconfig"
       "BUCK"
     }
-    url = "https://buck.build/"
+    url = "https://buck2.build/"
   }
   new {
     name = "Cake"
@@ -232,12 +239,27 @@ buildtools = new Listing<BuildToolDef> {
     url = "https://magefile.org/"
   }
   new {
+    name = "Mill"
+    `build-files` = new { "*.mill" }
+    url = "https://mill-build.org/"
+  }
+  new {
     name = "mise"
     `build-files` = new {
       "mise.toml"
       "mise.local.toml"
     }
     url = "https://mise.jdx.dev"
+  }
+  new {
+    name = "Moon"
+    `build-files` = new {
+      ".moon/workspace.yml"
+      ".moon/tasks.yml"
+      ".moon/toolchain.yml"
+      "moon.yml"
+    }
+    url = "https://moonrepo.dev/moon"
   }
   new {
     name = "ninja"
@@ -368,6 +390,13 @@ buildtools = new Listing<BuildToolDef> {
     name = "Webpack"
     `build-files` = new {"webpack.config.js"}
     url = "https://webpack.js.org/"
+  }
+  new {
+    name = "Xmake"
+    `build-files` = new {
+      "xmake.lua"
+    }
+    url = "https://xmake.io/"
   }
 }
 
