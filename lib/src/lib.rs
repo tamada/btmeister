@@ -176,7 +176,7 @@ impl BuildTools {
                 Ok(bt.path.display().to_string())
             }
         } else {
-            Err(MeisterError::Fatal(format!("index {} out of range", index)))
+            Err(MeisterError::Fatal(format!("index {index} out of range")))
         }
     }
 }
@@ -283,7 +283,7 @@ impl Meister {
                         }
                     }
                 }
-                Err(e) => errs.push(MeisterError::Warning(format!("walking: {}", e))),
+                Err(e) => errs.push(MeisterError::Warning(format!("walking: {e}"))),
             }
         }
         if errs.is_empty() {

@@ -24,7 +24,7 @@ impl FormatterTrait for Formatter {
         let files = &def
             .build_files
             .iter()
-            .map(|s| format!("            <build-file>{}</build-file>\n", s))
+            .map(|s| format!("            <build-file>{s}</build-file>\n"))
             .collect::<Vec<String>>()
             .concat();
         let result = format!(
@@ -60,7 +60,7 @@ impl FormatterTrait for Formatter {
             );
         }
         let _ = writeln!(result, "        </build-files>\n    </project>");
-        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
+        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{e}")))
     }
 
     fn header_files(&self) -> Option<String> {

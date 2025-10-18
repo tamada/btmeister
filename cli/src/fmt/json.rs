@@ -24,13 +24,13 @@ impl FormatterTrait for crate::fmt::json::Formatter {
         let files = &def
             .build_files
             .iter()
-            .map(|s| format!("\"{}\"", s))
+            .map(|s| format!("\"{s}\""))
             .collect::<Vec<String>>()
             .join(",");
         let separator = if first { "" } else { "," };
         let result = format!(
-            r#"{}{{"name":"{}","build-files":[{}],"url":"{}"}}"#,
-            separator, &def.name, files, &def.url
+            r#"{separator}{{"name":"{}","build-files":[{files}],"url":"{}"}}"#,
+            &def.name, &def.url
         );
         Ok(result)
     }
@@ -53,14 +53,13 @@ impl FormatterTrait for crate::fmt::json::Formatter {
             let separator = if uindex == 0 { "" } else { "," };
             let _ = writeln!(
                 result,
-                r#"{}{{"path":"{}","tool-name":"{}"}}"#,
-                separator,
+                r#"{separator}{{"path":"{}","tool-name":"{}"}}"#,
                 path.display(),
                 bt.def.name
             );
         }
         let _ = writeln!(result, "]}}");
-        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
+        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{e}")))
     }
 
     fn header_files(&self) -> Option<String> {

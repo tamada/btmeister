@@ -238,7 +238,7 @@ mod tests {
             assert_eq!(PathBuf::from("../testdata/hello"), p[0]);
             assert_eq!(PathBuf::from("../testdata/fibonacci"), p[1]);
         } else {
-            panic!("fatal: {:?}", projects);
+            panic!("fatal: {projects:?}");
         }
     }
 
@@ -295,7 +295,7 @@ mod tests {
         assert!(projects.is_err());
         match projects {
             Err(MeisterError::NoProjectSpecified()) => {}
-            _ => panic!("fatal: {:?}", projects),
+            _ => panic!("fatal: {projects:?}"),
         }
     }
 }

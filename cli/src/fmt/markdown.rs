@@ -15,7 +15,7 @@ impl FormatterTrait for Formatter {
         let url = &def.url;
         let buildfiles = def.build_files.join("\n  - ");
 
-        Ok(format!("- [{}]({})\n  - {}", name, url, buildfiles))
+        Ok(format!("- [{name}]({url})\n  - {buildfiles}"))
     }
 
     fn header_defs(&self) -> Option<String> {
@@ -29,7 +29,7 @@ impl FormatterTrait for Formatter {
     fn format_files(&self, tools: &BuildTools, _: bool) -> Result<String> {
         let mut result = Vec::<u8>::new();
         let b = tools.base.display();
-        let _ = writeln!(result, "## {}\n", b);
+        let _ = writeln!(result, "## {b}\n");
         for bt in &tools.tools {
             let _ = if let Ok(p) = bt.path.strip_prefix(tools.base.clone()) {
                 writeln!(result, "- {}\n  - {}", bt.def.name, p.display())
@@ -37,7 +37,7 @@ impl FormatterTrait for Formatter {
                 writeln!(result, "- {}\n  - {}", bt.def.name, bt.path.display())
             };
         }
-        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
+        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{e}")))
     }
 
     fn header_files(&self) -> Option<String> {
