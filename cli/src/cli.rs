@@ -33,16 +33,16 @@ pub(crate) struct Options {
 
 #[derive(Parser, Debug)]
 pub(crate) struct FilterOpts {
-    #[clap(short = 'I', long, value_name = "TOOL_NAME", help = "commma separated tool names to include. If start with '@', reads from file.", conflicts_with_all = [ "excludes", "include_files", "exclude_files" ])]
+    #[clap(short = 'I', long, value_name = "TOOL_NAME", help = "comma separated tool names to include. If start with '@', reads from file.", conflicts_with_all = [ "excludes", "include_files", "exclude_files" ])]
     pub(crate) includes: Option<String>,
 
-    #[clap(short = 'E', long, value_name = "TOOL_NAME", help = "commma separated tool names to exclude. If start with '@', reads from file.", conflicts_with_all = [ "includes", "include_files", "exclude_files" ])]
+    #[clap(short = 'E', long, value_name = "TOOL_NAME", help = "comma separated tool names to exclude. If start with '@', reads from file.", conflicts_with_all = [ "includes", "include_files", "exclude_files" ])]
     pub(crate) excludes: Option<String>,
 
-    #[clap(long, value_name = "BUILD_FILE_NAME", help = "commma separated build file names to include. If start with '@', reads from file.", conflicts_with_all = [ "includes", "excludes", "exclude_files" ])]
+    #[clap(long, value_name = "BUILD_FILE_NAME", help = "comma separated build file names to include. If start with '@', reads from file.", conflicts_with_all = [ "includes", "excludes", "exclude_files" ])]
     pub(crate) include_files: Option<String>,
 
-    #[clap(long, value_name = "BUILD_FILE_NAME", help = "commma separated build file names to exclude. If start with '@', reads from file.", conflicts_with_all = [ "includes", "excludes", "include_files" ])]
+    #[clap(long, value_name = "BUILD_FILE_NAME", help = "comma separated build file names to exclude. If start with '@', reads from file.", conflicts_with_all = [ "includes", "excludes", "include_files" ])]
     pub(crate) exclude_files: Option<String>,
 }
 

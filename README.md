@@ -40,13 +40,13 @@ Options:
       --append-defs <DEFS_JSON>
           Specify the additional definitions of the build tools.
   -I, --includes <TOOL_NAME>
-          commma separated tool names to include. If start with '@', reads from file.
+          comma separated tool names to include. If start with '@', reads from file.
   -E, --excludes <TOOL_NAME>
-          commma separated tool names to exclude. If start with '@', reads from file.
+          comma separated tool names to exclude. If start with '@', reads from file.
       --include-files <BUILD_FILE_NAME>
-          commma separated build file names to include. If start with '@', reads from file.
+          comma separated build file names to include. If start with '@', reads from file.
       --exclude-files <BUILD_FILE_NAME>
-          commma separated build file names to exclude. If start with '@', reads from file.
+          comma separated build file names to exclude. If start with '@', reads from file.
   -i, --ignore-type <IGNORE_TYPE>
           Specify the ignore type. [default: default]
           [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]

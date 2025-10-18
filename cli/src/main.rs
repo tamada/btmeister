@@ -1,6 +1,6 @@
 mod cli;
-mod fmt;
 mod defs_builder;
+mod fmt;
 
 use crate::cli::InputOpts;
 use crate::fmt::Formatter;

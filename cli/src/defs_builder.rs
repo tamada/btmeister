@@ -16,18 +16,23 @@ pub fn construct(opts: cli::DefOpts) -> Result<BuildToolDefs> {
             } else {
                 Ok(r.filter(filter))
             }
-        },
+        }
         Err(e) => Err(e),
     }
 }
 
 impl cli::FilterOpts {
     fn build_filter(self) -> Filter {
-        match (self.includes, self.excludes, self.include_files, self.exclude_files) {
-            (Some(v), _, _, _)  => Filter::Includes(parse_item(v)),
-            (_, Some(v), _, _)  => Filter::Excludes(parse_item(v)),
-            (_, _, Some(v), _)  => Filter::IncludeFiles(parse_item(v)),
-            (_, _, _, Some(v))  => Filter::ExcludeFiles(parse_item(v)),
+        match (
+            self.includes,
+            self.excludes,
+            self.include_files,
+            self.exclude_files,
+        ) {
+            (Some(v), _, _, _) => Filter::Includes(parse_item(v)),
+            (_, Some(v), _, _) => Filter::Excludes(parse_item(v)),
+            (_, _, Some(v), _) => Filter::IncludeFiles(parse_item(v)),
+            (_, _, _, Some(v)) => Filter::ExcludeFiles(parse_item(v)),
             (None, None, None, None) => Filter::None,
         }
     }
@@ -47,9 +52,9 @@ fn parse_item(item: String) -> Vec<String> {
 }
 
 fn read_file_content(f: File) -> Vec<String> {
-    let r = BufReader::new(f).lines()
-        .filter_map(|s| Some(s.unwrap()))
+    BufReader::new(f)
+        .lines()
+        .map_while(|s| s.ok())
         .map(|s| s.trim().to_string())
-        .collect::<Vec<_>>();
-    r
+        .collect::<Vec<_>>()
 }
