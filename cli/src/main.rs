@@ -1,5 +1,6 @@
 mod cli;
 mod fmt;
+mod defs_builder;
 
 use crate::cli::InputOpts;
 use crate::fmt::Formatter;
@@ -126,7 +127,7 @@ fn perform(opts: cli::Options) -> Result<()> {
     let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
     #[cfg(debug_assertions)]
     let compopts = opts.compopts;
-    let defs = defs::construct(defopts.definition, defopts.append_defs)?;
+    let defs = defs_builder::construct(defopts)?;
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if compopts.completion {

@@ -26,7 +26,7 @@ This tool finds the build files from the specified directories, and identifies t
 ```sh
 Detecting build tools/task runners in use of the projects
 
-Usage: btmeister [OPTIONS] [PROJECTs]...
+Usage: btmeister-cli [OPTIONS] [PROJECTs]...
 
 Arguments:
   [PROJECTs]...  The target project paths. If "-" was given, reads from stdin.
@@ -35,15 +35,33 @@ Arguments:
                  Supported archive files: tar, tar.bz2, tar.gz, tar.xz, tar.zstd, and zip.
 
 Options:
-  -D, --definition <DEFS_JSON>     Specify the definition of the build tools.
-      --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
-  -i, --ignore-type <IGNORE_TYPE>  Specify the ignore type. [default: default] [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
-  -e, --excludes <EXCLUDEs>        Specify the filters of excluding files or directories.
-  -L, --list-defs                  Print the build tools' definition list
-  -f, --format <FORMAT>            Specify the output format [default: default] [possible values: csv, default, json, markdown, xml, yaml]
-  -l, --level <LEVEL>              Specify the log level. [default: warn] [possible values: error, warn, info, debug, trace]
-  -h, --help                       Print help (see more with '--help')
-  -V, --version                    Print version
+  -D, --definition <DEFS_JSON>
+          Specify the definition of the build tools.
+      --append-defs <DEFS_JSON>
+          Specify the additional definitions of the build tools.
+  -I, --includes <TOOL_NAME>
+          commma separated tool names to include. If start with '@', reads from file.
+  -E, --excludes <TOOL_NAME>
+          commma separated tool names to exclude. If start with '@', reads from file.
+      --include-files <BUILD_FILE_NAME>
+          commma separated build file names to include. If start with '@', reads from file.
+      --exclude-files <BUILD_FILE_NAME>
+          commma separated build file names to exclude. If start with '@', reads from file.
+  -i, --ignore-type <IGNORE_TYPE>
+          Specify the ignore type. [default: default]
+          [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -s, --skip-traverse <SKIP_DIRs>
+          Specify the skip directories.
+  -L, --list-defs
+          Print the build tools' definition list
+  -f, --format <FORMAT>
+          Specify the output format [default: default] [possible values: csv, default, json, markdown, xml, yaml]
+  -l, --level <LEVEL>
+          Specify the log level. [default: warn] [possible values: error, warn, info, debug, trace]
+  -h, --help
+          Print help (see more with '--help')
+  -V, --version
+          Print version
 ```
 
 ### Sample Output

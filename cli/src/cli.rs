@@ -31,6 +31,21 @@ pub(crate) struct Options {
     pub(crate) compopts: CompletionOpts,
 }
 
+#[derive(Parser, Debug)]
+pub(crate) struct FilterOpts {
+    #[clap(short = 'I', long, value_name = "TOOL_NAME", help = "commma separated tool names to include. If start with '@', reads from file.", conflicts_with_all = [ "excludes", "include_files", "exclude_files" ])]
+    pub(crate) includes: Option<String>,
+
+    #[clap(short = 'E', long, value_name = "TOOL_NAME", help = "commma separated tool names to exclude. If start with '@', reads from file.", conflicts_with_all = [ "includes", "include_files", "exclude_files" ])]
+    pub(crate) excludes: Option<String>,
+
+    #[clap(long, value_name = "BUILD_FILE_NAME", help = "commma separated build file names to include. If start with '@', reads from file.", conflicts_with_all = [ "includes", "excludes", "exclude_files" ])]
+    pub(crate) include_files: Option<String>,
+
+    #[clap(long, value_name = "BUILD_FILE_NAME", help = "commma separated build file names to exclude. If start with '@', reads from file.", conflicts_with_all = [ "includes", "excludes", "include_files" ])]
+    pub(crate) exclude_files: Option<String>,
+}
+
 #[cfg(debug_assertions)]
 #[derive(Parser, Debug)]
 pub(crate) struct CompletionOpts {
@@ -65,12 +80,12 @@ pub(crate) struct InputOpts {
     pub(crate) ignore_types: Vec<IgnoreType>,
 
     #[arg(
-        short,
-        long,
-        value_name = "EXCLUDEs",
-        help = "Specify the filters of excluding files or directories."
+        short = 's',
+        long = "skip-traverse",
+        value_name = "SKIP_DIRs",
+        help = "Specify the skip directories."
     )]
-    pub(crate) excludes: Vec<String>,
+    pub(crate) skips: Vec<String>,
 
     #[arg(
         value_name = "PROJECTs",
@@ -104,7 +119,7 @@ pub(crate) struct OutputOpts {
     pub(crate) format: Format,
 }
 
-#[derive(Parser, Debug, Clone)]
+#[derive(Parser, Debug)]
 pub(crate) struct DefOpts {
     #[arg(
         short = 'D',
@@ -120,6 +135,9 @@ pub(crate) struct DefOpts {
         help = "Specify the additional definitions of the build tools."
     )]
     pub(crate) append_defs: Option<PathBuf>,
+
+    #[clap(flatten)]
+    pub(crate) filter: FilterOpts,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum, Debug)]
@@ -288,7 +306,7 @@ mod tests {
     fn test_no_projects() {
         let opts = InputOpts {
             ignore_types: vec![],
-            excludes: vec![],
+            skips: vec![],
             dirs: vec![],
         };
         let projects = opts.projects();

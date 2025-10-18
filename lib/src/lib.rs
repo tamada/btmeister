@@ -162,6 +162,15 @@ pub struct BuildTool {
     pub def: BuildToolDef,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum Filter {
+    Includes(Vec<String>),
+    Excludes(Vec<String>),
+    IncludeFiles(Vec<String>),
+    ExcludeFiles(Vec<String>),
+    None,
+}
+
 trait Matcher {
     fn matches(&self, p: &Path) -> bool;
 }

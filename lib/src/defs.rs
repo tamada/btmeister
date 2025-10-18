@@ -28,7 +28,7 @@ use std::path::PathBuf;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
-use crate::{MeisterError, Result};
+use crate::{Filter, MeisterError, Result};
 
 #[derive(RustEmbed)]
 #[folder = "../assets"]
@@ -97,6 +97,24 @@ impl BuildToolDefs {
         }
     }
 
+    pub fn filter(self, f: Filter) -> BuildToolDefs {
+        match f {
+            Filter::Includes(items) => BuildToolDefs::new(
+                includes(items, self.into_iter())
+            ),
+            Filter::Excludes(items) => BuildToolDefs::new(
+                excludes(items, self.into_iter())
+            ),
+            Filter::IncludeFiles(items) => BuildToolDefs::new(
+                include_files(items, self.into_iter())
+            ),
+            Filter::ExcludeFiles(items) => BuildToolDefs::new(
+                exclude_files(items, self.into_iter())
+            ),
+            Filter::None => self,
+        }
+    }
+
     /// len returns the number of the build tool definitions.
     pub fn len(&self) -> usize {
         self.defs.len()
@@ -112,6 +130,10 @@ impl BuildToolDefs {
         self.defs.iter()
     }
 
+    pub fn into_iter(self) -> impl Iterator<Item = BuildToolDef> {
+        self.defs.into_iter()
+    }
+
     /// extend appends the build tool definitions of the second object to the first object.
     pub fn extend(&mut self, second: BuildToolDefs) {
         self.defs.extend(second.defs);
@@ -121,6 +143,34 @@ impl BuildToolDefs {
     pub fn append(&mut self, other: &mut BuildToolDefs) {
         self.defs.append(&mut other.defs);
     }
+}
+
+fn includes(item: Vec<String>, i: impl Iterator<Item = BuildToolDef>) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| item.iter().any(|s| d.name.to_lowercase() == s.to_string().to_lowercase()))
+}
+
+fn excludes(item: Vec<String>, i: impl Iterator<Item = BuildToolDef>) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| item.iter().all(|s| d.name.to_lowercase() != s.to_string().to_lowercase()))
+}
+
+fn include_files(item: Vec<String>, i: impl Iterator<Item = BuildToolDef>) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| {
+        for name in &item {
+            return d.build_files.iter().any(|f| f.to_lowercase() == name.to_lowercase()) 
+        }
+        return false
+    })
+}
+
+fn exclude_files(item: Vec<String>, i: impl Iterator<Item = BuildToolDef>) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| {
+        for name in &item {
+            if d.build_files.iter().any(|bf| bf.to_lowercase() == name.to_lowercase()) {
+                return false
+            }
+        }
+        return true
+    })
 }
 
 impl BuildToolDef {
