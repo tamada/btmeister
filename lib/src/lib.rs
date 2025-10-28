@@ -162,6 +162,53 @@ pub struct BuildTool {
     pub def: BuildToolDef,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub enum Filter {
+    Includes(Vec<String>),
+    Excludes(Vec<String>),
+    IncludeFiles(Vec<String>),
+    ExcludeFiles(Vec<String>),
+    None,
+}
+
+impl Filter {
+    pub fn includes<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::Includes(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+
+    pub fn excludes<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::Excludes(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+
+    pub fn include_files<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::IncludeFiles(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+
+    pub fn exclude_files<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::ExcludeFiles(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+}
+
 trait Matcher {
     fn matches(&self, p: &Path) -> bool;
 }
@@ -176,7 +223,7 @@ impl BuildTools {
                 Ok(bt.path.display().to_string())
             }
         } else {
-            Err(MeisterError::Fatal(format!("index {} out of range", index)))
+            Err(MeisterError::Fatal(format!("index {index} out of range")))
         }
     }
 }
@@ -283,7 +330,7 @@ impl Meister {
                         }
                     }
                 }
-                Err(e) => errs.push(MeisterError::Warning(format!("walking: {}", e))),
+                Err(e) => errs.push(MeisterError::Warning(format!("walking: {e}"))),
             }
         }
         if errs.is_empty() {

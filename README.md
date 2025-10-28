@@ -4,10 +4,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/tamada/btmeister/badge.svg?branch=main)](https://coveralls.io/github/tamada/btmeister?branch=main)
 [![Rust Report Card](https://rust-reportcard.xuri.me/badge/github.com/tamada/btmeister)](https://rust-reportcard.xuri.me/report/github.com/tamada/btmeister)
 
-[![Version](https://img.shields.io/badge/Version-v0.7.4-green)](https://github.com/tamada/btmeister/releases/tag/v0.7.4)
+[![Version](https://img.shields.io/badge/Version-v0.8.2-green)](https://github.com/tamada/btmeister/releases/tag/v0.8.2)
 [![License](https://img.shields.io/badge/License-MIT-green)](https://github.com/tamada/btmeister/blob/main/LICENSE)
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.4-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.8.2-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 [![Homebrew](https://img.shields.io/badge/Homebrew-tamada/tap/btmeister-blue?logo=homebrew)](https://github.com/tamada/homebrew-tap)
 
 Detecting the build tools in use.
@@ -26,7 +26,7 @@ This tool finds the build files from the specified directories, and identifies t
 ```sh
 Detecting build tools/task runners in use of the projects
 
-Usage: btmeister [OPTIONS] [PROJECTs]...
+Usage: btmeister-cli [OPTIONS] [PROJECTs]...
 
 Arguments:
   [PROJECTs]...  The target project paths. If "-" was given, reads from stdin.
@@ -35,15 +35,33 @@ Arguments:
                  Supported archive files: tar, tar.bz2, tar.gz, tar.xz, tar.zstd, and zip.
 
 Options:
-  -D, --definition <DEFS_JSON>     Specify the definition of the build tools.
-      --append-defs <DEFS_JSON>    Specify the additional definitions of the build tools.
-  -i, --ignore-type <IGNORE_TYPE>  Specify the ignore type. [default: default] [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
-  -e, --excludes <EXCLUDEs>        Specify the filters of excluding files or directories.
-  -L, --list-defs                  Print the build tools' definition list
-  -f, --format <FORMAT>            Specify the output format [default: default] [possible values: csv, default, json, markdown, xml, yaml]
-  -l, --level <LEVEL>              Specify the log level. [default: warn] [possible values: error, warn, info, debug, trace]
-  -h, --help                       Print help (see more with '--help')
-  -V, --version                    Print version
+  -D, --definition <DEFS_JSON>
+          Specify the definition of the build tools.
+      --append-defs <DEFS_JSON>
+          Specify the additional definitions of the build tools.
+  -I, --includes <TOOL_NAME>
+          comma separated tool names to include. If start with '@', reads from file.
+  -E, --excludes <TOOL_NAME>
+          comma separated tool names to exclude. If start with '@', reads from file.
+      --include-files <BUILD_FILE_NAME>
+          comma separated build file names to include. If start with '@', reads from file.
+      --exclude-files <BUILD_FILE_NAME>
+          comma separated build file names to exclude. If start with '@', reads from file.
+  -i, --ignore-type <IGNORE_TYPE>
+          Specify the ignore type. [default: default]
+          [possible values: default, hidden, ignore, git-ignore, git-global, git-exclude]
+  -s, --skip-traverse <SKIP_DIRs>
+          Specify the skip directories.
+  -L, --list-defs
+          Print the build tools' definition list
+  -f, --format <FORMAT>
+          Specify the output format [default: default] [possible values: csv, default, json, markdown, xml, yaml]
+  -l, --level <LEVEL>
+          Specify the log level. [default: warn] [possible values: error, warn, info, debug, trace]
+  -h, --help
+          Print help (see more with '--help')
+  -V, --version
+          Print version
 ```
 
 ### Sample Output
@@ -98,7 +116,7 @@ $ btmeister --format json ~/github.com/tamada/gibo-wrapper | jq .
 
 ## :whale: Docker
 
-[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.7.4-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
+[![Docker](https://img.shields.io/badge/Docker-ghcr.io/tamada/btmeister:0.8.2-blue?logo=docker)](https://github.com/tamada/btmeister/pkgs/container/btmeister/)
 
 ```sh
 docker run --rm -it -v $PWD:/app ghcr.io/tamada/btmeister:latest .

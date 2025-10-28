@@ -24,7 +24,7 @@ impl FormatterTrait for Formatter {
         let files = &def
             .build_files
             .iter()
-            .map(|s| format!("  - {}", s))
+            .map(|s| format!("  - {s}"))
             .collect::<Vec<String>>()
             .join("\n");
         Ok(format!(
@@ -56,7 +56,7 @@ impl FormatterTrait for Formatter {
                 bt.def.name, path_name
             );
         }
-        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
+        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{e}")))
     }
 
     fn header_files(&self) -> Option<String> {

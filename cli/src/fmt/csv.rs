@@ -16,7 +16,7 @@ impl FormatterTrait for Formatter {
         let result = def
             .build_files
             .iter()
-            .map(|s| format!("{},{},{}", name, s, url))
+            .map(|s| format!("{name},{s},{url}"))
             .collect::<Vec<String>>()
             .join("\n");
         Ok(result)
@@ -40,7 +40,7 @@ impl FormatterTrait for Formatter {
                 writeln!(result, "{},{},{}", b, bt.path.display(), bt.def.name)
             };
         }
-        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{}", e)))
+        String::from_utf8(result).map_err(|e| MeisterError::Fatal(format!("{e}")))
     }
 
     fn header_files(&self) -> Option<String> {

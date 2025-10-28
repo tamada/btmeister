@@ -28,7 +28,7 @@ use std::path::PathBuf;
 use rust_embed::RustEmbed;
 use serde::{Deserialize, Serialize};
 
-use crate::{MeisterError, Result};
+use crate::{Filter, MeisterError, Result};
 
 #[derive(RustEmbed)]
 #[folder = "../assets"]
@@ -71,6 +71,15 @@ impl Default for BuildToolDefs {
     }
 }
 
+impl std::iter::IntoIterator for BuildToolDefs {
+    type Item = BuildToolDef;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.defs.into_iter()
+    }
+}
+
 impl BuildToolDefs {
     /// new creates a new BuildToolDefs object from the given definitions.
     pub fn new<I, T>(defs: I) -> BuildToolDefs
@@ -97,19 +106,33 @@ impl BuildToolDefs {
         }
     }
 
+    pub fn filter(self, f: Filter) -> BuildToolDefs {
+        match f {
+            Filter::Includes(items) => BuildToolDefs::new(includes(items, self.into_iter())),
+            Filter::Excludes(items) => BuildToolDefs::new(excludes(items, self.into_iter())),
+            Filter::IncludeFiles(items) => {
+                BuildToolDefs::new(include_files(items, self.into_iter()))
+            }
+            Filter::ExcludeFiles(items) => {
+                BuildToolDefs::new(exclude_files(items, self.into_iter()))
+            }
+            Filter::None => self,
+        }
+    }
+
     /// len returns the number of the build tool definitions.
     pub fn len(&self) -> usize {
         self.defs.len()
     }
 
-    /// is_empty returns true if the build tool definitions are empty.
-    pub fn is_empty(&self) -> bool {
-        self.defs.is_empty()
-    }
-
     /// iter returns an iterator of the build tool definitions.
     pub fn iter(&self) -> impl Iterator<Item = &BuildToolDef> + '_ {
         self.defs.iter()
+    }
+
+    /// is_empty returns true if the build tool definitions are empty.
+    pub fn is_empty(&self) -> bool {
+        self.defs.is_empty()
     }
 
     /// extend appends the build tool definitions of the second object to the first object.
@@ -121,6 +144,54 @@ impl BuildToolDefs {
     pub fn append(&mut self, other: &mut BuildToolDefs) {
         self.defs.append(&mut other.defs);
     }
+}
+
+fn includes(
+    item: Vec<String>,
+    i: impl Iterator<Item = BuildToolDef>,
+) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| {
+        item.iter()
+            .any(|s| d.name.to_lowercase() == s.to_string().to_lowercase())
+    })
+}
+
+fn excludes(
+    item: Vec<String>,
+    i: impl Iterator<Item = BuildToolDef>,
+) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| {
+        item.iter()
+            .all(|s| d.name.to_lowercase() != s.to_string().to_lowercase())
+    })
+}
+
+fn include_files(
+    item: Vec<String>,
+    i: impl Iterator<Item = BuildToolDef>,
+) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| {
+        item.iter()
+            .map(|s| s.to_lowercase())
+            .any(|name| d.build_files.iter().any(|f| f.to_lowercase() == name))
+    })
+}
+
+fn exclude_files(
+    item: Vec<String>,
+    i: impl Iterator<Item = BuildToolDef>,
+) -> impl Iterator<Item = BuildToolDef> {
+    i.filter(move |d| {
+        for name in &item {
+            if d.build_files
+                .iter()
+                .any(|bf| bf.to_lowercase() == name.to_lowercase())
+            {
+                return false;
+            }
+        }
+        true
+    })
 }
 
 impl BuildToolDef {
@@ -243,5 +314,40 @@ mod test {
 
         assert_eq!(1, defs1.len());
         assert!(!defs1.is_empty());
+    }
+
+    #[test]
+    fn test_filter_include_files() {
+        let defs = BuildToolDefs::default();
+        let filtered = defs.filter(Filter::include_files(vec![
+            "Makefile",
+            "Fake",
+        ]));
+        assert_eq!(1, filtered.len());
+    }
+
+    #[test]
+    fn test_filter_includes() {
+        let defs = BuildToolDefs::default();
+        let filtered = defs.filter(Filter::includes(vec![
+            "Apache Ant",
+            "Gradle",
+            "Apache Maven",
+        ]));
+        assert_eq!(3, filtered.len());
+    }
+
+    #[test]
+    fn test_filter_excludes() {
+        let defs = BuildToolDefs::parse(PathBuf::from("../testdata/append_def.json")).unwrap();
+        let filtered = defs.filter(Filter::excludes(vec!["Fake"]));
+        assert_eq!(1, filtered.len());
+    }
+
+    #[test]
+    fn test_filter_exclude_files() {
+        let defs = BuildToolDefs::parse(PathBuf::from("../testdata/append_def.json")).unwrap();
+        let filtered = defs.filter(Filter::exclude_files(vec!["Dummyfile"]));
+        assert_eq!(1, filtered.len());
     }
 }

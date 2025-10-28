@@ -1,4 +1,5 @@
 mod cli;
+mod defs_builder;
 mod fmt;
 
 use crate::cli::InputOpts;
@@ -10,17 +11,17 @@ use clap::Parser;
 
 fn list_defs(defs: BuildToolDefs, f: Box<dyn Formatter>) -> Result<()> {
     if let Some(header) = f.header_defs() {
-        println!("{}", header);
+        println!("{header}");
     }
     let mut errs = vec![];
     for (index, def) in defs.iter().enumerate() {
         match f.format_def(def, index == 0) {
-            Ok(s) => println!("{}", s),
+            Ok(s) => println!("{s}"),
             Err(e) => errs.push(e),
         }
     }
     if let Some(footer) = f.footer_defs() {
-        println!("{}", footer);
+        println!("{footer}");
     }
     if errs.is_empty() {
         Ok(())
@@ -33,16 +34,16 @@ fn print_results(r: Vec<BuildTools>, f: Box<dyn Formatter>) -> Result<()> {
     use std::io::Write;
     let mut errs = vec![];
     if let Some(header) = f.header_files() {
-        println!("{}", header);
+        println!("{header}");
     }
     for (i, bt) in r.iter().enumerate() {
         match f.format_files(bt, i == 0) {
-            Ok(s) => print!("{}", s),
+            Ok(s) => print!("{s}"),
             Err(e) => errs.push(e),
         }
     }
     if let Some(footer) = f.footer_files() {
-        println!("{}", footer);
+        println!("{footer}");
     }
     let _ = std::io::stdout().flush();
     if errs.is_empty() {
@@ -126,7 +127,7 @@ fn perform(opts: cli::Options) -> Result<()> {
     let (input_opts, output_opts, defopts) = (opts.inputs, opts.outputs, opts.defopts);
     #[cfg(debug_assertions)]
     let compopts = opts.compopts;
-    let defs = defs::construct(defopts.definition, defopts.append_defs)?;
+    let defs = defs_builder::construct(defopts)?;
     if cfg!(debug_assertions) {
         #[cfg(debug_assertions)]
         if compopts.completion {
@@ -152,15 +153,15 @@ fn errors_to_string(e: MeisterError) -> String {
             .map(errors_to_string)
             .collect::<Vec<String>>()
             .join("\n"),
-        Fatal(m) => format!("fatal: {}", m),
-        IO(e) => format!("io error: {}", e),
-        Json(e) => format!("parse error: {}", e),
+        Fatal(m) => format!("fatal: {m}"),
+        IO(e) => format!("io error: {e}"),
+        Json(e) => format!("parse error: {e}"),
         NotImplemented => "not implemented yet.".to_string(),
-        NotProject(file) => format!("{}: not project", file),
+        NotProject(file) => format!("{file}: not project"),
         NoProjectSpecified() => "no project specified.".to_string(),
         ProjectNotFound(p) => format!("{}: project not found", p.display()),
-        UnsupportedArchiveFormat(f) => format!("{}: unsupported archive format", f),
-        Warning(m) => format!("warning: {}", m),
+        UnsupportedArchiveFormat(f) => format!("{f}: unsupported archive format"),
+        Warning(m) => format!("warning: {m}"),
     }
 }
 
@@ -177,8 +178,8 @@ fn init_logs(level: &LogLevel) {
         btmeister::LogLevel::TRACE => std::env::set_var("RUST_LOG", "trace"),
     };
     match env_logger::try_init() {
-        Ok(_) => log::info!("set log level to {}", level),
-        Err(_) => log::info!("set log level to {} (no tty)", level),
+        Ok(_) => log::info!("set log level to {level}"),
+        Err(_) => log::info!("set log level to {level} (no tty)"),
     }
 }
 
@@ -210,7 +211,7 @@ mod tests {
         assert_eq!("fatal: test", errors_to_string(Fatal("test".to_string())));
         assert_eq!(
             "io error: test",
-            errors_to_string(IO(std::io::Error::new(std::io::ErrorKind::Other, "test",)))
+            errors_to_string(IO(std::io::Error::other("test",)))
         );
         assert_eq!(
             "parse error: missing field `test`",
