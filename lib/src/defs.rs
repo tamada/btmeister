@@ -315,4 +315,39 @@ mod test {
         assert_eq!(1, defs1.len());
         assert!(!defs1.is_empty());
     }
+
+    #[test]
+    fn test_filter_include_files() {
+        let defs = BuildToolDefs::default();
+        let filtered = defs.filter(Filter::include_files(vec![
+            "Makefile",
+            "Fake",
+        ]));
+        assert_eq!(1, filtered.len());
+    }
+
+    #[test]
+    fn test_filter_includes() {
+        let defs = BuildToolDefs::default();
+        let filtered = defs.filter(Filter::includes(vec![
+            "Apache Ant",
+            "Gradle",
+            "Apache Maven",
+        ]));
+        assert_eq!(3, filtered.len());
+    }
+
+    #[test]
+    fn test_filter_excludes() {
+        let defs = BuildToolDefs::parse(PathBuf::from("../testdata/append_def.json")).unwrap();
+        let filtered = defs.filter(Filter::excludes(vec!["Fake"]));
+        assert_eq!(1, filtered.len());
+    }
+
+    #[test]
+    fn test_filter_exclude_files() {
+        let defs = BuildToolDefs::parse(PathBuf::from("../testdata/append_def.json")).unwrap();
+        let filtered = defs.filter(Filter::exclude_files(vec!["Dummyfile"]));
+        assert_eq!(1, filtered.len());
+    }
 }

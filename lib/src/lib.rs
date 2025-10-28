@@ -171,6 +171,44 @@ pub enum Filter {
     None,
 }
 
+impl Filter {
+    pub fn includes<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::Includes(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+
+    pub fn excludes<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::Excludes(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+
+    pub fn include_files<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::IncludeFiles(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+
+    pub fn exclude_files<S: AsRef<str>>(names: Vec<S>) -> Self {
+        Filter::ExcludeFiles(
+            names
+                .into_iter()
+                .map(|s| s.as_ref().to_string())
+                .collect(),
+        )
+    }
+}
+
 trait Matcher {
     fn matches(&self, p: &Path) -> bool;
 }
