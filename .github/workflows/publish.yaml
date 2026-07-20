@@ -1,0 +1,208 @@
+name: publish_site_release_assets
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    # runs only the branch name starts with 'release/v' and the pull request is merged.
+    if: startsWith(github.head_ref, 'release/v') && github.event.pull_request.merged == true
+    outputs:
+      tag: ${{ steps.vars.outputs.tag }}
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Git Tag name
+        id: vars
+        run: |
+          echo "tag=${GITHUB_HEAD_REF##*/v}" >> $GITHUB_OUTPUT
+
+      # - name: Create release
+      #   id: create_release
+      #   uses: actions/create-release@v1.0.0
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     tag_name: v${{ steps.vars.outputs.tag }}
+      #     release_name: Release v${{ steps.vars.outputs.tag }}
+      #     draft: true
+      #     prerelease: false
+
+      - name: Create release
+        id: create_release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create v${{ steps.vars.outputs.tag }} \
+            --draft \
+            --repo  $GITHUB_REPOSITORY \
+            --title "Release v${{ steps.vars.outputs.tag }}" \
+            --generate-notes
+
+  site:
+    runs-on: ubuntu-latest
+    needs: setup
+    outputs:
+      tag: ${{ needs.setup.outputs.tag }}
+      upload_url: ${{ needs.setup.outputs.upload_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Initialize Git
+        shell: bash
+        run: |
+          git config --global user.name  "GitHub Actions"
+          git config --global user.email "action@github.com"
+          auth_header="$(git config --local --get http.https://github.com/.extraheader)"
+          git submodule sync --recursive
+          git -c "http.extraheader=$auth_header" -c protocol.version=2 submodule update --init --force --recursive --depth=1
+          git worktree add site/public gh-pages
+          
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: llvm-tools-preview
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v2
+        with:
+          hugo-version: '0.91.2'
+          extended: true
+
+      - name: Build site
+        run: |
+          cargo llvm-cov --html
+          mkdir -p site/static/coverage
+          cp -r target/llvm-cov/html/* site/static/coverage/
+          git submodule update --init
+          hugo -s site
+          rm site/public/favicon*
+
+      - name: Deploy Site
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site/public
+
+  publish:
+    runs-on: ${{ matrix.os }}
+    needs: site
+    outputs:
+      tag: ${{ needs.site.outputs.tag }}
+    strategy:
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_amd64
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-gnu
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_linux_arm64
+          - os: macOS-latest
+            target: x86_64-apple-darwin
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_darwin_amd64
+          - os: macOS-latest
+            target: aarch64-apple-darwin
+            artifact_name: btmeister
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_darwin_arm64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            artifact_name: btmeister.exe
+            asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_amd64
+          # - os: windows-latest
+          #   target: aarch64-pc-windows-msvc
+          #   artifact_name: btmeister.exe
+          #   asset_name: btmeister-${{ needs.site.outputs.tag }}_windows_arm64
+
+    steps:
+# initialization
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0 # Fetch all history for .GitInfo and .Lastmod
+
+      - name: Setup variable
+        id: vars
+        shell: bash
+        run: |
+          rustup target list
+          DIR=$(echo "btmeister-${{ needs.site.outputs.tag }}")
+          echo "dir=$DIR" >> $GITHUB_OUTPUT
+
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: Setup
+        run: rustup update stable
+
+      - name: Setup Rust (1/2) (toolchain)
+        uses: taiki-e/setup-cross-toolchain-action@v1
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          target: ${{ matrix.target }}
+
+      - name: Cross build (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          rustup target add ${{ matrix.target }}
+          cargo build --release --target ${{ matrix.target }}
+
+      - name: Cross build (Linux and Windows)
+        run: |
+          cargo build --release --target ${{ matrix.target }}
+
+      # - name: Cross build with all features
+      #   uses: actions-rs/cargo@v1
+      #   with:
+      #     use-cross: true 
+      #     command: build
+      #     args: --release --target ${{ matrix.target }} --all-features --verbose
+          
+# publish release
+      - name: Create release file
+        shell: bash
+        run: |
+          git worktree add site/public gh-pages
+          DIR=${{ steps.vars.outputs.dir }}
+          DIST=${{ matrix.target }}
+          mkdir -p dist/$DIST/$DIR
+          cp -r site/public dist/$DIST/$DIR/docs
+          cp -r README.md LICENSE assets target/${{ matrix.target }}/release/${{ matrix.artifact_name }} dist/$DIST/$DIR
+          tar cvfz dist/${{ matrix.asset_name }}.tar.gz -C dist/$DIST $DIR
+
+      - name: Upload release assets
+        id: upload-release-assets
+        uses: actions/upload-release-asset@v1.0.1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          asset_path: dist/${{ matrix.asset_name }}.tar.gz
+          asset_name: ${{ matrix.asset_name }}.tar.gz
+          asset_content_type: application/x-gzip
+          upload_url: ${{ needs.site.outputs.upload_url }}
+
+  finalize:
+    runs-on: ubuntu-latest
+    needs: publish
+    steps:
+      - name: Make the release immutable
+        run: |
+          echo "The release v${{ needs.publish.outputs.tag }} has been created with assets."
+          gh release edit v${{ needs.publish.outputs.tag }} --draft=false
